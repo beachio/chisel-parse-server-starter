@@ -1,0 +1,10 @@
+{
+  "name": "chisel-server",
+  "description": "parse-server for Chisel",
+  "scripts": {
+    "start": "parse-server config.json"
+  },
+  "dependencies": {
+    "parse-server": "^2.0.0"
+  }
+}
