@@ -1,8 +1,9 @@
 {
-  "name": "chisel-server",
-  "description": "parse-server for Chisel",
+  "name": "parse-server",
+  "description": "parse-server for Chisel, Mesto, ...",
   "scripts": {
-    "start": "parse-server config.json"
+    "chisel": "parse-server configs/chisel.json",
+    "mesto": "parse-server configs/mesto.json"
   },
   "dependencies": {
     "parse-server": "^2.0.0"
