@@ -2,6 +2,6 @@
   "appId": "d5701a37cf242d5ee398005d997e4229",
   "masterKey": "5a70dd9922602c26e6fac84d611decb4",
   "appName": "Chisel",
-  "cloud": "./cloud/main",
+  "cloud": "./cloud/chisel",
   "databaseURI": "mongodb://127.0.0.1:27017/parse"
 }

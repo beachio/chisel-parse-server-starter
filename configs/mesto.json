@@ -2,6 +2,6 @@
   "appId": "d5701a37cf242d5ee000000d997e4229",
   "masterKey": "5a70dd0000000c26e6fac84d611decb4",
   "appName": "Mesto",
-  "cloud": "./cloud/main",
+  "cloud": "./cloud/mesto",
   "databaseURI": "mongodb://127.0.0.1:27017/mesto"
 }
