@@ -120,6 +120,25 @@ Parse.Cloud.define("deleteSite", (request, response) => {
       return promises;
     })
     
+    .then(() => {
+      return promisify(
+        new Parse.Query('Collaboration')
+          .equalTo('site', site)
+          .find());
+    })
+  
+    .then(collabs => {
+      let promises = [];
+      for (let collab of collabs) {
+        if (checkRights(request.user, collab))
+          promises.push(promisifyW(collab.destroy()));
+      }
+  
+      return Promise.all(promises);
+    })
+  
+    .catch(() => Promise.resolve())
+    
     .then(() => promisify(site.destroy()))
   
     .then(() => response.success("Successfully deleted site."))
