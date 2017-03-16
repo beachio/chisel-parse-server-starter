@@ -1,3 +1,6 @@
+const config = require('../configs/chisel.json');
+
+
 let promisify = pp => {
   return new Promise((rs, rj) => pp.then(rs, rj));
 };
@@ -147,7 +150,35 @@ Parse.Cloud.define("deleteSite", (request, response) => {
 });
 
 
+let setCLP = (table, CLP) => {
+  let endpoint = '/parse/schemas/' + table;
+  let server = 'http://localhost:1337';
+  
+  return Parse.Cloud.httpRequest({
+    url: server + endpoint,
+    method: 'POST',
+    mode: 'cors',
+    cache: 'no-cache',
+    headers: {
+      'Content-Type': 'application/json',
+      'X-Parse-Application-Id': config.appId,
+      'X-Parse-Master-Key': config.masterKey
+    },
+    body: JSON.stringify({"classLevelPermissions": CLP})
+  })
+    .then(response => {
+      if (response.status == 200) {
+        return response.json();
+      } else {
+        return Promise.reject();
+      }
+    });
+};
+
+
 const ROLE_ADMIN = "ADMIN";
+const ROLE_EDITOR = "EDITOR";
+
 
 Parse.Cloud.define("onCollaborationModify", (request, response) => {
   if (!request.user) {
@@ -302,27 +333,60 @@ Parse.Cloud.define("onModelAdd", (request, response) => {
     })
     
     .then(collabs => {
+      let admins = [owner.id];
+      let writers = [owner.id];
+      let all = [owner.id];
+      
       for (let collab of collabs) {
         let user = collab.get('user');
         let role = collab.get('role');
   
         modelACL.setReadAccess(user, true);
         modelACL.setWriteAccess(user, role == ROLE_ADMIN);
+  
+        if (role == ROLE_ADMIN)
+          admins.push(user.id);
+        if (role == ROLE_ADMIN || role == ROLE_EDITOR)
+          writers.push(user.id);
+        all.push(user.id);
       }
   
       model.setACL(modelACL);
       model.save();
-    })
-    
-    .then(() => {
-      /*
-       let Content = Parse.Object.extend(model.tableName);
-       let contentACL = Content.getACL();
-       contentACL.setReadAccess(collab.user.origin, !deleting);
-       contentACL.setWriteAccess(collab.user.origin, !deleting && (collab.role == ROLE_ADMIN || collab.role == ROLE_DEVELOPER));
-       Content.setACL(contentACL);
-       Content.save();
-       */
+      
+      //set CLP for content table
+      let CLP = {
+        'get': {},
+        'find': {},
+        'create': {},
+        'update': {},
+        'delete': {},
+        'addField': {},
+        /*
+        "readUserFields": [
+          "owner"
+        ],
+        "writeUserFields": [
+          "owner"
+        ]
+        */
+      };
+      
+      for (let user of all) {
+        CLP['get'][user] = true;
+        CLP['find'][user] = true;
+      }
+      for (let user of writers) {
+        CLP['create'][user] = true;
+        CLP['update'][user] = true;
+        CLP['delete'][user] = true;
+      }
+      for (let user of admins) {
+        CLP['addField'][user] = true;
+      }
+      
+      return promisify(
+        setCLP(model.get('tableName'), CLP));
     })
     
     .then(() => response.success('ACL setup ends!'))
