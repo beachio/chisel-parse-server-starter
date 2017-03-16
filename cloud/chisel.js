@@ -302,12 +302,10 @@ Parse.Cloud.define("onCollaborationModify", (request, response) => {
         }
       }
   
-      if (!deleting) {
-        collabACL.setReadAccess(user, true);
-        collabACL.setWriteAccess(user, true);
-        collab.setACL(collabACL);
-        collab.save();
-      }
+      collabACL.setReadAccess(user, true);
+      collabACL.setWriteAccess(user, true);
+      collab.setACL(collabACL);
+      collab.save();
     })
     
     .then(() => {
