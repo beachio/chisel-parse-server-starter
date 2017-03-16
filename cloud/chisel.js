@@ -1,6 +1,12 @@
 const config = require('../configs/chisel.json');
 
 
+const SERVER = 'http://localhost:1337';
+
+const ROLE_ADMIN = "ADMIN";
+const ROLE_EDITOR = "EDITOR";
+
+
 let promisify = pp => {
   return new Promise((rs, rj) => pp.then(rs, rj));
 };
@@ -23,10 +29,35 @@ let checkRights = (user, obj) => {
   return read && write || pRead && pWrite;
 };
 
+let deleteTable = table => {
+  let endpoint = '/parse/schemas/' + table;
+  
+  return new Promise((resolve, reject) => {
+    Parse.Cloud.httpRequest({
+      url: SERVER + endpoint,
+      method: 'DELETE',
+      mode: 'cors',
+      cache: 'no-cache',
+      headers: {
+        'Content-Type': 'application/json',
+        'X-Parse-Application-Id': config.appId,
+        'X-Parse-Master-Key': config.masterKey
+      }
+    })
+      .then(response => {
+        if (response.status == 200)
+          resolve();
+        else
+          reject();
+      }, reject);
+  });
+};
 
 let deleteModel = (user, model) => {
   if (!checkRights(user, model))
     return Promise.reject("Access denied!");
+  
+  let tableName;
   
   return promisify(
     new Parse.Query('ModelField')
@@ -47,7 +78,7 @@ let deleteModel = (user, model) => {
   
     .then(() => {
       //TODO: clearing all content, not first 100
-      let tableName = model.get('tableName');
+      tableName = model.get('tableName');
       return promisify(
         new Parse.Query(tableName)
           .find());
@@ -62,6 +93,10 @@ let deleteModel = (user, model) => {
     
       return Promise.all(promises);
     })
+  
+    .catch(() => Promise.resolve())
+  
+    .then(() => deleteTable(tableName))
   
     .catch(() => Promise.resolve())
   
@@ -152,11 +187,10 @@ Parse.Cloud.define("deleteSite", (request, response) => {
 
 let getCLP = table => {
   let endpoint = '/parse/schemas/' + table;
-  let server = 'http://localhost:1337';
   
   return new Promise((resolve, reject) => {
     Parse.Cloud.httpRequest({
-      url: server + endpoint,
+      url: SERVER + endpoint,
       method: 'GET',
       mode: 'cors',
       cache: 'no-cache',
@@ -177,11 +211,10 @@ let getCLP = table => {
 
 let setCLP = (table, CLP, method = 'POST') => {
   let endpoint = '/parse/schemas/' + table;
-  let server = 'http://localhost:1337';
   
   return new Promise((resolve, reject) => {
     Parse.Cloud.httpRequest({
-      url: server + endpoint,
+      url: SERVER + endpoint,
       method,
       mode: 'cors',
       cache: 'no-cache',
@@ -202,8 +235,6 @@ let setCLP = (table, CLP, method = 'POST') => {
 };
 
 
-const ROLE_ADMIN = "ADMIN";
-const ROLE_EDITOR = "EDITOR";
 
 
 Parse.Cloud.define("onCollaborationModify", (request, response) => {
