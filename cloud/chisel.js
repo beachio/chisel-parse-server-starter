@@ -150,29 +150,55 @@ Parse.Cloud.define("deleteSite", (request, response) => {
 });
 
 
-let setCLP = (table, CLP) => {
+let getCLP = table => {
   let endpoint = '/parse/schemas/' + table;
   let server = 'http://localhost:1337';
   
-  return Parse.Cloud.httpRequest({
-    url: server + endpoint,
-    method: 'POST',
-    mode: 'cors',
-    cache: 'no-cache',
-    headers: {
-      'Content-Type': 'application/json',
-      'X-Parse-Application-Id': config.appId,
-      'X-Parse-Master-Key': config.masterKey
-    },
-    body: JSON.stringify({"classLevelPermissions": CLP})
-  })
-    .then(response => {
-      if (response.status == 200) {
-        return response.json();
-      } else {
-        return Promise.reject();
+  return new Promise((resolve, reject) => {
+    Parse.Cloud.httpRequest({
+      url: server + endpoint,
+      method: 'GET',
+      mode: 'cors',
+      cache: 'no-cache',
+      headers: {
+        'Content-Type': 'application/json',
+        'X-Parse-Application-Id': config.appId,
+        'X-Parse-Master-Key': config.masterKey
       }
-    });
+    })
+      .then(response => {
+        if (response.status == 200)
+          resolve(response.data.classLevelPermissions);
+        else
+          resolve(null);
+      }, () => resolve(null));
+  });
+};
+
+let setCLP = (table, CLP, method = 'POST') => {
+  let endpoint = '/parse/schemas/' + table;
+  let server = 'http://localhost:1337';
+  
+  return new Promise((resolve, reject) => {
+    Parse.Cloud.httpRequest({
+      url: server + endpoint,
+      method,
+      mode: 'cors',
+      cache: 'no-cache',
+      headers: {
+        'Content-Type': 'application/json',
+        'X-Parse-Application-Id': config.appId,
+        'X-Parse-Master-Key': config.masterKey
+      },
+      body: JSON.stringify({"classLevelPermissions": CLP})
+    })
+      .then(response => {
+        if (response.status == 200)
+          resolve();
+        else
+          reject();
+      }, reject);
+  });
 };
 
 
@@ -283,14 +309,50 @@ Parse.Cloud.define("onCollaborationModify", (request, response) => {
         model.setACL(modelACL);
         model.save();
     
-        /*
-         let Content = Parse.Object.extend(model.tableName);
-         let contentACL = Content.getACL();
-         contentACL.setReadAccess(collab.user.origin, !deleting);
-         contentACL.setWriteAccess(collab.user.origin, !deleting && (collab.role == ROLE_ADMIN || collab.role == ROLE_DEVELOPER));
-         Content.setACL(contentACL);
-         Content.save();
-         */
+        let tableName = model.get('tableName');
+        getCLP(tableName)
+          .then(CLP => {
+            if (!CLP)
+              CLP = {
+                'get': {},
+                'find': {},
+                'create': {},
+                'update': {},
+                'delete': {},
+                'addField': {}
+              };
+            
+            if (!deleting) {
+              CLP['get'][user.id] = true;
+              CLP['find'][user.id] = true;
+            } else {
+              if (CLP['get'].hasOwnProperty(user.id))
+                delete CLP['get'][user.id];
+              if (CLP['find'].hasOwnProperty(user.id))
+                delete CLP['find'][user.id];
+            }
+  
+            if (!deleting && (role == ROLE_ADMIN || role == ROLE_EDITOR)) {
+              CLP['create'][user.id] = true;
+              CLP['update'][user.id] = true;
+              CLP['delete'][user.id] = true;
+            } else {
+              if (CLP['create'].hasOwnProperty(user.id))
+                delete CLP['create'][user.id];
+              if (CLP['update'].hasOwnProperty(user.id))
+                delete CLP['update'][user.id];
+              if (CLP['delete'].hasOwnProperty(user.id))
+                delete CLP['delete'][user.id];
+            }
+            
+            if (!deleting && role == ROLE_ADMIN)
+              CLP['addField'][user.id] = true;
+            else if (CLP['addField'].hasOwnProperty(user.id))
+              delete CLP['addField'][user.id];
+            
+            setCLP(tableName, CLP)
+              .catch(() => setCLP(tableName, CLP, 'PUT'));
+          });
       }
     })
     
@@ -385,8 +447,7 @@ Parse.Cloud.define("onModelAdd", (request, response) => {
         CLP['addField'][user] = true;
       }
       
-      return promisify(
-        setCLP(model.get('tableName'), CLP));
+      return setCLP(model.get('tableName'), CLP);
     })
     
     .then(() => response.success('ACL setup ends!'))
