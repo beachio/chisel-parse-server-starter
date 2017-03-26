@@ -175,7 +175,7 @@ Parse.Cloud.define("deleteSite", (request, response) => {
       return Promise.all(promises);
     })
   
-    .catch(() => Promise.resolve())
+    //.catch(() => Promise.resolve())
     
     .then(() => promisify(site.destroy()))
   
@@ -255,6 +255,9 @@ Parse.Cloud.define("onCollaborationModify", (request, response) => {
   )
     .then(p_collab => {
       collab = p_collab;
+  
+      if (!checkRights(request.user, collab))
+        return Promise.reject("Access denied!");
       
       site = collab.get('site');
       user = collab.get('user');
@@ -271,6 +274,7 @@ Parse.Cloud.define("onCollaborationModify", (request, response) => {
       if (!collabACL)
         collabACL = new Parse.ACL(owner);
       
+      //getting all site collabs
       return promisify(
         new Parse.Query('Collaboration')
           .equalTo('site', site)
@@ -292,6 +296,7 @@ Parse.Cloud.define("onCollaborationModify", (request, response) => {
         tempCollabACL.setWriteAccess(user, !deleting && role == ROLE_ADMIN);
     
         tempCollab.setACL(tempCollabACL);
+        //!! non-controlling async
         tempCollab.save();
     
         //set ACL for current collab
@@ -305,6 +310,7 @@ Parse.Cloud.define("onCollaborationModify", (request, response) => {
       collabACL.setReadAccess(user, true);
       collabACL.setWriteAccess(user, true);
       collab.setACL(collabACL);
+      //!! non-controlling async
       collab.save();
     })
     
@@ -317,6 +323,7 @@ Parse.Cloud.define("onCollaborationModify", (request, response) => {
       siteACL.setReadAccess(user, !deleting);
       siteACL.setWriteAccess(user, !deleting && role == ROLE_ADMIN);
       site.setACL(siteACL);
+      //!! non-controlling async
       site.save();
   
       //ACL for models and content items
@@ -336,9 +343,11 @@ Parse.Cloud.define("onCollaborationModify", (request, response) => {
         modelACL.setReadAccess(user, !deleting);
         modelACL.setWriteAccess(user, !deleting && role == ROLE_ADMIN);
         model.setACL(modelACL);
+        //!! non-controlling async
         model.save();
     
         let tableName = model.get('tableName');
+        //!! non-controlling async
         getCLP(tableName)
           .then(CLP => {
             if (!CLP)
@@ -378,7 +387,8 @@ Parse.Cloud.define("onCollaborationModify", (request, response) => {
               CLP['addField'][user.id] = true;
             else if (CLP['addField'].hasOwnProperty(user.id))
               delete CLP['addField'][user.id];
-            
+  
+            //!! non-controlling async
             setCLP(tableName, CLP)
               .catch(() => setCLP(tableName, CLP, 'PUT'));
           });
