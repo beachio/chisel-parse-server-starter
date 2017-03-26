@@ -29,6 +29,28 @@ let checkRights = (user, obj) => {
   return read && write || pRead && pWrite;
 };
 
+let getAllObjects = query => {
+  const MAX_COUNT = 50;
+  let objects = [];
+  
+  let getObjects = offset => {
+    return promisify(query
+      .limit(MAX_COUNT)
+      .skip(offset)
+      .find()
+    )
+      .then(res => {
+        if (!res.length)
+          return objects;
+        
+        objects = objects.concat(res);
+        return getObjects(offset + MAX_COUNT);
+      })
+  };
+  
+  return getObjects(0);
+};
+
 let deleteTable = table => {
   let endpoint = '/parse/schemas/' + table;
   
@@ -53,16 +75,16 @@ let deleteTable = table => {
   });
 };
 
+
 let deleteModel = (user, model) => {
   if (!checkRights(user, model))
     return Promise.reject("Access denied!");
   
   let tableName;
   
-  return promisify(
+  return getAllObjects(
     new Parse.Query('ModelField')
       .equalTo('model', model)
-      .find()
   )
     .then(fields => {
       let promises = [];
@@ -79,9 +101,8 @@ let deleteModel = (user, model) => {
     .then(() => {
       //TODO: clearing all content, not first 100
       tableName = model.get('tableName');
-      return promisify(
-        new Parse.Query(tableName)
-          .find());
+      return getAllObjects(
+        new Parse.Query(tableName));
     })
   
     .then(items => {
@@ -144,10 +165,9 @@ Parse.Cloud.define("deleteSite", (request, response) => {
       if (!checkRights(request.user, site))
         return Promise.reject("Access denied!");
       
-      return promisify(
+      return getAllObjects(
         new Parse.Query('Model')
-          .equalTo('site', site)
-          .find());
+          .equalTo('site', site));
     })
     
     .then(models => {
@@ -159,10 +179,9 @@ Parse.Cloud.define("deleteSite", (request, response) => {
     })
     
     .then(() => {
-      return promisify(
+      return getAllObjects(
         new Parse.Query('Collaboration')
-          .equalTo('site', site)
-          .find());
+          .equalTo('site', site));
     })
   
     .then(collabs => {
@@ -183,6 +202,7 @@ Parse.Cloud.define("deleteSite", (request, response) => {
   
     .catch(error => response.error("Could not delete site: " + JSON.stringify(error, null, 2)));
 });
+
 
 
 let getCLP = table => {
@@ -235,8 +255,6 @@ let setCLP = (table, CLP, method = 'POST') => {
 };
 
 
-
-
 Parse.Cloud.define("onCollaborationModify", (request, response) => {
   if (!request.user) {
     response.error('You must be authorized!');
@@ -275,10 +293,9 @@ Parse.Cloud.define("onCollaborationModify", (request, response) => {
         collabACL = new Parse.ACL(owner);
       
       //getting all site collabs
-      return promisify(
+      return getAllObjects(
         new Parse.Query('Collaboration')
-          .equalTo('site', site)
-          .find());
+          .equalTo('site', site));
     })
     
     .then(collabs => {
@@ -296,7 +313,7 @@ Parse.Cloud.define("onCollaborationModify", (request, response) => {
         tempCollabACL.setWriteAccess(user, !deleting && role == ROLE_ADMIN);
     
         tempCollab.setACL(tempCollabACL);
-        //!! non-controlling async
+        //!! uncontrolled async operation
         tempCollab.save();
     
         //set ACL for current collab
@@ -310,7 +327,7 @@ Parse.Cloud.define("onCollaborationModify", (request, response) => {
       collabACL.setReadAccess(user, true);
       collabACL.setWriteAccess(user, true);
       collab.setACL(collabACL);
-      //!! non-controlling async
+      //!! uncontrolled async operation
       collab.save();
     })
     
@@ -323,15 +340,14 @@ Parse.Cloud.define("onCollaborationModify", (request, response) => {
       siteACL.setReadAccess(user, !deleting);
       siteACL.setWriteAccess(user, !deleting && role == ROLE_ADMIN);
       site.setACL(siteACL);
-      //!! non-controlling async
+      //!! uncontrolled async operation
       site.save();
   
       //ACL for models and content items
   
-      return promisify(
+      return getAllObjects(
         new Parse.Query('Model')
-          .equalTo('site', site)
-          .find());
+          .equalTo('site', site));
     })
     
     .then(models => {
@@ -343,11 +359,11 @@ Parse.Cloud.define("onCollaborationModify", (request, response) => {
         modelACL.setReadAccess(user, !deleting);
         modelACL.setWriteAccess(user, !deleting && role == ROLE_ADMIN);
         model.setACL(modelACL);
-        //!! non-controlling async
+        //!! uncontrolled async operation
         model.save();
     
         let tableName = model.get('tableName');
-        //!! non-controlling async
+        //!! uncontrolled async operation
         getCLP(tableName)
           .then(CLP => {
             if (!CLP)
@@ -388,7 +404,7 @@ Parse.Cloud.define("onCollaborationModify", (request, response) => {
             else if (CLP['addField'].hasOwnProperty(user.id))
               delete CLP['addField'][user.id];
   
-            //!! non-controlling async
+            //!! uncontrolled async operation
             setCLP(tableName, CLP)
               .catch(() => setCLP(tableName, CLP, 'PUT'));
           });
@@ -427,10 +443,9 @@ Parse.Cloud.define("onModelAdd", (request, response) => {
       owner = site.get('owner');
       modelACL = new Parse.ACL(owner);
       
-      return promisify(
+      return getAllObjects(
         new Parse.Query('Collaboration')
-          .equalTo('site', site)
-          .find());
+          .equalTo('site', site));
     })
     
     .then(collabs => {
@@ -453,6 +468,7 @@ Parse.Cloud.define("onModelAdd", (request, response) => {
       }
   
       model.setACL(modelACL);
+      //!! uncontrolled async operation
       model.save();
       
       //set CLP for content table
