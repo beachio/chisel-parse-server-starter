@@ -51,6 +51,55 @@ let getAllObjects = query => {
   return getObjects(0);
 };
 
+let getTableData = table => {
+  let endpoint = '/parse/schemas/' + table;
+  
+  return new Promise((resolve, reject) => {
+    Parse.Cloud.httpRequest({
+      url: SERVER + endpoint,
+      method: 'GET',
+      mode: 'cors',
+      cache: 'no-cache',
+      headers: {
+        'Content-Type': 'application/json',
+        'X-Parse-Application-Id': config.appId,
+        'X-Parse-Master-Key': config.masterKey
+      }
+    })
+      .then(response => {
+        if (response.status == 200)
+          resolve(response.data);
+        else
+          resolve(null);
+      }, () => resolve(null));
+  });
+};
+
+let setTableData = (table, data, method = 'POST') => {
+  let endpoint = '/parse/schemas/' + table;
+  
+  return new Promise((resolve, reject) => {
+    Parse.Cloud.httpRequest({
+      url: SERVER + endpoint,
+      method,
+      mode: 'cors',
+      cache: 'no-cache',
+      headers: {
+        'Content-Type': 'application/json',
+        'X-Parse-Application-Id': config.appId,
+        'X-Parse-Master-Key': config.masterKey
+      },
+      body: JSON.stringify(data)
+    })
+      .then(response => {
+        if (response.status == 200)
+          resolve();
+        else
+          reject();
+      }, reject);
+  });
+};
+
 let deleteTable = table => {
   let endpoint = '/parse/schemas/' + table;
   
@@ -99,7 +148,6 @@ let deleteModel = (user, model) => {
     .catch(() => Promise.resolve())
   
     .then(() => {
-      //TODO: clearing all content, not first 100
       tableName = model.get('tableName');
       return getAllObjects(
         new Parse.Query(tableName));
@@ -124,6 +172,50 @@ let deleteModel = (user, model) => {
     .then(() => promisify(model.destroy()));
 };
 
+
+Parse.Cloud.define("deleteContentItem", (request, response) => {
+  if (!request.user) {
+    response.error("Must be signed in to call this Cloud Function.");
+    return;
+  }
+  
+  Parse.Cloud.useMasterKey();
+  
+  let tableName = request.params.tableName;
+  let itemId = request.params.itemId;
+  let item;
+  
+  promisify(
+    new Parse.Query(tableName)
+      .get(itemId)
+  )
+    .then(p_item => {
+      item = p_item;
+  
+      if (!checkRights(request.user, item))
+        return Promise.reject("Access denied!");
+      
+      return getTableData(tableName);
+    })
+  
+    .then(data => {
+      for (let field in data.fields) {
+        let val = data.fields[field];
+        if (val.type == 'Pointer' && val.targetClass == 'MediaItem') {
+          let media = item.get(field);
+          //!! uncontrolled async operation
+          if (media)
+            media.destroy();
+        }
+      }
+    })
+    
+    .then(() => promisify(item.destroy()))
+    
+    .then(() => response.success("Successfully deleted content item."))
+    
+    .catch(error => response.error("Could not delete content item: " + JSON.stringify(error, null, 2)));
+});
 
 Parse.Cloud.define("deleteModel", (request, response) => {
   if (!request.user) {
@@ -203,56 +295,6 @@ Parse.Cloud.define("deleteSite", (request, response) => {
     .catch(error => response.error("Could not delete site: " + JSON.stringify(error, null, 2)));
 });
 
-
-
-let getCLP = table => {
-  let endpoint = '/parse/schemas/' + table;
-  
-  return new Promise((resolve, reject) => {
-    Parse.Cloud.httpRequest({
-      url: SERVER + endpoint,
-      method: 'GET',
-      mode: 'cors',
-      cache: 'no-cache',
-      headers: {
-        'Content-Type': 'application/json',
-        'X-Parse-Application-Id': config.appId,
-        'X-Parse-Master-Key': config.masterKey
-      }
-    })
-      .then(response => {
-        if (response.status == 200)
-          resolve(response.data.classLevelPermissions);
-        else
-          resolve(null);
-      }, () => resolve(null));
-  });
-};
-
-let setCLP = (table, CLP, method = 'POST') => {
-  let endpoint = '/parse/schemas/' + table;
-  
-  return new Promise((resolve, reject) => {
-    Parse.Cloud.httpRequest({
-      url: SERVER + endpoint,
-      method,
-      mode: 'cors',
-      cache: 'no-cache',
-      headers: {
-        'Content-Type': 'application/json',
-        'X-Parse-Application-Id': config.appId,
-        'X-Parse-Master-Key': config.masterKey
-      },
-      body: JSON.stringify({"classLevelPermissions": CLP})
-    })
-      .then(response => {
-        if (response.status == 200)
-          resolve();
-        else
-          reject();
-      }, reject);
-  });
-};
 
 
 Parse.Cloud.define("onCollaborationModify", (request, response) => {
@@ -364,8 +406,9 @@ Parse.Cloud.define("onCollaborationModify", (request, response) => {
     
         let tableName = model.get('tableName');
         //!! uncontrolled async operation
-        getCLP(tableName)
-          .then(CLP => {
+        getTableData(tableName)
+          .then(response => {
+            let CLP = response.classLevelPermissions;
             if (!CLP)
               CLP = {
                 'get': {},
@@ -405,8 +448,9 @@ Parse.Cloud.define("onCollaborationModify", (request, response) => {
               delete CLP['addField'][user.id];
   
             //!! uncontrolled async operation
-            setCLP(tableName, CLP)
-              .catch(() => setCLP(tableName, CLP, 'PUT'));
+            let data = {"classLevelPermissions": CLP};
+            setTableData(tableName, data)
+              .catch(() => setTableData(tableName, data, 'PUT'));
           });
       }
     })
@@ -501,8 +545,9 @@ Parse.Cloud.define("onModelAdd", (request, response) => {
       for (let user of admins) {
         CLP['addField'][user] = true;
       }
-      
-      return setCLP(model.get('tableName'), CLP);
+  
+      let data = {"classLevelPermissions": CLP};
+      return setTableData(model.get('tableName'), data);
     })
     
     .then(() => response.success('ACL setup ends!'))
