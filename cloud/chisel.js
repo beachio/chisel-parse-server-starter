@@ -124,6 +124,36 @@ let deleteTable = table => {
   });
 };
 
+let deleteContentItem = (user, tableName, itemId) => {
+  let item;
+  
+  return promisify(
+    new Parse.Query(tableName)
+      .get(itemId)
+  )
+    .then(p_item => {
+      item = p_item;
+      
+      if (!checkRights(user, item))
+        return Promise.reject("Access denied!");
+      
+      return getTableData(tableName);
+    })
+    
+    .then(data => {
+      for (let field in data.fields) {
+        let val = data.fields[field];
+        if (val.type == 'Pointer' && val.targetClass == 'MediaItem') {
+          let media = item.get(field);
+          //!! uncontrolled async operation
+          if (media)
+            media.destroy();
+        }
+      }
+    })
+    
+    .then(() => promisify(item.destroy()));
+};
 
 let deleteModel = (user, model) => {
   if (!checkRights(user, model))
@@ -156,8 +186,10 @@ let deleteModel = (user, model) => {
     .then(items => {
       let promises = [];
       for (let item of items) {
-        if (checkRights(user, item))
-          promises.push(promisifyW(item.destroy()));
+        promises.push(
+          promisifyW(
+            deleteContentItem(user, tableName, item.id)
+          ));
       }
     
       return Promise.all(promises);
@@ -181,39 +213,12 @@ Parse.Cloud.define("deleteContentItem", (request, response) => {
   
   Parse.Cloud.useMasterKey();
   
-  let tableName = request.params.tableName;
-  let itemId = request.params.itemId;
-  let item;
-  
-  promisify(
-    new Parse.Query(tableName)
-      .get(itemId)
+  deleteContentItem(
+    request.user,
+    request.params.tableName,
+    request.params.itemId
   )
-    .then(p_item => {
-      item = p_item;
-  
-      if (!checkRights(request.user, item))
-        return Promise.reject("Access denied!");
-      
-      return getTableData(tableName);
-    })
-  
-    .then(data => {
-      for (let field in data.fields) {
-        let val = data.fields[field];
-        if (val.type == 'Pointer' && val.targetClass == 'MediaItem') {
-          let media = item.get(field);
-          //!! uncontrolled async operation
-          if (media)
-            media.destroy();
-        }
-      }
-    })
-    
-    .then(() => promisify(item.destroy()))
-    
     .then(() => response.success("Successfully deleted content item."))
-    
     .catch(error => response.error("Could not delete content item: " + JSON.stringify(error, null, 2)));
 });
 
