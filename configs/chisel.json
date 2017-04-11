@@ -3,5 +3,18 @@
   "masterKey": "5a70dd9922602c26e6fac84d611decb4",
   "appName": "Chisel",
   "cloud": "./cloud/chisel",
-  "databaseURI": "mongodb://127.0.0.1:27017/parse"
+  "databaseURI": "mongodb://127.0.0.1:27017/parse",
+
+  "verifyUserEmails": "true",
+  "preventLoginWithUnverifiedEmail": "true",
+  "publicServerURL": "http://localhost:1337/parse",
+
+  "emailAdapter": {
+    "module": "parse-server-simple-mailgun-adapter",
+    "options": {
+      "fromAddress": "parse@charliedisney.com",
+      "domain": "charliedisney.com",
+      "apiKey": "key-6488b75d22dfe878cf83f1753d64f825"
+    }
+  }
 }
