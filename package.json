@@ -2,10 +2,12 @@
   "name": "parse-server",
   "description": "parse-server for Chisel, Mesto, ...",
   "scripts": {
-    "chisel": "parse-server configs/chisel.json",
+    "chisel": "node ./chisel.js",
     "mesto": "parse-server configs/mesto.json"
   },
   "dependencies": {
-    "parse-server": "^2.0.0"
+    "express": "^4.15.2",
+    "parse-server": "^2.0.0",
+    "parse-server-mailgun": "^2.4.3"
   }
 }
