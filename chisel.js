@@ -42,7 +42,10 @@ const api = new ParseServer({
   },
   
   customPages: {
-    verifyEmailSuccess: 'http://localhost:3000/email-verify'
+    verifyEmailSuccess:   'http://localhost:3000/email-verify',
+    choosePassword:       'http://localhost:3000/password-set',
+    passwordResetSuccess: 'http://localhost:3000/password-set-success',
+    invalidLink:          'http://localhost:3000/invalid-link',
   }
 });
 
