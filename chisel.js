@@ -39,6 +39,10 @@ const api = new ParseServer({
         }
       }
     })
+  },
+  
+  customPages: {
+    verifyEmailSuccess: 'http://localhost:3000/email-verify'
   }
 });
 
