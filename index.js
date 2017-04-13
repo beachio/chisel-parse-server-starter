@@ -3,11 +3,11 @@ const resolve = require('path').resolve;
 const ParseServer = require('parse-server').ParseServer;
 
 
-const PORT = 1337;
-const PARSE_SERVER = `http://localhost:${PORT}/parse`;
-const MONGO_DB = `mongodb://127.0.0.1:27017/parse`;
-const MAIN_SITE = `http://localhost:3000`;
-module.exports['PARSE_SERVER'] = PARSE_SERVER;
+const PORT = process.env.PORT || 1337;
+const URL_SERVER = process.env.SERVER_URL || `http://localhost:${PORT}/parse`;
+const URL_DB = process.env.DATABASE_URI || process.env.MONGODB_URI || `mongodb://localhost:27017/parse`;
+const URL_SITE = `http://localhost:3000`;
+module.exports['URL_SERVER'] = URL_SERVER;
 
 
 const mailgunConfig = {
@@ -22,10 +22,10 @@ const parseConfig = {
   masterKey: "5a70dd9922602c26e6fac84d611decb4",
   appName: "Chisel",
   cloud: "./cloud/main",
-  databaseURI: MONGO_DB,
+  databaseURI: URL_DB,
   
-  serverURL: PARSE_SERVER,
-  publicServerURL: PARSE_SERVER,
+  serverURL: URL_SERVER,
+  publicServerURL: URL_SERVER,
   
   verifyUserEmails: true,
   preventLoginWithUnverifiedEmail: true,
@@ -49,10 +49,10 @@ const parseConfig = {
   },
   
   customPages: {
-    verifyEmailSuccess:   `${MAIN_SITE}/email-verify`,
-    choosePassword:       `${MAIN_SITE}/password-set`,
-    passwordResetSuccess: `${MAIN_SITE}/password-set-success`,
-    invalidLink:          `${MAIN_SITE}/invalid-link`
+    verifyEmailSuccess:   `${URL_SITE}/email-verify`,
+    choosePassword:       `${URL_SITE}/password-set`,
+    passwordResetSuccess: `${URL_SITE}/password-set-success`,
+    invalidLink:          `${URL_SITE}/invalid-link`
   }
 };
 module.exports.parseConfig = parseConfig;

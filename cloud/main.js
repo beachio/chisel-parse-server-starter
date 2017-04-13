@@ -5,7 +5,7 @@ const Mailgun = require('mailgun-js');
 const configs = require('../index.js');
 const config = configs.parseConfig;
 const mailgunConfig = configs.mailgunConfig;
-const SERVER = configs['PARSE_SERVER'];
+const SERVER = configs['URL_SERVER'];
 
 
 let mailgun = new Mailgun(mailgunConfig);
