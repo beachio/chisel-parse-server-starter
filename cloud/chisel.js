@@ -2,8 +2,8 @@ console.log('Cloud code connected');
 
 const Mailgun = require('mailgun-js');
 
-const config = require('../configs/chisel.json');
 const mailgunConfig = require('../chisel.js').mailgunConfig;
+const parseConfig = require('../chisel.js').parseConfig;
 
 let mailgun = new Mailgun(mailgunConfig);
 

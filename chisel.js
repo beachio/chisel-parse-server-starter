@@ -10,7 +10,7 @@ const mailgunConfig = {
 };
 module.exports.mailgunConfig = mailgunConfig;
 
-const api = new ParseServer({
+const parseConfig = {
   appId: "d5701a37cf242d5ee398005d997e4229",
   masterKey: "5a70dd9922602c26e6fac84d611decb4",
   appName: "Chisel",
@@ -47,7 +47,10 @@ const api = new ParseServer({
     passwordResetSuccess: 'http://localhost:3000/password-set-success',
     invalidLink:          'http://localhost:3000/invalid-link',
   }
-});
+};
+module.exports.parseConfig = parseConfig;
+
+const api = new ParseServer(parseConfig);
 
 let app = new express();
 

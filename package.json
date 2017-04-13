@@ -2,8 +2,7 @@
   "name": "parse-server",
   "description": "parse-server for Chisel, Mesto, ...",
   "scripts": {
-    "chisel": "node ./chisel.js",
-    "mesto": "parse-server configs/mesto.json"
+    "start": "node chisel.js"
   },
   "dependencies": {
     "express": "^4.15.2",

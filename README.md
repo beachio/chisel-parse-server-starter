@@ -1,9 +1,7 @@
 Parse server
 =====================
 
-A Parse server instance. Has configurations for projects:
-- Chisel
-- Mesto
+A Parse server for Chisel project.
  
 
 ## Build Setup
@@ -18,9 +16,8 @@ Before running server, you should start MongoDB daemon:
 mongod --dbpath <path to data directory>
 ```
  
-Next, choose you project and run appropriate npm-script:
+Next, run server:
 ``` bash
-# for Chisel project
-npm run chisel
+npm start
 ```
 The server will listen 5000 port.
