@@ -2,13 +2,14 @@ console.log('Cloud code connected');
 
 const Mailgun = require('mailgun-js');
 
-const mailgunConfig = require('../chisel.js').mailgunConfig;
-const parseConfig = require('../chisel.js').parseConfig;
+const configs = require('../index.js');
+const config = configs.parseConfig;
+const mailgunConfig = configs.mailgunConfig;
+const SERVER = configs['PARSE_SERVER'];
+
 
 let mailgun = new Mailgun(mailgunConfig);
 
-
-const SERVER = 'http://localhost:1337';
 
 const ROLE_ADMIN = "ADMIN";
 const ROLE_EDITOR = "EDITOR";
@@ -59,7 +60,7 @@ let getAllObjects = query => {
 };
 
 let getTableData = table => {
-  let endpoint = '/parse/schemas/' + table;
+  let endpoint = '/schemas/' + table;
   
   return new Promise((resolve, reject) => {
     Parse.Cloud.httpRequest({
@@ -83,7 +84,7 @@ let getTableData = table => {
 };
 
 let setTableData = (table, data, method = 'POST') => {
-  let endpoint = '/parse/schemas/' + table;
+  let endpoint = '/schemas/' + table;
   
   return new Promise((resolve, reject) => {
     Parse.Cloud.httpRequest({
@@ -108,7 +109,7 @@ let setTableData = (table, data, method = 'POST') => {
 };
 
 let deleteTable = table => {
-  let endpoint = '/parse/schemas/' + table;
+  let endpoint = '/schemas/' + table;
   
   return new Promise((resolve, reject) => {
     Parse.Cloud.httpRequest({

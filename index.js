@@ -3,6 +3,13 @@ const resolve = require('path').resolve;
 const ParseServer = require('parse-server').ParseServer;
 
 
+const PORT = 1337;
+const PARSE_SERVER = `http://localhost:${PORT}/parse`;
+const MONGO_DB = `mongodb://127.0.0.1:27017/parse`;
+const MAIN_SITE = `http://localhost:3000`;
+module.exports['PARSE_SERVER'] = PARSE_SERVER;
+
+
 const mailgunConfig = {
   fromAddress: "parse@charliedisney.com",
   domain: "charliedisney.com",
@@ -14,14 +21,14 @@ const parseConfig = {
   appId: "d5701a37cf242d5ee398005d997e4229",
   masterKey: "5a70dd9922602c26e6fac84d611decb4",
   appName: "Chisel",
-  cloud: "./cloud/chisel",
-  databaseURI: "mongodb://127.0.0.1:27017/parse",
+  cloud: "./cloud/main",
+  databaseURI: MONGO_DB,
   
-  serverURL: 'http://localhost:1337/parse',
+  serverURL: PARSE_SERVER,
+  publicServerURL: PARSE_SERVER,
   
   verifyUserEmails: true,
   preventLoginWithUnverifiedEmail: true,
-  publicServerURL: "http://localhost:1337/parse",
   
   emailAdapter: {
     module: "parse-server-mailgun",
@@ -42,10 +49,10 @@ const parseConfig = {
   },
   
   customPages: {
-    verifyEmailSuccess:   'http://localhost:3000/email-verify',
-    choosePassword:       'http://localhost:3000/password-set',
-    passwordResetSuccess: 'http://localhost:3000/password-set-success',
-    invalidLink:          'http://localhost:3000/invalid-link',
+    verifyEmailSuccess:   `${MAIN_SITE}/email-verify`,
+    choosePassword:       `${MAIN_SITE}/password-set`,
+    passwordResetSuccess: `${MAIN_SITE}/password-set-success`,
+    invalidLink:          `${MAIN_SITE}/invalid-link`
   }
 };
 module.exports.parseConfig = parseConfig;
@@ -57,6 +64,6 @@ let app = new express();
 // Serve the Parse API on the /parse URL prefix
 app.use('/parse', api);
 
-app.listen(1337, () => {
-  console.log('Parse server running on port 1337.');
+app.listen(PORT, () => {
+  console.log(`Parse server running on port ${PORT}.`);
 });
