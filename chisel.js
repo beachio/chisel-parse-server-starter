@@ -8,6 +8,7 @@ const mailgunConfig = {
   domain: "charliedisney.com",
   apiKey: "key-6488b75d22dfe878cf83f1753d64f825"
 };
+module.exports.mailgunConfig = mailgunConfig;
 
 const api = new ParseServer({
   appId: "d5701a37cf242d5ee398005d997e4229",
@@ -49,5 +50,3 @@ app.use('/parse', api);
 app.listen(1337, () => {
   console.log('Parse server running on port 1337.');
 });
-
-module.exports.mailgunConfig = mailgunConfig;

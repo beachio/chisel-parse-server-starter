@@ -1,4 +1,11 @@
+console.log('Cloud code connected');
+
+const Mailgun = require('mailgun-js');
+
 const config = require('../configs/chisel.json');
+const mailgunConfig = require('../chisel.js').mailgunConfig;
+
+let mailgun = new Mailgun(mailgunConfig);
 
 
 const SERVER = 'http://localhost:1337';
@@ -558,4 +565,26 @@ Parse.Cloud.define("onModelAdd", (request, response) => {
     .then(() => response.success('ACL setup ends!'))
     
     .catch(e => response.error(e));
+});
+
+
+Parse.Cloud.define("sendEmail", function(request, response) {
+  console.log("sendEmail " + new Date());
+  
+  let data = {
+    from:     mailgunConfig.fromAddress,
+    to:       request.params.address,
+    subject:  request.params.subject,
+    html:     request.params.body
+  };
+  
+  mailgun.messages().send(data, error => {
+    if (error) {
+      console.log("got an error in sendEmail: " + error);
+      response.error(error);
+    }	else {
+      console.log("email sent to " + toEmail + " " + new Date());
+      response.success("Email sent!");
+    }
+  });
 });
