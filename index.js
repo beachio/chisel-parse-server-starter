@@ -8,6 +8,7 @@ const URL_SERVER = process.env.SERVER_URL || `http://localhost:${PORT}/parse`;
 const URL_DB = process.env.DATABASE_URI || process.env.MONGODB_URI || `mongodb://localhost:27017/parse`;
 const URL_SITE = `http://localhost:3000`;
 module.exports['URL_SERVER'] = URL_SERVER;
+module.exports['URL_SITE'] = URL_SITE;
 
 
 const mailgunConfig = {
@@ -43,6 +44,11 @@ const parseConfig = {
           subject: 'Confirm your account',
           pathPlainText: resolve(__dirname, 'mailTemplates/emailVerify.txt'),
           pathHtml: resolve(__dirname, 'mailTemplates/emailVerify.html')
+        },
+        inviteEmail: {
+          subject: 'Inviting you to Chisel',
+          pathPlainText: resolve(__dirname, 'mailTemplates/invite.txt'),
+          pathHtml: resolve(__dirname, 'mailTemplates/invite.html')
         }
       }
     })

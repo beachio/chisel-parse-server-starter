@@ -6,6 +6,7 @@ const configs = require('../index.js');
 const config = configs.parseConfig;
 const mailgunConfig = configs.mailgunConfig;
 const SERVER = configs['URL_SERVER'];
+const SITE = configs['URL_SITE'];
 
 
 let mailgun = new Mailgun(mailgunConfig);
@@ -354,6 +355,9 @@ Parse.Cloud.define("onCollaborationModify", (request, response) => {
     })
     
     .then(collabs => {
+      if (!user)
+        return;
+      
       for (let tempCollab of collabs) {
         //set ACL for others collab
         let tempCollabACL = tempCollab.getACL();
@@ -387,6 +391,9 @@ Parse.Cloud.define("onCollaborationModify", (request, response) => {
     })
     
     .then(() => {
+      if (!user)
+        return;
+    
       //ACL for site
       let siteACL = site.getACL();
       if (!siteACL)
@@ -406,6 +413,9 @@ Parse.Cloud.define("onCollaborationModify", (request, response) => {
     })
     
     .then(models => {
+      if (!user)
+        return;
+      
       for (let model of models) {
         let modelACL = model.getACL();
         if (!modelACL)
@@ -566,6 +576,43 @@ Parse.Cloud.define("onModelAdd", (request, response) => {
     .then(() => response.success('ACL setup ends!'))
     
     .catch(e => response.error(e));
+});
+
+
+Parse.Cloud.define("inviteUser", function(request, response) {
+  if (!request.user) {
+    response.error('You must be authorized!');
+    return;
+  }
+  
+  let emailSelf = request.user.get('email');
+  let email = request.params.email;
+  let siteName = request.params.siteName;
+  if (!email || !siteName) {
+    response.error('Email or siteName is empty!');
+    return;
+  }
+  
+  let link = SITE;
+  
+  console.log(`Send invite to ${email} ${new Date()}`);
+  
+  const {AppCache} = require('parse-server/lib/cache');
+  const MailgunAdapter = AppCache.get(config.appId)['userController']['adapter'];
+  
+  MailgunAdapter.send({
+    templateName: 'inviteEmail',
+    recipient: email,
+    variables: {siteName, emailSelf, link}
+  })
+    .then(() => {
+      console.log(`Invite sent to ${email} ${new Date()}`);
+      response.success("Invite email sent!");
+    })
+    .catch (error => {
+      console.log("got an error in inviteUser: " + error);
+      response.error(error);
+    });
 });
 
 
