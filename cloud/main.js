@@ -310,36 +310,16 @@ Parse.Cloud.define("deleteSite", (request, response) => {
 });
 
 
-
-Parse.Cloud.define("onCollaborationModify", (request, response) => {
-  if (!request.user) {
-    response.error('You must be authorized!');
-    return;
-  }
-   
-  Parse.Cloud.useMasterKey();
+let onCollaborationModify = (collab, deleting = false) => {
+  let site = collab.get('site');
+  let user = collab.get('user');
+  let role = collab.get('role');
   
-  let deleting = request.params.deleting;
+  let owner, collabACL;
   
-  let collab, site, user, role, owner, collabACL;
   
-  promisify(
-    new Parse.Query("Collaboration")
-      .get(request.params.collabId)
-  )
-    .then(p_collab => {
-      collab = p_collab;
-  
-      if (!checkRights(request.user, collab))
-        return Promise.reject("Access denied!");
-      
-      site = collab.get('site');
-      user = collab.get('user');
-      role = collab.get('role');
-      
-      return promisify(site.fetch());
-    })
-  
+  return promisify(site.fetch())
+    
     .then(() => {
       //ACL for collaborations
       owner = site.get('owner');
@@ -363,26 +343,26 @@ Parse.Cloud.define("onCollaborationModify", (request, response) => {
         let tempCollabACL = tempCollab.getACL();
         if (!tempCollabACL)
           tempCollabACL = new Parse.ACL(owner);
-  
-        let tempUser = tempCollab.get('user');
-        if (tempUser == user)
+        
+        if (collab.get('email') == user.get('email'))
           continue;
-    
+        
         tempCollabACL.setReadAccess(user, !deleting && role == ROLE_ADMIN);
         tempCollabACL.setWriteAccess(user, !deleting && role == ROLE_ADMIN);
-    
+        
         tempCollab.setACL(tempCollabACL);
         //!! uncontrolled async operation
         tempCollab.save();
-    
+        
         //set ACL for current collab
         if (!deleting) {
           let tempRole = tempCollab.get('role');
+          let tempUser = tempCollab.get('user');
           collabACL.setReadAccess(tempUser, tempRole == ROLE_ADMIN);
           collabACL.setWriteAccess(tempUser, tempRole == ROLE_ADMIN);
         }
       }
-  
+      
       collabACL.setReadAccess(user, true);
       collabACL.setWriteAccess(user, true);
       collab.setACL(collabACL);
@@ -393,20 +373,20 @@ Parse.Cloud.define("onCollaborationModify", (request, response) => {
     .then(() => {
       if (!user)
         return;
-    
+      
       //ACL for site
       let siteACL = site.getACL();
       if (!siteACL)
         siteACL = new Parse.ACL(owner);
-  
+      
       siteACL.setReadAccess(user, !deleting);
       siteACL.setWriteAccess(user, !deleting && role == ROLE_ADMIN);
       site.setACL(siteACL);
       //!! uncontrolled async operation
       site.save();
-  
+      
       //ACL for models and content items
-  
+      
       return getAllObjects(
         new Parse.Query('Model')
           .equalTo('site', site));
@@ -420,13 +400,13 @@ Parse.Cloud.define("onCollaborationModify", (request, response) => {
         let modelACL = model.getACL();
         if (!modelACL)
           modelACL = new Parse.ACL(owner);
-    
+        
         modelACL.setReadAccess(user, !deleting);
         modelACL.setWriteAccess(user, !deleting && role == ROLE_ADMIN);
         model.setACL(modelACL);
         //!! uncontrolled async operation
         model.save();
-    
+        
         let tableName = model.get('tableName');
         //!! uncontrolled async operation
         getTableData(tableName)
@@ -451,7 +431,7 @@ Parse.Cloud.define("onCollaborationModify", (request, response) => {
               if (CLP['find'].hasOwnProperty(user.id))
                 delete CLP['find'][user.id];
             }
-  
+            
             if (!deleting && (role == ROLE_ADMIN || role == ROLE_EDITOR)) {
               CLP['create'][user.id] = true;
               CLP['update'][user.id] = true;
@@ -469,18 +449,67 @@ Parse.Cloud.define("onCollaborationModify", (request, response) => {
               CLP['addField'][user.id] = true;
             else if (CLP['addField'].hasOwnProperty(user.id))
               delete CLP['addField'][user.id];
-  
+            
             //!! uncontrolled async operation
             let data = {"classLevelPermissions": CLP};
             setTableData(tableName, data)
               .catch(() => setTableData(tableName, data, 'PUT'));
           });
       }
+    });
+};
+
+
+Parse.Cloud.define("onCollaborationModify", (request, response) => {
+  if (!request.user) {
+    response.error('You must be authorized!');
+    return;
+  }
+   
+  Parse.Cloud.useMasterKey();
+  
+  promisify(
+    new Parse.Query("Collaboration")
+      .get(request.params.collabId)
+  )
+    .then(collab => {
+      if (!checkRights(request.user, collab))
+        return Promise.reject("Access denied!");
+      
+      return onCollaborationModify(collab, request.params.deleting);
     })
     
     .then(() => response.success('ACL setup ends!'))
     
     .catch(e => response.error(e));
+});
+
+
+Parse.Cloud.afterSave(Parse.User, (request, response) => {
+  Parse.Cloud.useMasterKey();
+  
+  let user = request.object;
+  let collab;
+  
+  new Parse.Query('Collaboration')
+    .equalTo('email', user.get('email'))
+    
+    .first()
+    
+    .then(p_collab => {
+      collab = p_collab;
+      if (!collab)
+        return Promise.reject('no inviting collab!');
+      
+      collab.set('user', user);
+      return promisify(collab.save());
+    })
+    
+    .then(() => onCollaborationModify(collab))
+    
+    .then(() => response.success())
+    
+    .catch(() => response.success());
 });
 
 
