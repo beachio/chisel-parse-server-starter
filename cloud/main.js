@@ -622,7 +622,7 @@ Parse.Cloud.define("inviteUser", function(request, response) {
     return;
   }
   
-  let link = SITE;
+  let link = `${SITE}/sign?mode=register&email=${email}`;
   
   console.log(`Send invite to ${email} ${new Date()}`);
   
