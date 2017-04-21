@@ -690,3 +690,17 @@ Parse.Cloud.define("sendEmail", function(request, response) {
     }
   });
 });
+
+
+Parse.Cloud.define("checkPassword", (request, response) => {
+  if (!request.user) {
+    response.error('You must be authorized!');
+    return;
+  }
+  
+  let username = request.user.get('username');
+  let password = request.params.password;
+  
+  Parse.User.logIn(username, password)
+    .then(response.success, response.error);
+});
