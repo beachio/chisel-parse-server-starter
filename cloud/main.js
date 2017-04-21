@@ -60,6 +60,7 @@ let getAllObjects = query => {
   return getObjects(0);
 };
 
+
 let getTableData = table => {
   let endpoint = '/schemas/' + table;
   
@@ -249,7 +250,6 @@ Parse.Cloud.define("deleteModel", (request, response) => {
   
     .catch(error => response.error("Could not delete model: " + JSON.stringify(error, null, 2)));
 });
-
 
 Parse.Cloud.define("deleteSite", (request, response) => {
   if (!request.user) {
@@ -481,37 +481,38 @@ Parse.Cloud.define("onCollaborationModify", (request, response) => {
     
     .then(() => response.success('ACL setup ends!'))
     
-    .catch(e => response.error(e));
+    .catch(response.error);
 });
-
 
 Parse.Cloud.afterSave(Parse.User, (request, response) => {
   Parse.Cloud.useMasterKey();
   
   let user = request.object;
-  let collab;
   
   new Parse.Query('Collaboration')
     .equalTo('email', user.get('email'))
     
-    .first()
+    .find()
     
-    .then(p_collab => {
-      collab = p_collab;
-      if (!collab)
-        return Promise.reject('no inviting collab!');
-      
-      collab.set('user', user);
-      return promisify(collab.save());
+    .then(p_collabs => {
+      let promises = [];
+      for (let collab of p_collabs) {
+        if (collab.get('user'))
+          return Promise.reject('user also exists!');
+  
+        collab.set('user', user);
+        promises.push(
+          promisify(collab.save())
+            .then(() => onCollaborationModify(collab))
+        );
+      }
+      return Promise.all(promises);
     })
     
-    .then(() => onCollaborationModify(collab))
+    .then(response.success)
     
-    .then(() => response.success())
-    
-    .catch(() => response.success());
+    .catch(response.success);
 });
-
 
 Parse.Cloud.define("onModelAdd", (request, response) => {
   if (!request.user) {
@@ -643,7 +644,6 @@ Parse.Cloud.define("inviteUser", function(request, response) {
       response.error(error);
     });
 });
-
 
 Parse.Cloud.define("sendEmail", function(request, response) {
   console.log("sendEmail " + new Date());
