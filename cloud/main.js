@@ -7,6 +7,7 @@ const config = configs.parseConfig;
 const mailgunConfig = configs.mailgunConfig;
 const SERVER = configs['URL_SERVER'];
 const SITE = configs['URL_SITE'];
+const CONTENT_HOOK = configs['URL_CONTENT_HOOK'];
 
 
 let mailgun = new Mailgun(mailgunConfig);
@@ -606,6 +607,30 @@ Parse.Cloud.define("onModelAdd", (request, response) => {
     .then(() => response.success('ACL setup ends!'))
     
     .catch(e => response.error(e));
+});
+
+
+Parse.Cloud.define("onContentModify", (request, response) => {
+  if (!request.user) {
+    response.error('You must be authorized!');
+    return;
+  }
+  
+  if (!CONTENT_HOOK) {
+    response.error('There is no content hook!');
+    return;
+  }
+  
+  Parse.Cloud.httpRequest({
+    url: `${CONTENT_HOOK}?userId=${request.user.id}`,
+    method: 'GET'
+  })
+    .then(response => {
+      if (response.status == 200)
+        response.success(response.data);
+      else
+        response.error(response.status);
+    }, response.error);
 });
 
 
