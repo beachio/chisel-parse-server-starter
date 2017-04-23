@@ -30,6 +30,8 @@ const parseConfig = {
   serverURL: URL_SERVER,
   publicServerURL: URL_SERVER,
   
+  maxUploadSize: `10mb`,
+  
   verifyUserEmails: true,
   preventLoginWithUnverifiedEmail: true,
   
