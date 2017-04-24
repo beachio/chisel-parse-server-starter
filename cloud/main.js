@@ -385,9 +385,30 @@ let onCollaborationModify = (collab, deleting = false) => {
       site.setACL(siteACL);
       //!! uncontrolled async operation
       site.save();
+  
+      //ACL for media items
+      return getAllObjects(
+        new Parse.Query('MediaItem')
+          .equalTo('site', site));
+    })
+  
+    .then(mediaItems => {
+      if (!user)
+        return;
+  
+      for (let item of mediaItems) {
+        let itemACL = item.getACL();
+        if (!itemACL)
+          itemACL = new Parse.ACL(owner);
+  
+        itemACL.setReadAccess(user, !deleting);
+        itemACL.setWriteAccess(user, !deleting && role == ROLE_ADMIN);
+        item.setACL(itemACL);
+        //!! uncontrolled async operation
+        item.save();
+      }
       
       //ACL for models and content items
-      
       return getAllObjects(
         new Parse.Query('Model')
           .equalTo('site', site));
@@ -606,7 +627,7 @@ Parse.Cloud.define("onModelAdd", (request, response) => {
     
     .then(() => response.success('ACL setup ends!'))
     
-    .catch(e => response.error(e));
+    .catch(response.error);
 });
 
 
@@ -631,6 +652,57 @@ Parse.Cloud.define("onContentModify", (request, response) => {
       else
         response.error(response.status);
     }, response.error);
+});
+
+
+Parse.Cloud.define("onMediaItemAdd", (request, response) => {
+  if (!request.user) {
+    response.error('You must be authorized!');
+    return;
+  }
+  
+  Parse.Cloud.useMasterKey();
+  
+  let item, site, itemACL;
+  
+  promisify(
+    new Parse.Query("MediaItem")
+      .get(request.params.itemId)
+  )
+    .then(p_item => {
+      item = p_item;
+      
+      site = item.get('site');
+      return promisify(site.fetch());
+    })
+    
+    .then(() => {
+      //ACL for collaborations
+      let owner = site.get('owner');
+      itemACL = new Parse.ACL(owner);
+      
+      return getAllObjects(
+        new Parse.Query('Collaboration')
+          .equalTo('site', site));
+    })
+    
+    .then(collabs => {
+      for (let collab of collabs) {
+        let user = collab.get('user');
+        let role = collab.get('role');
+  
+        itemACL.setReadAccess(user, true);
+        itemACL.setWriteAccess(user, role == ROLE_ADMIN);
+      }
+  
+      item.setACL(itemACL);
+      //!! uncontrolled async operation
+      item.save();
+    })
+    
+    .then(() => response.success('ACL setup ends!'))
+    
+    .catch(response.error);
 });
 
 
