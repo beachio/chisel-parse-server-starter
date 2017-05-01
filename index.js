@@ -8,7 +8,6 @@ const URL_SERVER = process.env.SERVER_URL || `http://localhost:${PORT}/parse`;
 const URL_DB = process.env.DATABASE_URI || process.env.MONGODB_URI || `mongodb://localhost:27017/parse`;
 const URL_SITE = `http://localhost:3000`;
 const URL_CONTENT_HOOK = ``;
-module.exports['URL_SERVER'] = URL_SERVER;
 module.exports['URL_SITE'] = URL_SITE;
 module.exports['URL_CONTENT_HOOK'] = URL_CONTENT_HOOK;
 

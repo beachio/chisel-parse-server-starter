@@ -5,7 +5,6 @@ const Mailgun = require('mailgun-js');
 const configs = require('../index.js');
 const config = configs.parseConfig;
 const mailgunConfig = configs.mailgunConfig;
-const SERVER = configs['URL_SERVER'];
 const SITE = configs['URL_SITE'];
 const CONTENT_HOOK = configs['URL_CONTENT_HOOK'];
 
@@ -67,7 +66,7 @@ let getTableData = table => {
   
   return new Promise((resolve, reject) => {
     Parse.Cloud.httpRequest({
-      url: SERVER + endpoint,
+      url: config.serverURL + endpoint,
       method: 'GET',
       mode: 'cors',
       cache: 'no-cache',
@@ -91,7 +90,7 @@ let setTableData = (table, data, method = 'POST') => {
   
   return new Promise((resolve, reject) => {
     Parse.Cloud.httpRequest({
-      url: SERVER + endpoint,
+      url: config.serverURL + endpoint,
       method,
       mode: 'cors',
       cache: 'no-cache',
@@ -116,7 +115,7 @@ let deleteTable = table => {
   
   return new Promise((resolve, reject) => {
     Parse.Cloud.httpRequest({
-      url: SERVER + endpoint,
+      url: config.serverURL + endpoint,
       method: 'DELETE',
       mode: 'cors',
       cache: 'no-cache',
