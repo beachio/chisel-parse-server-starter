@@ -1,12 +1,12 @@
 {
-  "name": "parse-server",
-  "description": "parse-server for Chisel, Mesto, ...",
+  "name": "chisel-parse-server",
+  "description": "parse-server for Chisel",
   "scripts": {
     "start": "node index.js"
   },
   "dependencies": {
     "express": "^4.15.2",
-    "parse-server": "^2.0.0",
-    "parse-server-mailgun": "^2.4.3"
+    "parse-server": "^2.3.8",
+    "parse-server-mailgun": "^2.4.4"
   }
 }

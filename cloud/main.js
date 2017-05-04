@@ -46,7 +46,7 @@ let getAllObjects = query => {
     return promisify(query
       .limit(MAX_COUNT)
       .skip(offset)
-      .find()
+      .find({useMasterKey: true})
     )
       .then(res => {
         if (!res.length)
@@ -139,7 +139,7 @@ let deleteContentItem = (user, tableName, itemId) => {
   
   return promisify(
     new Parse.Query(tableName)
-      .get(itemId)
+      .get(itemId, {useMasterKey: true})
   )
     .then(p_item => {
       item = p_item;
@@ -157,12 +157,12 @@ let deleteContentItem = (user, tableName, itemId) => {
           let media = item.get(field);
           //!! uncontrolled async operation
           if (media)
-            media.destroy();
+            media.destroy({useMasterKey: true});
         }
       }
     })
     
-    .then(() => promisify(item.destroy()));
+    .then(() => promisify(item.destroy({useMasterKey: true})));
 };
 
 let deleteModel = (user, model) => {
@@ -179,7 +179,7 @@ let deleteModel = (user, model) => {
       let promises = [];
       for (let field of fields) {
         if (checkRights(user, field))
-          promises.push(promisifyW(field.destroy()));
+          promises.push(promisifyW(field.destroy({useMasterKey: true})));
       }
     
       return Promise.all(promises);
@@ -211,7 +211,7 @@ let deleteModel = (user, model) => {
   
     .catch(() => Promise.resolve())
   
-    .then(() => promisify(model.destroy()));
+    .then(() => promisify(model.destroy({useMasterKey: true})));
 };
 
 
@@ -220,8 +220,6 @@ Parse.Cloud.define("deleteContentItem", (request, response) => {
     response.error("Must be signed in to call this Cloud Function.");
     return;
   }
-  
-  Parse.Cloud.useMasterKey();
   
   deleteContentItem(
     request.user,
@@ -238,11 +236,9 @@ Parse.Cloud.define("deleteModel", (request, response) => {
     return;
   }
   
-  Parse.Cloud.useMasterKey();
-  
   promisify(
     new Parse.Query("Model")
-      .get(request.params.modelId)
+      .get(request.params.modelId, {useMasterKey: true})
   )
     .then(model => deleteModel(request.user, model))
     
@@ -257,13 +253,11 @@ Parse.Cloud.define("deleteSite", (request, response) => {
     return;
   }
   
-  Parse.Cloud.useMasterKey();
-  
   let site;
   
   promisify(
     new Parse.Query("Site")
-      .get(request.params.siteId)
+      .get(request.params.siteId, {useMasterKey: true})
   )
     .then(p_site => {
       site = p_site;
@@ -294,7 +288,7 @@ Parse.Cloud.define("deleteSite", (request, response) => {
       let promises = [];
       for (let collab of collabs) {
         if (checkRights(request.user, collab))
-          promises.push(promisifyW(collab.destroy()));
+          promises.push(promisifyW(collab.destroy({useMasterKey: true})));
       }
   
       return Promise.all(promises);
@@ -302,7 +296,7 @@ Parse.Cloud.define("deleteSite", (request, response) => {
   
     //.catch(() => Promise.resolve())
     
-    .then(() => promisify(site.destroy()))
+    .then(() => promisify(site.destroy({useMasterKey: true})))
   
     .then(() => response.success("Successfully deleted site."))
   
@@ -318,7 +312,7 @@ let onCollaborationModify = (collab, deleting = false) => {
   let owner, collabACL;
   
   
-  return promisify(site.fetch())
+  return promisify(site.fetch({useMasterKey: true}))
     
     .then(() => {
       //ACL for collaborations
@@ -352,7 +346,7 @@ let onCollaborationModify = (collab, deleting = false) => {
         
         tempCollab.setACL(tempCollabACL);
         //!! uncontrolled async operation
-        tempCollab.save();
+        tempCollab.save(null, {useMasterKey: true});
         
         //set ACL for current collab
         if (!deleting) {
@@ -367,7 +361,7 @@ let onCollaborationModify = (collab, deleting = false) => {
       collabACL.setWriteAccess(user, true);
       collab.setACL(collabACL);
       //!! uncontrolled async operation
-      collab.save();
+      collab.save(null, {useMasterKey: true});
     })
     
     .then(() => {
@@ -383,7 +377,7 @@ let onCollaborationModify = (collab, deleting = false) => {
       siteACL.setWriteAccess(user, !deleting && role == ROLE_ADMIN);
       site.setACL(siteACL);
       //!! uncontrolled async operation
-      site.save();
+      site.save(null, {useMasterKey: true});
   
       //ACL for media items
       return getAllObjects(
@@ -404,7 +398,7 @@ let onCollaborationModify = (collab, deleting = false) => {
         itemACL.setWriteAccess(user, !deleting && role == ROLE_ADMIN);
         item.setACL(itemACL);
         //!! uncontrolled async operation
-        item.save();
+        item.save(null, {useMasterKey: true});
       }
       
       //ACL for models and content items
@@ -426,7 +420,7 @@ let onCollaborationModify = (collab, deleting = false) => {
         modelACL.setWriteAccess(user, !deleting && role == ROLE_ADMIN);
         model.setACL(modelACL);
         //!! uncontrolled async operation
-        model.save();
+        model.save(null, {useMasterKey: true});
         
         let tableName = model.get('tableName');
         //!! uncontrolled async operation
@@ -487,11 +481,9 @@ Parse.Cloud.define("onCollaborationModify", (request, response) => {
     return;
   }
    
-  Parse.Cloud.useMasterKey();
-  
   promisify(
     new Parse.Query("Collaboration")
-      .get(request.params.collabId)
+      .get(request.params.collabId, {useMasterKey: true})
   )
     .then(collab => {
       if (!checkRights(request.user, collab))
@@ -506,14 +498,12 @@ Parse.Cloud.define("onCollaborationModify", (request, response) => {
 });
 
 Parse.Cloud.afterSave(Parse.User, (request, response) => {
-  Parse.Cloud.useMasterKey();
-  
   let user = request.object;
   
   new Parse.Query('Collaboration')
     .equalTo('email', user.get('email'))
     
-    .find()
+    .find({useMasterKey: true})
     
     .then(p_collabs => {
       let promises = [];
@@ -523,7 +513,7 @@ Parse.Cloud.afterSave(Parse.User, (request, response) => {
   
         collab.set('user', user);
         promises.push(
-          promisify(collab.save())
+          promisify(collab.save(null, {useMasterKey: true}))
             .then(() => onCollaborationModify(collab))
         );
       }
@@ -541,19 +531,17 @@ Parse.Cloud.define("onModelAdd", (request, response) => {
     return;
   }
   
-  Parse.Cloud.useMasterKey();
-  
   let model, site, owner, modelACL;
   
   promisify(
     new Parse.Query("Model")
-      .get(request.params.modelId)
+      .get(request.params.modelId, {useMasterKey: true})
   )
     .then(p_model => {
       model = p_model;
       
       site = model.get('site');
-      return promisify(site.fetch());
+      return promisify(site.fetch({useMasterKey: true}));
     })
     
     .then(() => {
@@ -587,7 +575,7 @@ Parse.Cloud.define("onModelAdd", (request, response) => {
   
       model.setACL(modelACL);
       //!! uncontrolled async operation
-      model.save();
+      model.save(null, {useMasterKey: true});
       
       //set CLP for content table
       let CLP = {
@@ -660,19 +648,17 @@ Parse.Cloud.define("onMediaItemAdd", (request, response) => {
     return;
   }
   
-  Parse.Cloud.useMasterKey();
-  
   let item, site, itemACL;
   
   promisify(
     new Parse.Query("MediaItem")
-      .get(request.params.itemId)
+      .get(request.params.itemId, {useMasterKey: true})
   )
     .then(p_item => {
       item = p_item;
       
       site = item.get('site');
-      return promisify(site.fetch());
+      return promisify(site.fetch({useMasterKey: true}));
     })
     
     .then(() => {
@@ -696,7 +682,7 @@ Parse.Cloud.define("onMediaItemAdd", (request, response) => {
   
       item.setACL(itemACL);
       //!! uncontrolled async operation
-      item.save();
+      item.save(null, {useMasterKey: true});
     })
     
     .then(() => response.success('ACL setup ends!'))
