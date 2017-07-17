@@ -42,7 +42,7 @@ let getAllObjects = query => {
   const MAX_COUNT = 50;
   let objects = [];
   
-  let getObjects = offset => {
+  let getObjects = (offset = 0) => {
     return promisify(query
       .limit(MAX_COUNT)
       .skip(offset)
@@ -57,7 +57,7 @@ let getAllObjects = query => {
       })
   };
   
-  return getObjects(0);
+  return getObjects();
 };
 
 
@@ -273,7 +273,9 @@ Parse.Cloud.define("deleteSite", (request, response) => {
     .then(models => {
       let promises = [];
       for (let model of models)
-        promises.push(promisifyW(deleteModel(request.user, model)));
+        promises.push(promisifyW(
+          deleteModel(request.user, model)
+        ));
       
       return promises;
     })
@@ -512,6 +514,7 @@ Parse.Cloud.afterSave(Parse.User, (request, response) => {
           return Promise.reject('user also exists!');
   
         collab.set('user', user);
+        
         promises.push(
           promisify(collab.save(null, {useMasterKey: true}))
             .then(() => onCollaborationModify(collab))
