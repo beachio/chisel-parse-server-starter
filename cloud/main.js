@@ -473,6 +473,24 @@ let onCollaborationModify = (collab, deleting = false) => {
               .catch(() => setTableData(tableName, data, 'PUT'));
           });
       }
+  
+      return getAllObjects(
+        new Parse.Query('ModelField')
+          .containedIn('model', models));
+    })
+    
+    .then(fields => {
+      for (let field of fields) {
+        let fieldACL = field.getACL();
+        if (!fieldACL)
+          fieldACL = new Parse.ACL(owner);
+  
+        fieldACL.setReadAccess(user, !deleting);
+        fieldACL.setWriteAccess(user, !deleting && role == ROLE_ADMIN);
+        field.setACL(fieldACL);
+        //!! uncontrolled async operation
+        field.save(null, {useMasterKey: true});
+      }
     });
 };
 
@@ -620,6 +638,55 @@ Parse.Cloud.define("onModelAdd", (request, response) => {
     .catch(response.error);
 });
 
+Parse.Cloud.define("onFieldAdd", (request, response) => {
+  if (!request.user) {
+    response.error('You must be authorized!');
+    return;
+  }
+  
+  let field, model, site, owner, fieldACL;
+  
+  promisify(
+    new Parse.Query("ModelField")
+      .get(request.params.fieldId, {useMasterKey: true})
+  )
+    .then(p_field => {
+      field = p_field;
+  
+      model = field.get('model');
+      return promisify(model.fetch({useMasterKey: true}));
+    })
+    .then(() => {
+      site = model.get('site');
+      return promisify(site.fetch({useMasterKey: true}));
+    })
+    .then(() => {
+      //ACL for collaborations
+      owner = site.get('owner');
+      fieldACL = new Parse.ACL(owner);
+    
+      return getAllObjects(
+        new Parse.Query('Collaboration')
+          .equalTo('site', site));
+    })
+    .then(collabs => {
+      for (let collab of collabs) {
+        let user = collab.get('user');
+        let role = collab.get('role');
+  
+        fieldACL.setReadAccess(user, true);
+        fieldACL.setWriteAccess(user, role == ROLE_ADMIN);
+      }
+    
+      field.setACL(fieldACL);
+      //!! uncontrolled async operation
+      field.save(null, {useMasterKey: true});
+    })
+  
+    .then(() => response.success('ACL setup ends!'))
+  
+    .catch(response.error);
+});
 
 Parse.Cloud.define("onContentModify", (request, response) => {
   if (!request.user) {
