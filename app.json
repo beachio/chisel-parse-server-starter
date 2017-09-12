@@ -1,7 +1,36 @@
 {
   "name": "Chisel Parse Server",
   "description": "Server for Chisel, a Parse-based CMS",
-  "repository": "https://github.com/beachio/chisel-parse-server-starter",
   "logo": "https://node-js-sample.herokuapp.com/node.png",
-  "keywords": ["chisel", "parse", "server"]
+  "keywords": [
+    "chisel",
+    "parse",
+    "server"
+  ],
+  "repository": "https://github.com/beachio/chisel-parse-server-starter",
+  "env": {
+    "APP_ID": {
+      "description": "Id of your Chisel App in the Parse.",
+      "value": "SampleAppId"
+    },
+    "MASTER_KEY": {
+      "description": "Master key in the Parse.",
+      "value": "SampleMasterKey"
+    },
+    "PARSE_MOUNT": {
+      "description": "The endpoint to mount Parse server.",
+      "value": "/parse"
+    },
+    "SERVER_URL": {
+      "description": "URL of Chisel Parse Server on Heroku.",
+      "value": "https://chisel-parse-server.herokuapp.com/parse"
+    },
+    "SITE_URL": {
+      "description": "URL of Chisel CMS.",
+      "value": "http://localhost:3000"
+    }
+  },
+  "addons": [
+    "mongolab"
+  ]
 }
