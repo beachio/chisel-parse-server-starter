@@ -1,5 +1,6 @@
 {
   "name": "Chisel Parse Server",
+  "description": "Server for Chisel, a Parse-based CMS",
   "repository": "https://github.com/beachio/chisel-parse-server-starter",
   "logo": "https://node-js-sample.herokuapp.com/node.png",
   "keywords": ["chisel", "parse", "server"]
