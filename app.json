@@ -1,0 +1,6 @@
+{
+  "name": "Chisel Parse Server",
+  "repository": "https://github.com/beachio/chisel-parse-server-starter",
+  "logo": "https://node-js-sample.herokuapp.com/node.png",
+  "keywords": ["chisel", "parse", "server"]
+}

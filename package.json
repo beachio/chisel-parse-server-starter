@@ -8,5 +8,9 @@
     "express": "^4.15.2",
     "parse-server": "^2.3.8",
     "parse-server-mailgun": "^2.4.4"
+  },
+  "engines": {
+    "node": "8.x.x",
+    "npm": "5.x.x"
   }
 }
