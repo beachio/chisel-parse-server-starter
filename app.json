@@ -27,7 +27,7 @@
     },
     "SITE_URL": {
       "description": "URL of Chisel CMS.",
-      "value": "http://localhost:3000"
+      "value": "http://localhost:9000"
     }
   },
   "image": "heroku/nodejs",
