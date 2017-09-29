@@ -6,8 +6,11 @@ const ParseServer = require('parse-server').ParseServer;
 const PORT = process.env.PORT || 1337;
 const URL_SERVER = process.env.SERVER_URL || `http://localhost:${PORT}/parse`;
 const URL_DB = process.env.DATABASE_URI || process.env.MONGODB_URI || `mongodb://localhost:27017/parse`;
-const URL_SITE = process.env.SITE_URL || `http://localhost:3000`;
+const URL_SITE = process.env.SITE_URL || `http://localhost:9000`;
 const URL_CONTENT_HOOK = ``;
+const APP_ID = process.env.APP_ID || 'SampleAppId';
+const MASTER_KEY = process.env.MASTER_KEY || 'SampleMasterKey';
+
 module.exports['URL_SITE'] = URL_SITE;
 module.exports['URL_CONTENT_HOOK'] = URL_CONTENT_HOOK;
 
@@ -20,8 +23,8 @@ const mailgunConfig = {
 module.exports.mailgunConfig = mailgunConfig;
 
 const parseConfig = {
-  appId: "d5701a37cf242d5ee398005d997e4229",
-  masterKey: "5a70dd9922602c26e6fac84d611decb4",
+  appId: APP_ID,
+  masterKey: MASTER_KEY,
   appName: "Chisel",
   cloud: "./cloud/main",
   databaseURI: URL_DB,
