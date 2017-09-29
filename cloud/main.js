@@ -695,7 +695,7 @@ Parse.Cloud.define("onContentModify", (request, response) => {
   }
   
   if (!CONTENT_HOOK) {
-    response.error('There is no content hook!');
+    response.success('Warning! There is no content hook!');
     return;
   }
   
