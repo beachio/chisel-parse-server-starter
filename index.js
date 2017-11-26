@@ -7,7 +7,7 @@ const PORT = process.env.PORT || 1337;
 const URL_SERVER = process.env.SERVER_URL || `http://localhost:${PORT}/parse`;
 const URL_DB = process.env.DATABASE_URI || process.env.MONGODB_URI || `mongodb://localhost:27017/parse`;
 const URL_SITE = process.env.SITE_URL || `http://localhost:9000`;
-const URL_CONTENT_HOOK = ``;
+const URL_CONTENT_HOOK = process.env.URL_CONTENT_HOOK || ``;
 const APP_ID = process.env.APP_ID || 'SampleAppId';
 const MASTER_KEY = process.env.MASTER_KEY || 'SampleMasterKey';
 

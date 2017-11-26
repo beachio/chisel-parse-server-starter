@@ -28,7 +28,11 @@
     "SITE_URL": {
       "description": "URL of Chisel CMS.",
       "value": "http://localhost:9000"
-    }
+    },
+    "URL_CONTENT_HOOK": {
+      "description": "An address, which will be hooked after content changes.",
+      "value": ""
+    },
   },
   "image": "heroku/nodejs",
   "addons": [
