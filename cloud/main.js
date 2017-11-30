@@ -6,7 +6,6 @@ const configs = require('../index.js');
 const config = configs.parseConfig;
 const mailgunConfig = configs.mailgunConfig;
 const SITE = configs['URL_SITE'];
-const CONTENT_HOOK = configs['URL_CONTENT_HOOK'];
 
 
 let mailgun = new Mailgun(mailgunConfig);
@@ -693,14 +692,16 @@ Parse.Cloud.define("onContentModify", (request, response) => {
     response.error('You must be authorized!');
     return;
   }
+
+  let url = request.params.URL;
   
-  if (!CONTENT_HOOK) {
+  if (!url) {
     response.success('Warning! There is no content hook!');
     return;
   }
   
   Parse.Cloud.httpRequest({
-    url: `${CONTENT_HOOK}?userId=${request.user.id}`,
+    url,
     method: 'GET'
   })
     .then(response => {
