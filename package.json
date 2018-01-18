@@ -8,7 +8,8 @@
   "dependencies": {
     "express": "^4.15.4",
     "parse-server": "^2.6.2",
-    "parse-server-mailgun": "^2.4.6"
+    "parse-server-mailgun": "^2.4.6",
+    "parse-dashboard": "^1.1.2"
   },
   "engines": {
     "node": "8.x.x",

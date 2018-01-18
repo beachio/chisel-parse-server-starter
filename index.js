@@ -1,7 +1,7 @@
 const express = require('express');
 const resolve = require('path').resolve;
 const ParseServer = require('parse-server').ParseServer;
-
+const ParseDashboard = require('parse-dashboard');
 
 const PORT = process.env.PORT || 1337;
 const URL_SERVER = process.env.SERVER_URL || `http://localhost:${PORT}/parse`;
@@ -9,7 +9,9 @@ const URL_DB = process.env.DATABASE_URI || process.env.MONGODB_URI || `mongodb:/
 const URL_SITE = process.env.SITE_URL || `http://localhost:9000`;
 const APP_ID = process.env.APP_ID || 'SampleAppId';
 const MASTER_KEY = process.env.MASTER_KEY || 'SampleMasterKey';
-
+const DASHBOARD_ACTIVATED = process.env.DASHBOARD_ACTIVATED || false
+const USER_EMAIL = process.env.USER_EMAIL || 'test'
+const USER_PASS = process.env.USER_PASS || '123456'
 module.exports['URL_SITE'] = URL_SITE;
 
 
@@ -65,14 +67,38 @@ const parseConfig = {
     invalidLink:          `${URL_SITE}/invalid-link`
   }
 };
+
 module.exports.parseConfig = parseConfig;
-
 const api = new ParseServer(parseConfig);
-
 let app = new express();
 
 // Serve the Parse API on the /parse URL prefix
 app.use('/parse', api);
+
+if (DASHBOARD_ACTIVATED) {
+  const dashboardConfig = {
+    apps: [
+      {
+        serverURL: URL_SERVER,
+        appId: APP_ID,
+        masterKey: MASTER_KEY,
+        appName: "Chisel"
+      }
+    ],
+    users: [
+      {
+        "user": USER_EMAIL,
+        "pass": USER_PASS
+      }
+    ],
+    "trustProxy": 1,
+    PARSE_DASHBOARD_ALLOW_INSECURE_HTTP: 1,
+    allowInsecureHTTP: 1
+  };
+  module.exports.dashboardConfig = dashboardConfig;
+  const dashboard = new ParseDashboard(dashboardConfig, {allowInsecureHTTP: true});
+  app.use('/dashboard', dashboard)
+}
 
 app.listen(PORT, () => {
   console.log(`Parse server running on port ${PORT}.`);
