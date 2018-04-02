@@ -1,10 +1,12 @@
 {
   "name": "chisel-parse-server",
-  "version": "0.1.0",
+  "version": "0.1.1",
   "description": "parse-server for Chisel",
   "scripts": {
     "start": "node index.js"
   },
+  "repository": "https://github.com/beachio/chisel-parse-server-starter",
+  "license": "MIT",
   "dependencies": {
     "express": "^4.15.4",
     "parse-server": "^2.6.2",
@@ -12,7 +14,7 @@
     "parse-dashboard": "^1.1.2"
   },
   "engines": {
-    "node": "8.x.x",
+    "node": "9.x.x",
     "npm": "5.x.x"
   }
 }
