@@ -1,14 +1,13 @@
 console.log('Cloud code connected');
 
-const Mailgun = require('mailgun-js');
 
 const configs = require('../index.js');
 const config = configs.parseConfig;
-const mailgunConfig = configs.mailgunConfig;
 const SITE = configs['URL_SITE'];
 
-
-let mailgun = new Mailgun(mailgunConfig);
+//const Mailgun = require('mailgun-js');
+//const mailgunConfig = configs.mailgunConfig;
+//let mailgun = new Mailgun(mailgunConfig);
 
 
 const ROLE_ADMIN = "ADMIN";
@@ -781,9 +780,9 @@ Parse.Cloud.define("inviteUser", function(request, response) {
   console.log(`Send invite to ${email} ${new Date()}`);
   
   const {AppCache} = require('parse-server/lib/cache');
-  const MailgunAdapter = AppCache.get(config.appId)['userController']['adapter'];
+  const emailAdapter = AppCache.get(config.appId)['userController']['adapter'];
   
-  MailgunAdapter.send({
+  emailAdapter.send({
     templateName: 'inviteEmail',
     recipient: email,
     variables: {siteName, emailSelf, link}
@@ -798,6 +797,7 @@ Parse.Cloud.define("inviteUser", function(request, response) {
     });
 });
 
+/*
 Parse.Cloud.define("sendEmail", function(request, response) {
   console.log("sendEmail " + new Date());
   
@@ -818,7 +818,7 @@ Parse.Cloud.define("sendEmail", function(request, response) {
     }
   });
 });
-
+*/
 
 Parse.Cloud.define("checkPassword", (request, response) => {
   if (!request.user) {

@@ -1,104 +1,70 @@
 const express = require('express');
-const resolve = require('path').resolve;
 const ParseServer = require('parse-server').ParseServer;
 const ParseDashboard = require('parse-dashboard');
 
-const PORT = process.env.PORT || 1337;
-const URL_SERVER = process.env.SERVER_URL || `http://localhost:${PORT}/parse`;
-const URL_DB = process.env.DATABASE_URI || process.env.MONGODB_URI || `mongodb://localhost:27017/parse`;
-const URL_SITE = process.env.SITE_URL || `http://localhost:9000`;
-const APP_ID = process.env.APP_ID || 'SampleAppId';
-const MASTER_KEY = process.env.MASTER_KEY || 'SampleMasterKey';
-const DASHBOARD_ACTIVATED = process.env.DASHBOARD_ACTIVATED || false
-const USER_EMAIL = process.env.USER_EMAIL || 'test'
-const USER_PASS = process.env.USER_PASS || '123456'
-module.exports['URL_SITE'] = URL_SITE;
 
+const config = require('./config.json');
+let parseConfig = config.parseConfig;
 
-const mailgunConfig = {
-  fromAddress: "parse@charliedisney.com",
-  domain: "charliedisney.com",
-  apiKey: "key-6488b75d22dfe878cf83f1753d64f825"
-};
-module.exports.mailgunConfig = mailgunConfig;
+const PORT        = process.env.PORT          || parseConfig.port;
+const URL_SERVER  = process.env.SERVER_URL    || parseConfig.URLserver;
+const URL_DB      = process.env.DATABASE_URI  ||
+                    process.env.MONGODB_URI   || parseConfig.URLdb;
+const URL_SITE    = process.env.SITE_URL      || parseConfig.URLsite;
+const APP_ID      = process.env.APP_ID        || parseConfig.appId;
+const MASTER_KEY  = process.env.MASTER_KEY    || parseConfig.masterKey;
 
-const parseConfig = {
+const DASHBOARD_ACTIVATED = process.env.DASHBOARD_ACTIVATED || config.extraConfig.dashboardActivated;
+const DASH_USER_EMAIL     = process.env.USER_EMAIL          || config.extraConfig.userEmail;
+const DASH_USER_PASSWORD  = process.env.USER_PASS           || config.extraConfig.userPassword;
+
+parseConfig = Object.assign(parseConfig, {
   appId: APP_ID,
   masterKey: MASTER_KEY,
-  appName: "Chisel",
   cloud: "./cloud/main",
   databaseURI: URL_DB,
   
   serverURL: URL_SERVER,
-  publicServerURL: URL_SERVER,
-  
-  maxUploadSize: `10mb`,
-  
-  verifyUserEmails: true,
-  preventLoginWithUnverifiedEmail: true,
-  
-  emailAdapter: {
-    module: "parse-server-mailgun",
-    options: Object.assign(mailgunConfig, {
-      templates: {
-        passwordResetEmail: {
-          subject: 'Reset your password',
-          pathPlainText: resolve(__dirname, 'mailTemplates/passwordReset.txt'),
-          pathHtml: resolve(__dirname, 'mailTemplates/passwordReset.html'),
-        },
-        verificationEmail: {
-          subject: 'Confirm your account',
-          pathPlainText: resolve(__dirname, 'mailTemplates/emailVerify.txt'),
-          pathHtml: resolve(__dirname, 'mailTemplates/emailVerify.html')
-        },
-        inviteEmail: {
-          subject: 'Inviting you to Chisel',
-          pathPlainText: resolve(__dirname, 'mailTemplates/invite.txt'),
-          pathHtml: resolve(__dirname, 'mailTemplates/invite.html')
-        }
-      }
-    })
-  },
-  
-  customPages: {
-    verifyEmailSuccess:   `${URL_SITE}/email-verify`,
-    choosePassword:       `${URL_SITE}/password-set`,
-    passwordResetSuccess: `${URL_SITE}/password-set-success`,
-    invalidLink:          `${URL_SITE}/invalid-link`
-  }
-};
+  publicServerURL: URL_SERVER
+});
+
+const cps = parseConfig.customPages;
+for (let p in cps) {
+  cps[p] = URL_SITE + cps[p];
+}
 
 module.exports.parseConfig = parseConfig;
-const api = new ParseServer(parseConfig);
-let app = new express();
+module.exports.URL_SITE = URL_SITE;
+//module.exports.mailgunConfig = parseConfig.emailAdapter.options;
 
-// Serve the Parse API on the /parse URL prefix
-app.use('/parse', api);
+
+const API = new ParseServer(parseConfig);
+const app = new express();
+app.use('/parse', API);
+
 
 if (DASHBOARD_ACTIVATED) {
   const dashboardConfig = {
-    apps: [
-      {
-        serverURL: URL_SERVER,
-        appId: APP_ID,
-        masterKey: MASTER_KEY,
-        appName: "Chisel"
-      }
-    ],
-    users: [
-      {
-        "user": USER_EMAIL,
-        "pass": USER_PASS
-      }
-    ],
-    "trustProxy": 1,
+    apps: [{
+      serverURL: URL_SERVER,
+      appId: APP_ID,
+      masterKey: MASTER_KEY,
+      appName: parseConfig.appName
+    }],
+    users: [{
+      user: DASH_USER_EMAIL,
+      pass: DASH_USER_PASSWORD
+    }],
+    trustProxy: 1,
     PARSE_DASHBOARD_ALLOW_INSECURE_HTTP: 1,
     allowInsecureHTTP: 1
   };
+
   module.exports.dashboardConfig = dashboardConfig;
   const dashboard = new ParseDashboard(dashboardConfig, {allowInsecureHTTP: true});
-  app.use('/dashboard', dashboard)
+  app.use('/dashboard', dashboard);
 }
+
 
 app.listen(PORT, () => {
   console.log(`Parse server running on port ${PORT}.`);
