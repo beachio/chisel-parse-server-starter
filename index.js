@@ -18,7 +18,7 @@ const DASHBOARD_ACTIVATED = process.env.DASHBOARD_ACTIVATED || config.extraConfi
 const DASH_USER_EMAIL     = process.env.USER_EMAIL          || config.extraConfig.userEmail;
 const DASH_USER_PASSWORD  = process.env.USER_PASS           || config.extraConfig.userPassword;
 
-parseConfig = Object.assign(parseConfig, {
+Object.assign(parseConfig, {
   appId: APP_ID,
   masterKey: MASTER_KEY,
   cloud: "./cloud/main",
