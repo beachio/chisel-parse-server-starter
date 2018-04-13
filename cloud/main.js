@@ -5,38 +5,34 @@ const configs = require('../index.js');
 const config = configs.parseConfig;
 const SITE = configs['URL_SITE'];
 
-//const Mailgun = require('mailgun-js');
-//const mailgunConfig = configs.mailgunConfig;
-//let mailgun = new Mailgun(mailgunConfig);
-
 
 const ROLE_ADMIN = "ADMIN";
 const ROLE_EDITOR = "EDITOR";
 
 
-let promisify = pp => {
+const promisify = pp => {
   return new Promise((rs, rj) => pp.then(rs, rj));
 };
 
-let promisifyW = pp => {
+const promisifyW = pp => {
   return new Promise((rs, rj) => pp.then(rs, rs));
 };
 
-let checkRights = (user, obj) => {
-  let acl = obj.getACL();
+const checkRights = (user, obj) => {
+  const acl = obj.getACL();
   if (!acl)
     return true;
-  
-  let read = acl.getReadAccess(user.id);
-  let write = acl.getWriteAccess(user.id);
-  
-  let pRead = acl.getPublicReadAccess();
-  let pWrite = acl.getPublicWriteAccess();
+
+  const read = acl.getReadAccess(user.id);
+  const write = acl.getWriteAccess(user.id);
+
+  const pRead = acl.getPublicReadAccess();
+  const pWrite = acl.getPublicWriteAccess();
   
   return read && write || pRead && pWrite;
 };
 
-let getAllObjects = query => {
+const getAllObjects = query => {
   const MAX_COUNT = 50;
   let objects = [];
   
@@ -59,8 +55,8 @@ let getAllObjects = query => {
 };
 
 
-let getTableData = table => {
-  let endpoint = '/schemas/' + table;
+const getTableData = table => {
+  const endpoint = '/schemas/' + table;
   
   return new Promise((resolve, reject) => {
     Parse.Cloud.httpRequest({
@@ -83,8 +79,8 @@ let getTableData = table => {
   });
 };
 
-let setTableData = (table, data, method = 'POST') => {
-  let endpoint = '/schemas/' + table;
+const setTableData = (table, data, method = 'POST') => {
+  const endpoint = '/schemas/' + table;
   
   return new Promise((resolve, reject) => {
     Parse.Cloud.httpRequest({
@@ -108,8 +104,8 @@ let setTableData = (table, data, method = 'POST') => {
   });
 };
 
-let deleteTable = table => {
-  let endpoint = '/schemas/' + table;
+const deleteTable = table => {
+  const endpoint = '/schemas/' + table;
   
   return new Promise((resolve, reject) => {
     Parse.Cloud.httpRequest({
@@ -132,7 +128,7 @@ let deleteTable = table => {
   });
 };
 
-let deleteContentItem = (user, tableName, itemId) => {
+const deleteContentItem = (user, tableName, itemId) => {
   let item;
   
   return promisify(
@@ -150,9 +146,9 @@ let deleteContentItem = (user, tableName, itemId) => {
     
     .then(data => {
       for (let field in data.fields) {
-        let val = data.fields[field];
+        const val = data.fields[field];
         if (val.type == 'Pointer' && val.targetClass == 'MediaItem') {
-          let media = item.get(field);
+          const media = item.get(field);
           //!! uncontrolled async operation
           if (media)
             media.destroy({useMasterKey: true});
@@ -163,7 +159,7 @@ let deleteContentItem = (user, tableName, itemId) => {
     .then(() => promisify(item.destroy({useMasterKey: true})));
 };
 
-let deleteModel = (user, model) => {
+const deleteModel = (user, model) => {
   if (!checkRights(user, model))
     return Promise.reject("Access denied!");
   
@@ -174,7 +170,7 @@ let deleteModel = (user, model) => {
       .equalTo('model', model)
   )
     .then(fields => {
-      let promises = [];
+      const promises = [];
       for (let field of fields) {
         if (checkRights(user, field))
           promises.push(promisifyW(field.destroy({useMasterKey: true})));
@@ -192,12 +188,9 @@ let deleteModel = (user, model) => {
     })
   
     .then(items => {
-      let promises = [];
+      const promises = [];
       for (let item of items) {
-        promises.push(
-          promisifyW(
-            deleteContentItem(user, tableName, item.id)
-          ));
+        promises.push(promisifyW(deleteContentItem(user, tableName, item.id)));
       }
     
       return Promise.all(promises);
@@ -218,12 +211,14 @@ Parse.Cloud.define("deleteContentItem", (request, response) => {
     response.error("Must be signed in to call this Cloud Function.");
     return;
   }
+
+  const {tableName, itemId} = request.params;
+  if (!tableName || !itemId) {
+    response.error('There is no tableName or itemId params!');
+    return;
+  }
   
-  deleteContentItem(
-    request.user,
-    request.params.tableName,
-    request.params.itemId
-  )
+  deleteContentItem(request.user, tableName, itemId)
     .then(() => response.success("Successfully deleted content item."))
     .catch(error => response.error("Could not delete content item: " + JSON.stringify(error, null, 2)));
 });
@@ -233,10 +228,16 @@ Parse.Cloud.define("deleteModel", (request, response) => {
     response.error("Must be signed in to call this Cloud Function.");
     return;
   }
+
+  const {modelId} = request.params;
+  if (!modelId) {
+    response.error('There is no modelId param!');
+    return;
+  }
   
   promisify(
     new Parse.Query("Model")
-      .get(request.params.modelId, {useMasterKey: true})
+      .get(modelId, {useMasterKey: true})
   )
     .then(model => deleteModel(request.user, model))
     
@@ -250,12 +251,18 @@ Parse.Cloud.define("deleteSite", (request, response) => {
     response.error("Must be signed in to call this Cloud Function.");
     return;
   }
+
+  const {siteId} = request.params;
+  if (!siteId) {
+    response.error('There is no siteId param!');
+    return;
+  }
   
   let site;
   
   promisify(
     new Parse.Query("Site")
-      .get(request.params.siteId, {useMasterKey: true})
+      .get(siteId, {useMasterKey: true})
   )
     .then(p_site => {
       site = p_site;
@@ -269,7 +276,7 @@ Parse.Cloud.define("deleteSite", (request, response) => {
     })
     
     .then(models => {
-      let promises = [];
+      const promises = [];
       for (let model of models)
         promises.push(promisifyW(
           deleteModel(request.user, model)
@@ -285,7 +292,7 @@ Parse.Cloud.define("deleteSite", (request, response) => {
     })
   
     .then(collabs => {
-      let promises = [];
+      const promises = [];
       for (let collab of collabs) {
         if (checkRights(request.user, collab))
           promises.push(promisifyW(collab.destroy({useMasterKey: true})));
@@ -304,10 +311,10 @@ Parse.Cloud.define("deleteSite", (request, response) => {
 });
 
 
-let onCollaborationModify = (collab, deleting = false) => {
-  let site = collab.get('site');
-  let user = collab.get('user');
-  let role = collab.get('role');
+const onCollaborationModify = (collab, deleting = false) => {
+  const site = collab.get('site');
+  const user = collab.get('user');
+  const role = collab.get('role');
   
   let owner, collabACL;
   
@@ -350,8 +357,8 @@ let onCollaborationModify = (collab, deleting = false) => {
         
         //set ACL for current collab
         if (!deleting) {
-          let tempRole = tempCollab.get('role');
-          let tempUser = tempCollab.get('user');
+          const tempRole = tempCollab.get('role');
+          const tempUser = tempCollab.get('user');
           collabACL.setReadAccess(tempUser, tempRole == ROLE_ADMIN);
           collabACL.setWriteAccess(tempUser, tempRole == ROLE_ADMIN);
         }
@@ -421,8 +428,8 @@ let onCollaborationModify = (collab, deleting = false) => {
         model.setACL(modelACL);
         //!! uncontrolled async operation
         model.save(null, {useMasterKey: true});
-        
-        let tableName = model.get('tableName');
+
+        const tableName = model.get('tableName');
         //!! uncontrolled async operation
         getTableData(tableName)
           .then(response => {
@@ -466,7 +473,7 @@ let onCollaborationModify = (collab, deleting = false) => {
               delete CLP['addField'][user.id];
             
             //!! uncontrolled async operation
-            let data = {"classLevelPermissions": CLP};
+            const data = {"classLevelPermissions": CLP};
             setTableData(tableName, data)
               .catch(() => setTableData(tableName, data, 'PUT'));
           });
@@ -498,16 +505,22 @@ Parse.Cloud.define("onCollaborationModify", (request, response) => {
     response.error('You must be authorized!');
     return;
   }
+
+  const {collabId, deleting} = request.params;
+  if (!collabId) {
+    response.error('There is no collabId param!');
+    return;
+  }
    
   promisify(
     new Parse.Query("Collaboration")
-      .get(request.params.collabId, {useMasterKey: true})
+      .get(collabId, {useMasterKey: true})
   )
     .then(collab => {
       if (!checkRights(request.user, collab))
         return Promise.reject("Access denied!");
       
-      return onCollaborationModify(collab, request.params.deleting);
+      return onCollaborationModify(collab, deleting);
     })
     
     .then(() => response.success('ACL setup ends!'))
@@ -516,7 +529,7 @@ Parse.Cloud.define("onCollaborationModify", (request, response) => {
 });
 
 Parse.Cloud.afterSave(Parse.User, (request, response) => {
-  let user = request.object;
+  const user = request.object;
   
   new Parse.Query('Collaboration')
     .equalTo('email', user.get('email'))
@@ -524,7 +537,8 @@ Parse.Cloud.afterSave(Parse.User, (request, response) => {
     .find({useMasterKey: true})
     
     .then(p_collabs => {
-      let promises = [];
+      const promises = [];
+
       for (let collab of p_collabs) {
         if (collab.get('user'))
           return Promise.reject('user also exists!');
@@ -549,12 +563,18 @@ Parse.Cloud.define("onModelAdd", (request, response) => {
     response.error('You must be authorized!');
     return;
   }
+
+  const {modelId} = request.params;
+  if (!modelId) {
+    response.error('There is no modelId param!');
+    return;
+  }
   
   let model, site, owner, modelACL;
   
   promisify(
     new Parse.Query("Model")
-      .get(request.params.modelId, {useMasterKey: true})
+      .get(modelId, {useMasterKey: true})
   )
     .then(p_model => {
       model = p_model;
@@ -574,13 +594,13 @@ Parse.Cloud.define("onModelAdd", (request, response) => {
     })
     
     .then(collabs => {
-      let admins = [owner.id];
-      let writers = [owner.id];
-      let all = [owner.id];
+      const admins = [owner.id];
+      const writers = [owner.id];
+      const all = [owner.id];
       
       for (let collab of collabs) {
-        let user = collab.get('user');
-        let role = collab.get('role');
+        const user = collab.get('user');
+        const role = collab.get('role');
   
         modelACL.setReadAccess(user, true);
         modelACL.setWriteAccess(user, role == ROLE_ADMIN);
@@ -597,21 +617,13 @@ Parse.Cloud.define("onModelAdd", (request, response) => {
       model.save(null, {useMasterKey: true});
       
       //set CLP for content table
-      let CLP = {
+      const CLP = {
         'get': {},
         'find': {},
         'create': {},
         'update': {},
         'delete': {},
-        'addField': {},
-        /*
-        "readUserFields": [
-          "owner"
-        ],
-        "writeUserFields": [
-          "owner"
-        ]
-        */
+        'addField': {}
       };
       
       for (let user of all) {
@@ -627,7 +639,7 @@ Parse.Cloud.define("onModelAdd", (request, response) => {
         CLP['addField'][user] = true;
       }
   
-      let data = {"classLevelPermissions": CLP};
+      const data = {"classLevelPermissions": CLP};
       return setTableData(model.get('tableName'), data);
     })
     
@@ -641,12 +653,18 @@ Parse.Cloud.define("onFieldAdd", (request, response) => {
     response.error('You must be authorized!');
     return;
   }
+
+  const {fieldId} = request.params;
+  if (!fieldId) {
+    response.error('There is no fieldId param!');
+    return;
+  }
   
   let field, model, site, owner, fieldACL;
   
   promisify(
     new Parse.Query("ModelField")
-      .get(request.params.fieldId, {useMasterKey: true})
+      .get(fieldId, {useMasterKey: true})
   )
     .then(p_field => {
       field = p_field;
@@ -669,8 +687,8 @@ Parse.Cloud.define("onFieldAdd", (request, response) => {
     })
     .then(collabs => {
       for (let collab of collabs) {
-        let user = collab.get('user');
-        let role = collab.get('role');
+        const user = collab.get('user');
+        const role = collab.get('role');
   
         fieldACL.setReadAccess(user, true);
         fieldACL.setWriteAccess(user, role == ROLE_ADMIN);
@@ -692,15 +710,14 @@ Parse.Cloud.define("onContentModify", (request, response) => {
     return;
   }
 
-  let url = request.params.URL;
-  
-  if (!url) {
+  const {URL} = request.params;
+  if (!URL) {
     response.success('Warning! There is no content hook!');
     return;
   }
   
   Parse.Cloud.httpRequest({
-    url,
+    URL,
     method: 'GET'
   })
     .then(response => {
@@ -717,12 +734,18 @@ Parse.Cloud.define("onMediaItemAdd", (request, response) => {
     response.error('You must be authorized!');
     return;
   }
+
+  const {itemId} = request.params;
+  if (!itemId) {
+    response.error('There is no itemId param!');
+    return;
+  }
   
   let item, site, itemACL;
   
   promisify(
     new Parse.Query("MediaItem")
-      .get(request.params.itemId, {useMasterKey: true})
+      .get(itemId, {useMasterKey: true})
   )
     .then(p_item => {
       item = p_item;
@@ -733,7 +756,7 @@ Parse.Cloud.define("onMediaItemAdd", (request, response) => {
     
     .then(() => {
       //ACL for collaborations
-      let owner = site.get('owner');
+      const owner = site.get('owner');
       itemACL = new Parse.ACL(owner);
       
       return getAllObjects(
@@ -743,8 +766,8 @@ Parse.Cloud.define("onMediaItemAdd", (request, response) => {
     
     .then(collabs => {
       for (let collab of collabs) {
-        let user = collab.get('user');
-        let role = collab.get('role');
+        const user = collab.get('user');
+        const role = collab.get('role');
   
         itemACL.setReadAccess(user, true);
         itemACL.setWriteAccess(user, role == ROLE_ADMIN);
@@ -767,21 +790,20 @@ Parse.Cloud.define("inviteUser", function(request, response) {
     return;
   }
   
-  let emailSelf = request.user.get('email');
-  let email = request.params.email;
-  let siteName = request.params.siteName;
+  const {email, siteName} = request.params;
   if (!email || !siteName) {
     response.error('Email or siteName is empty!');
     return;
   }
   
-  let link = `${SITE}/sign?mode=register&email=${email}`;
-  
   console.log(`Send invite to ${email} ${new Date()}`);
   
   const {AppCache} = require('parse-server/lib/cache');
   const emailAdapter = AppCache.get(config.appId)['userController']['adapter'];
-  
+
+  const emailSelf = request.user.get('email');
+  const link = `${SITE}/sign?mode=register&email=${email}`;
+
   emailAdapter.send({
     templateName: 'inviteEmail',
     recipient: email,
@@ -792,12 +814,16 @@ Parse.Cloud.define("inviteUser", function(request, response) {
       response.success("Invite email sent!");
     })
     .catch (error => {
-      console.log("got an error in inviteUser: " + error);
+      console.log(`Got an error in inviteUser: ${error}`);
       response.error(error);
     });
 });
 
 /*
+const Mailgun = require('mailgun-js');
+const mailgunConfig = configs.mailgunConfig;
+const mailgun = new Mailgun(mailgunConfig);
+
 Parse.Cloud.define("sendEmail", function(request, response) {
   console.log("sendEmail " + new Date());
   
@@ -825,10 +851,15 @@ Parse.Cloud.define("checkPassword", (request, response) => {
     response.error('You must be authorized!');
     return;
   }
+
+  const {password} = request.params;
+  if (!password) {
+    response.error('There is no password param!');
+    return;
+  }
   
-  let username = request.user.get('username');
-  let password = request.params.password;
-  
+  const username = request.user.get('username');
+
   Parse.User.logIn(username, password)
     .then(response.success, response.error);
 });
