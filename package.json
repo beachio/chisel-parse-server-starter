@@ -1,6 +1,6 @@
 {
   "name": "chisel-parse-server",
-  "version": "0.1.2",
+  "version": "0.2.0",
   "description": "parse-server for Chisel",
   "scripts": {
     "start": "node index.js"
