@@ -10,10 +10,6 @@ const ROLE_ADMIN = "ADMIN";
 const ROLE_EDITOR = "EDITOR";
 
 
-const promisify = pp => {
-  return new Promise((rs, rj) => pp.then(rs, rj));
-};
-
 const promisifyW = pp => {
   return new Promise((rs, rj) => pp.then(rs, rs));
 };
@@ -37,11 +33,10 @@ const getAllObjects = query => {
   let objects = [];
   
   let getObjects = (offset = 0) => {
-    return promisify(query
+    return query
       .limit(MAX_COUNT)
       .skip(offset)
       .find({useMasterKey: true})
-    )
       .then(res => {
         if (!res.length)
           return objects;
@@ -131,10 +126,9 @@ const deleteTable = table => {
 const deleteContentItem = (user, tableName, itemId) => {
   let item;
   
-  return promisify(
-    new Parse.Query(tableName)
-      .get(itemId, {useMasterKey: true})
-  )
+  return new Parse.Query(tableName)
+    .get(itemId, {useMasterKey: true})
+
     .then(p_item => {
       item = p_item;
       
@@ -156,7 +150,7 @@ const deleteContentItem = (user, tableName, itemId) => {
       }
     })
     
-    .then(() => promisify(item.destroy({useMasterKey: true})));
+    .then(() => item.destroy({useMasterKey: true}));
 };
 
 const deleteModel = (user, model) => {
@@ -202,68 +196,58 @@ const deleteModel = (user, model) => {
   
     .catch(() => Promise.resolve())
   
-    .then(() => promisify(model.destroy({useMasterKey: true})));
+    .then(() => model.destroy({useMasterKey: true}));
 };
 
 
-Parse.Cloud.define("deleteContentItem", (request, response) => {
-  if (!request.user) {
-    response.error("Must be signed in to call this Cloud Function.");
-    return;
-  }
+Parse.Cloud.define("deleteContentItem", request => {
+  if (!request.user)
+    throw 'Must be signed in to call this Cloud Function.';
 
   const {tableName, itemId} = request.params;
-  if (!tableName || !itemId) {
-    response.error('There is no tableName or itemId params!');
-    return;
-  }
-  
-  deleteContentItem(request.user, tableName, itemId)
-    .then(() => response.success("Successfully deleted content item."))
-    .catch(error => response.error("Could not delete content item: " + JSON.stringify(error, null, 2)));
+  if (!tableName || !itemId)
+    throw 'There is no tableName or itemId params!';
+
+  return deleteContentItem(request.user, tableName, itemId)
+    .then(() => "Successfully deleted content item.")
+    .catch(error => {
+      throw `Could not delete content item: ${JSON.stringify(error, null, 2)}`;
+    });
 });
 
-Parse.Cloud.define("deleteModel", (request, response) => {
-  if (!request.user) {
-    response.error("Must be signed in to call this Cloud Function.");
-    return;
-  }
+Parse.Cloud.define("deleteModel", request => {
+  if (!request.user)
+    throw 'Must be signed in to call this Cloud Function.';
 
   const {modelId} = request.params;
-  if (!modelId) {
-    response.error('There is no modelId param!');
-    return;
-  }
-  
-  promisify(
-    new Parse.Query("Model")
-      .get(modelId, {useMasterKey: true})
-  )
+  if (!modelId)
+    throw 'There is no modelId param!';
+
+  return new Parse.Query("Model")
+    .get(modelId, {useMasterKey: true})
+
     .then(model => deleteModel(request.user, model))
     
-    .then(() => response.success("Successfully deleted model."))
+    .then(() => "Successfully deleted model.")
   
-    .catch(error => response.error("Could not delete model: " + JSON.stringify(error, null, 2)));
+    .catch(error => {
+      throw `Could not delete model: ${JSON.stringify(error, null, 2)}`;
+    });
 });
 
-Parse.Cloud.define("deleteSite", (request, response) => {
-  if (!request.user) {
-    response.error("Must be signed in to call this Cloud Function.");
-    return;
-  }
+Parse.Cloud.define("deleteSite", request => {
+  if (!request.user)
+    throw 'Must be signed in to call this Cloud Function.';
 
   const {siteId} = request.params;
-  if (!siteId) {
-    response.error('There is no siteId param!');
-    return;
-  }
-  
+  if (!siteId)
+    throw 'There is no siteId param!';
+
   let site;
   
-  promisify(
-    new Parse.Query("Site")
-      .get(siteId, {useMasterKey: true})
-  )
+  return new Parse.Query("Site")
+    .get(siteId, {useMasterKey: true})
+
     .then(p_site => {
       site = p_site;
       
@@ -303,11 +287,13 @@ Parse.Cloud.define("deleteSite", (request, response) => {
   
     //.catch(() => Promise.resolve())
     
-    .then(() => promisify(site.destroy({useMasterKey: true})))
+    .then(() => site.destroy({useMasterKey: true}))
   
-    .then(() => response.success("Successfully deleted site."))
+    .then(() => "Successfully deleted site.")
   
-    .catch(error => response.error("Could not delete site: " + JSON.stringify(error, null, 2)));
+    .catch(error => {
+      throw `Could not delete site: ${JSON.stringify(error, null, 2)}`;
+    });
 });
 
 
@@ -319,7 +305,7 @@ const onCollaborationModify = (collab, deleting = false) => {
   let owner, collabACL;
   
   
-  return promisify(site.fetch({useMasterKey: true}))
+  return site.fetch({useMasterKey: true})
     
     .then(() => {
       //ACL for collaborations
@@ -500,22 +486,17 @@ const onCollaborationModify = (collab, deleting = false) => {
 };
 
 
-Parse.Cloud.define("onCollaborationModify", (request, response) => {
-  if (!request.user) {
-    response.error('You must be authorized!');
-    return;
-  }
+Parse.Cloud.define("onCollaborationModify", request => {
+  if (!request.user)
+    throw 'Must be signed in to call this Cloud Function.';
 
   const {collabId, deleting} = request.params;
-  if (!collabId) {
-    response.error('There is no collabId param!');
-    return;
-  }
-   
-  promisify(
-    new Parse.Query("Collaboration")
-      .get(collabId, {useMasterKey: true})
-  )
+  if (!collabId)
+    throw 'There is no collabId param!';
+
+  return new Parse.Query("Collaboration")
+    .get(collabId, {useMasterKey: true})
+
     .then(collab => {
       if (!checkRights(request.user, collab))
         return Promise.reject("Access denied!");
@@ -523,15 +504,13 @@ Parse.Cloud.define("onCollaborationModify", (request, response) => {
       return onCollaborationModify(collab, deleting);
     })
     
-    .then(() => response.success('ACL setup ends!'))
-    
-    .catch(response.error);
+    .then(() => 'ACL setup ends!');
 });
 
-Parse.Cloud.afterSave(Parse.User, (request, response) => {
+Parse.Cloud.afterSave(Parse.User, request => {
   const user = request.object;
   
-  new Parse.Query('Collaboration')
+  return new Parse.Query('Collaboration')
     .equalTo('email', user.get('email'))
     
     .find({useMasterKey: true})
@@ -546,41 +525,34 @@ Parse.Cloud.afterSave(Parse.User, (request, response) => {
         collab.set('user', user);
         
         promises.push(
-          promisify(collab.save(null, {useMasterKey: true}))
+          collab.save(null, {useMasterKey: true})
             .then(() => onCollaborationModify(collab))
         );
       }
       return Promise.all(promises);
     })
     
-    .then(response.success)
-    
-    .catch(response.success);
+    .catch(() => Promise.resolve());
 });
 
-Parse.Cloud.define("onModelAdd", (request, response) => {
-  if (!request.user) {
-    response.error('You must be authorized!');
-    return;
-  }
+Parse.Cloud.define("onModelAdd", request => {
+  if (!request.user)
+    throw 'Must be signed in to call this Cloud Function.';
 
   const {modelId} = request.params;
-  if (!modelId) {
-    response.error('There is no modelId param!');
-    return;
-  }
-  
+  if (!modelId)
+    throw 'There is no modelId param!';
+
   let model, site, owner, modelACL;
   
-  promisify(
-    new Parse.Query("Model")
-      .get(modelId, {useMasterKey: true})
-  )
+  return new Parse.Query("Model")
+    .get(modelId, {useMasterKey: true})
+
     .then(p_model => {
       model = p_model;
       
       site = model.get('site');
-      return promisify(site.fetch({useMasterKey: true}));
+      return site.fetch({useMasterKey: true});
     })
     
     .then(() => {
@@ -643,39 +615,34 @@ Parse.Cloud.define("onModelAdd", (request, response) => {
       return setTableData(model.get('tableName'), data);
     })
     
-    .then(() => response.success('ACL setup ends!'))
-    
-    .catch(response.error);
+    .then(() => 'ACL setup ends!');
 });
 
-Parse.Cloud.define("onFieldAdd", (request, response) => {
-  if (!request.user) {
-    response.error('You must be authorized!');
-    return;
-  }
+Parse.Cloud.define("onFieldAdd", request => {
+  if (!request.user)
+    throw 'Must be signed in to call this Cloud Function.';
 
   const {fieldId} = request.params;
-  if (!fieldId) {
-    response.error('There is no fieldId param!');
-    return;
-  }
-  
+  if (!fieldId)
+    throw 'There is no fieldId param!';
+
   let field, model, site, owner, fieldACL;
   
-  promisify(
-    new Parse.Query("ModelField")
-      .get(fieldId, {useMasterKey: true})
-  )
+  return new Parse.Query("ModelField")
+    .get(fieldId, {useMasterKey: true})
+
     .then(p_field => {
       field = p_field;
   
       model = field.get('model');
-      return promisify(model.fetch({useMasterKey: true}));
+      return model.fetch({useMasterKey: true});
     })
+
     .then(() => {
       site = model.get('site');
-      return promisify(site.fetch({useMasterKey: true}));
+      return site.fetch({useMasterKey: true});
     })
+
     .then(() => {
       //ACL for collaborations
       owner = site.get('owner');
@@ -685,6 +652,7 @@ Parse.Cloud.define("onFieldAdd", (request, response) => {
         new Parse.Query('Collaboration')
           .equalTo('site', site));
     })
+
     .then(collabs => {
       for (let collab of collabs) {
         const user = collab.get('user');
@@ -699,59 +667,48 @@ Parse.Cloud.define("onFieldAdd", (request, response) => {
       field.save(null, {useMasterKey: true});
     })
   
-    .then(() => response.success('ACL setup ends!'))
-  
-    .catch(response.error);
+    .then(() => 'ACL setup ends!');
 });
 
-Parse.Cloud.define("onContentModify", (request, response) => {
-  if (!request.user) {
-    response.error('You must be authorized!');
-    return;
-  }
+Parse.Cloud.define("onContentModify", request => {
+  if (!request.user)
+    throw 'Must be signed in to call this Cloud Function.';
 
   const {URL} = request.params;
-  if (!URL) {
-    response.success('Warning! There is no content hook!');
-    return;
-  }
-  
-  Parse.Cloud.httpRequest({
+  if (!URL)
+    return 'Warning! There is no content hook!';
+
+  return Parse.Cloud.httpRequest({
     URL,
     method: 'GET'
   })
     .then(response => {
       if (response.status == 200)
-        response.success(response.data);
+        return response.data;
       else
-        response.error(response.status);
-    }, response.error);
+        throw response.status;
+    });
 });
 
 
-Parse.Cloud.define("onMediaItemAdd", (request, response) => {
-  if (!request.user) {
-    response.error('You must be authorized!');
-    return;
-  }
+Parse.Cloud.define("onMediaItemAdd", request => {
+  if (!request.user)
+    throw 'Must be signed in to call this Cloud Function.';
 
   const {itemId} = request.params;
-  if (!itemId) {
-    response.error('There is no itemId param!');
-    return;
-  }
-  
+  if (!itemId)
+    throw 'There is no itemId param!';
+
   let item, site, itemACL;
   
-  promisify(
-    new Parse.Query("MediaItem")
-      .get(itemId, {useMasterKey: true})
-  )
+  return new Parse.Query("MediaItem")
+    .get(itemId, {useMasterKey: true})
+
     .then(p_item => {
       item = p_item;
       
       site = item.get('site');
-      return promisify(site.fetch({useMasterKey: true}));
+      return site.fetch({useMasterKey: true});
     })
     
     .then(() => {
@@ -778,24 +735,18 @@ Parse.Cloud.define("onMediaItemAdd", (request, response) => {
       item.save(null, {useMasterKey: true});
     })
     
-    .then(() => response.success('ACL setup ends!'))
-    
-    .catch(response.error);
+    .then(() => 'ACL setup ends!');
 });
 
 
-Parse.Cloud.define("inviteUser", function(request, response) {
-  if (!request.user) {
-    response.error('You must be authorized!');
-    return;
-  }
+Parse.Cloud.define("inviteUser", request => {
+  if (!request.user)
+    throw 'Must be signed in to call this Cloud Function.';
   
   const {email, siteName} = request.params;
-  if (!email || !siteName) {
-    response.error('Email or siteName is empty!');
-    return;
-  }
-  
+  if (!email || !siteName)
+    throw 'Email or siteName is empty!';
+
   console.log(`Send invite to ${email} ${new Date()}`);
   
   const {AppCache} = require('parse-server/lib/cache');
@@ -804,18 +755,18 @@ Parse.Cloud.define("inviteUser", function(request, response) {
   const emailSelf = request.user.get('email');
   const link = `${SITE}/sign?mode=register&email=${email}`;
 
-  emailAdapter.send({
+  return emailAdapter.send({
     templateName: 'inviteEmail',
     recipient: email,
     variables: {siteName, emailSelf, link}
   })
     .then(() => {
       console.log(`Invite sent to ${email} ${new Date()}`);
-      response.success("Invite email sent!");
+      return "Invite email sent!";
     })
     .catch (error => {
       console.log(`Got an error in inviteUser: ${error}`);
-      response.error(error);
+      throw error;
     });
 });
 
@@ -846,20 +797,15 @@ Parse.Cloud.define("sendEmail", function(request, response) {
 });
 */
 
-Parse.Cloud.define("checkPassword", (request, response) => {
-  if (!request.user) {
-    response.error('You must be authorized!');
-    return;
-  }
+Parse.Cloud.define("checkPassword", request => {
+  if (!request.user)
+    throw 'Must be signed in to call this Cloud Function.';
 
   const {password} = request.params;
-  if (!password) {
-    response.error('There is no password param!');
-    return;
-  }
-  
+  if (!password)
+    throw 'There is no password param!';
+
   const username = request.user.get('username');
 
-  Parse.User.logIn(username, password)
-    .then(response.success, response.error);
+  return Parse.User.logIn(username, password);
 });
