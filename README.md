@@ -2,7 +2,7 @@ Parse Server
 =====================
 
 A Parse Server setup for Chisel - the open source API-first, headless CMS.
- 
+
 ## One Click Deploy to Heroku
 
 Setting up a hosted Parse Server instance is easy with Heroku.
@@ -44,7 +44,4 @@ Next, run server:
 npm start
 ```
 
-Parse Server will be running on `http://localhost:5000`
-
-
-
+Parse Server will be running on `http://localhost:1337/parse`
