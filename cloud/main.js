@@ -523,6 +523,7 @@ Parse.Cloud.afterSave(Parse.User, request => {
           return Promise.reject('user also exists!');
   
         collab.set('user', user);
+        collab.set('email', '');
         
         promises.push(
           collab.save(null, {useMasterKey: true})
