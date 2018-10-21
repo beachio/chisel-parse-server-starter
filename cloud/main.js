@@ -512,7 +512,6 @@ Parse.Cloud.afterSave(Parse.User, request => {
   
   return new Parse.Query('Collaboration')
     .equalTo('email', user.get('email'))
-    
     .find({useMasterKey: true})
     
     .then(p_collabs => {
@@ -520,7 +519,7 @@ Parse.Cloud.afterSave(Parse.User, request => {
 
       for (let collab of p_collabs) {
         if (collab.get('user'))
-          return Promise.reject('user also exists!');
+          throw 'user also exists!';
   
         collab.set('user', user);
         collab.set('email', '');
