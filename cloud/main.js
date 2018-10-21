@@ -507,6 +507,11 @@ Parse.Cloud.define("onCollaborationModify", request => {
     .then(() => 'ACL setup ends!');
 });
 
+Parse.Cloud.beforeSave(Parse.User, request => {
+  const user = request.object;
+  user.set('username', user.get('email'));
+});
+
 Parse.Cloud.afterSave(Parse.User, request => {
   const user = request.object;
   
