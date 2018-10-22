@@ -1,7 +1,7 @@
 Parse Server
 =====================
 
-A Parse Server setup for Chisel - the open source API-first, headless CMS.
+A Parse Server setup for [Chisel](https://github.com/beachio/chisel) — the open source API-first, headless CMS. It based on [Parse Server](https://github.com/parse-community/parse-server).
 
 ## One Click Deploy to Heroku
 
@@ -45,3 +45,24 @@ npm start
 ```
 
 Parse Server will be running on `http://localhost:1337/parse`
+
+## Configuration
+
+You can setup configuration in `config.json` file. Also some parameters can be passed by `process.env`.
+In `config.json` file, in `parseConfig` object you can pass any parameters of original Parse Server, so checkout its docs. 
+Main parameter with `process.env` aliases:
+| Parameter | chisel-config.json  | process.env  |
+| :---:   | :-: | :-: |
+| Parse server port | port | PORT |
+| Parse server URL | URLserver | SERVER_URL |
+| Database URI | URLdb | DATABASE_URI, MONGODB_URI |
+| Chisel site URL | URLsite | SITE_URL |
+| Parse application ID | appId | APP_ID |
+| Parse master key | masterKey | MASTER_KEY |
+
+Also you can configure integrated Parse Dashboard (in `extraConfig` object in `config.json`):
+| Parameter | chisel-config.json  | process.env  |
+| :---:   | :-: | :-: |
+| Dashboard enabled | dashboardActivated | DASHBOARD_ACTIVATED |
+| Email for dashboard | userEmail | USER_EMAIL |
+| Password for dashboard | userPassword | USER_PASSWORD |
