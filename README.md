@@ -50,7 +50,8 @@ Parse Server will be running on `http://localhost:1337/parse`
 
 You can setup configuration in `config.json` file. Also some parameters can be passed by `process.env`.
 In `config.json` file, in `parseConfig` object you can pass any parameters of original Parse Server, so checkout its docs. 
-Main parameter with `process.env` aliases:
+Main parameters with `process.env` aliases:
+
 | Parameter | chisel-config.json  | process.env  |
 | :---:   | :-: | :-: |
 | Parse server port | port | PORT |
@@ -61,6 +62,7 @@ Main parameter with `process.env` aliases:
 | Parse master key | masterKey | MASTER_KEY |
 
 Also you can configure integrated Parse Dashboard (in `extraConfig` object in `config.json`):
+
 | Parameter | chisel-config.json  | process.env  |
 | :---:   | :-: | :-: |
 | Dashboard enabled | dashboardActivated | DASHBOARD_ACTIVATED |
