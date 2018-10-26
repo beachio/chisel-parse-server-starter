@@ -51,15 +51,17 @@ if (DASHBOARD_ACTIVATED) {
       masterKey: MASTER_KEY,
       appName: parseConfig.appName
     }],
-    users: [{
-      user: DASH_USER_EMAIL,
-      pass: DASH_USER_PASSWORD
-    }],
     trustProxy: 1,
     PARSE_DASHBOARD_ALLOW_INSECURE_HTTP: 1,
     allowInsecureHTTP: 1
   };
 
+  if (DASH_USER_EMAIL && DASH_USER_PASSWORD)
+    dashboardConfig.users = [{
+      user: DASH_USER_EMAIL,
+      pass: DASH_USER_PASSWORD
+    }];
+  
   module.exports.dashboardConfig = dashboardConfig;
   const dashboard = new ParseDashboard(dashboardConfig, {allowInsecureHTTP: true});
   app.use('/dashboard', dashboard);
