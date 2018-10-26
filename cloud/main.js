@@ -226,12 +226,52 @@ Parse.Cloud.define("deleteModel", request => {
   const {modelId} = request.params;
   if (!modelId)
     throw 'There is no modelId param!';
+  
+  let model;
 
   return new Parse.Query("Model")
     .get(modelId, {useMasterKey: true})
 
-    .then(model => deleteModel(request.user, model))
-    
+    .then(_model => {
+      model = _model;
+      return deleteModel(request.user, model);
+    })
+
+    //removing reference validation to model
+    .then(() =>
+      getAllObjects(
+        new Parse.Query('Model')
+          .equalTo('site', model.get('site'))
+      )
+    )
+  
+    .then(models =>
+      getAllObjects(
+        new Parse.Query('ModelField')
+          .containedIn('model', models)
+          .notEqualTo('model', model)
+          .equalTo('type', 'Reference')
+      )
+    )
+  
+    .then(fields => {
+      const promises = [];
+      for (let field of fields) {
+        const validations = field.get('validations');
+        if (!validations || !validations.models || !validations.models.active || !validations.models.modelsList)
+          continue;
+      
+        const i = validations.models.modelsList.indexOf(model.get('nameId'));
+        if (i == -1)
+          continue;
+      
+        validations.models.modelsList.splice(i, 1);
+        field.set('validations', validations);
+        promises.push(promisifyW(field.save(null, {useMasterKey: true})));
+      }
+      return Promise.all(promises);
+    })
+  
     .then(() => "Successfully deleted model.")
   
     .catch(error => {
