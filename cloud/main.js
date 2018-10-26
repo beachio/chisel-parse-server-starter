@@ -159,6 +159,7 @@ const deleteModel = (user, model) => {
   
   let tableName;
   
+  //removing model fields
   return getAllObjects(
     new Parse.Query('ModelField')
       .equalTo('model', model)
@@ -175,6 +176,7 @@ const deleteModel = (user, model) => {
     
     .catch(() => Promise.resolve())
   
+    //removing content items of model
     .then(() => {
       tableName = model.get('tableName');
       return getAllObjects(
@@ -192,10 +194,12 @@ const deleteModel = (user, model) => {
   
     .catch(() => Promise.resolve())
   
+    //removing table of model
     .then(() => deleteTable(tableName))
   
     .catch(() => Promise.resolve())
   
+    //remove model
     .then(() => model.destroy({useMasterKey: true}));
 };
 
