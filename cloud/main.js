@@ -553,7 +553,9 @@ Parse.Cloud.define("onCollaborationModify", request => {
 
 Parse.Cloud.beforeSave(Parse.User, request => {
   const user = request.object;
-  user.set('username', user.get('email'));
+  const email = user.get('email');
+  if (user.get('username') != email)
+    user.set('username', email);
 });
 
 Parse.Cloud.afterSave(Parse.User, request => {
