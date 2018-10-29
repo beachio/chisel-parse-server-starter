@@ -124,7 +124,7 @@ const deleteTable = table => {
 };
 
 const deleteContentItem = (user, tableName, itemId) => {
-  let item;
+  let item, itemDraft, tableData;
   
   return new Parse.Query(tableName)
     .get(itemId, {useMasterKey: true})
@@ -138,9 +138,11 @@ const deleteContentItem = (user, tableName, itemId) => {
       return getTableData(tableName);
     })
     
-    .then(data => {
-      for (let field in data.fields) {
-        const val = data.fields[field];
+    //removing MediaItem's belonging to content item
+    .then(_tableData => {
+      tableData = _tableData;
+      for (let field in tableData.fields) {
+        const val = tableData.fields[field];
         if (val.type == 'Pointer' && val.targetClass == 'MediaItem') {
           const media = item.get(field);
           //!! uncontrolled async operation
@@ -150,7 +152,36 @@ const deleteContentItem = (user, tableName, itemId) => {
       }
     })
     
-    .then(() => item.destroy({useMasterKey: true}));
+    //seeking draft version of content item
+    .then(() => new Parse.Query(tableName)
+      .equalTo('t__owner', item)
+      .first({useMasterKey: true}))
+  
+    .then(p_itemDraft => {
+      itemDraft = p_itemDraft;
+      if (!itemDraft)
+        return;
+    
+      if (!checkRights(user, itemDraft))
+        throw "Access denied!";
+      
+      for (let field in tableData.fields) {
+        const val = tableData.fields[field];
+        if (val.type == 'Pointer' && val.targetClass == 'MediaItem') {
+          const media = itemDraft.get(field);
+          //!! uncontrolled async operation
+          if (media)
+            media.destroy({useMasterKey: true});
+        }
+      }
+    })
+    
+    .then(() => item.destroy({useMasterKey: true}))
+    
+    .then(() => {
+      if (itemDraft)
+        return itemDraft.destroy({useMasterKey: true});
+    });
 };
 
 const deleteModel = (user, model) => {
@@ -215,7 +246,7 @@ Parse.Cloud.define("deleteContentItem", request => {
   return deleteContentItem(request.user, tableName, itemId)
     .then(() => "Successfully deleted content item.")
     .catch(error => {
-      throw `Could not delete content item: ${JSON.stringify(error, null, 2)}`;
+      throw `Could not delete content item: ${error}`;
     });
 });
 
