@@ -133,7 +133,7 @@ const deleteContentItem = (user, tableName, itemId) => {
       item = p_item;
       
       if (!checkRights(user, item))
-        return Promise.reject("Access denied!");
+        throw "Access denied!";
       
       return getTableData(tableName);
     })
@@ -155,7 +155,7 @@ const deleteContentItem = (user, tableName, itemId) => {
 
 const deleteModel = (user, model) => {
   if (!checkRights(user, model))
-    return Promise.reject("Access denied!");
+    throw "Access denied!";
   
   let tableName;
   
@@ -174,7 +174,7 @@ const deleteModel = (user, model) => {
       return Promise.all(promises);
     })
     
-    .catch(() => Promise.resolve())
+    .catch(() => {})
   
     //removing content items of model
     .then(() => {
@@ -192,12 +192,12 @@ const deleteModel = (user, model) => {
       return Promise.all(promises);
     })
   
-    .catch(() => Promise.resolve())
+    .catch(() => {})
   
     //removing table of model
     .then(() => deleteTable(tableName))
   
-    .catch(() => Promise.resolve())
+    .catch(() => {})
   
     //remove model
     .then(() => model.destroy({useMasterKey: true}));
@@ -296,7 +296,7 @@ Parse.Cloud.define("deleteSite", request => {
       site = p_site;
       
       if (!checkRights(request.user, site))
-        return Promise.reject("Access denied!");
+        throw "Access denied!";
       
       return getAllObjects(
         new Parse.Query('Model')
@@ -543,7 +543,7 @@ Parse.Cloud.define("onCollaborationModify", request => {
 
     .then(collab => {
       if (!checkRights(request.user, collab))
-        return Promise.reject("Access denied!");
+        throw "Access denied!";
       
       return onCollaborationModify(collab, deleting);
     })
@@ -583,7 +583,7 @@ Parse.Cloud.afterSave(Parse.User, request => {
       return Promise.all(promises);
     })
     
-    .catch(() => Promise.resolve());
+    .catch(() => {});
 });
 
 Parse.Cloud.define("onModelAdd", request => {
