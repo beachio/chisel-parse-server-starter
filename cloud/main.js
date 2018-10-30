@@ -10,13 +10,6 @@ const ROLE_ADMIN = "ADMIN";
 const ROLE_EDITOR = "EDITOR";
 
 
-const filterSpecials = (str, symb = "_") => {
-  if (!str)
-    return '';
-  str = str.trim().replace(/\s+/g, ' ');
-  return str.replace(/\W/g, symb);
-};
-
 const promisifyW = pp => {
   return new Promise((rs, rj) => pp.then(rs, rs));
 };
@@ -241,55 +234,6 @@ const deleteModel = (user, model) => {
     .then(() => model.destroy({useMasterKey: true}));
 };
 
-
-
-
-Parse.Cloud.define("createSite", request => {
-  if (!request.user)
-    throw 'Must be signed in to call this Cloud Function.';
-  
-  const siteData = request.params.site;
-  if (!siteData)
-    throw 'There is no site param!';
-  
-  const Site = Parse.Object.extend('Site');
-  const site = new Site();
-  
-  site.set("name",    siteData.name);
-  site.set("domain",  siteData.domain);
-  site.set("webhook", siteData.webhook);
-  site.set("owner",   request.user);
-  
-  site.setACL(new Parse.ACL(request.user));
-  
-  let nameId = filterSpecials(siteData.name);
-  
-  return getAllObjects(new Parse.Query(Site))
-    
-    .then(sites => {
-      
-      const getNameIdInc = (inc = 0) => {
-        let newNameId = inc ? `${nameId}_${inc}` : nameId;
-    
-        for (let siteTemp of sites) {
-          if (siteTemp.get('nameId') == newNameId)
-            return getNameIdInc(++inc);
-        }
-    
-        return newNameId;
-      };
-  
-      nameId = getNameIdInc();
-      site.set("nameId", nameId);
-      return site.save({useMasterKey: true});
-    })
-    
-    .then(() => site)
-    
-    .catch(error => {
-      throw `Could not create site: ${error}`;
-    });
-});
 
 Parse.Cloud.define("deleteContentItem", request => {
   if (!request.user)
