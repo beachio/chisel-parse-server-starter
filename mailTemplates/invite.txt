@@ -6,4 +6,4 @@ Accept invite:
 {{link}}
 
 The AwesomeApp Team
-https://chisel.com
+https://chiselcms.com
