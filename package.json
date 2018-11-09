@@ -1,12 +1,13 @@
 {
   "name": "chisel-parse-server",
-  "version": "0.5.1",
-  "description": "parse-server for Chisel",
+  "version": "0.5.2",
+  "description": "Parse Server setup for Chisel CMS",
+  "author": "beach.io",
+  "repository": "https://github.com/beachio/chisel-parse-server-starter",
+  "license": "MIT",
   "scripts": {
     "start": "node index.js"
   },
-  "repository": "https://github.com/beachio/chisel-parse-server-starter",
-  "license": "MIT",
   "dependencies": {
     "express": "^4.16.3",
     "parse-dashboard": "^1.2.0",
