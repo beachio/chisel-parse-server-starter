@@ -17,9 +17,9 @@
     "emailAdapter": {
       "module": "parse-server-mailgun",
       "options": {
-        "fromAddress": "parse@charliedisney.com",
-        "domain": "charliedisney.com",
-        "apiKey": "key-6488b75d22dfe878cf83f1753d64f825",
+        "fromAddress": "sample@address.com",
+        "domain": "sampledomain.com",
+        "apiKey": "samplekey",
         "templates": {
           "passwordResetEmail": {
             "subject": "Reset your password",
@@ -50,7 +50,7 @@
   },
 
   "extraConfig": {
-    "dashboardActivated": false,
+    "dashboardActivated": true,
     "userEmail": "test",
     "userPassword": "123456"
   }

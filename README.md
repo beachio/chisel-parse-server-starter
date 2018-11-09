@@ -52,7 +52,7 @@ You can setup configuration in `config.json` file. Also some parameters can be p
 In `config.json` file, in `parseConfig` object you can pass any parameters of original Parse Server, so checkout its docs. 
 Main parameters with `process.env` aliases:
 
-| Parameter | chisel-config.json  | process.env  |
+| Parameter | config.json  | process.env  |
 | :---:   | :-: | :-: |
 | Parse server port | port | PORT |
 | Parse server URL | URLserver | SERVER_URL |
@@ -61,9 +61,11 @@ Main parameters with `process.env` aliases:
 | Parse application ID | appId | APP_ID |
 | Parse master key | masterKey | MASTER_KEY |
 
-Also you can configure integrated Parse Dashboard (in `extraConfig` object in `config.json`):
+In `emailAdapter` there are settings for email adapter. To using email features (users' verification) you should replace `fromAddress`, `domain` and `apiKey` parameters to yours (or even change the adapter if you don't use Mailgun).
 
-| Parameter | chisel-config.json  | process.env  |
+Also you can configure integrated Parse Dashboard (in `extraConfig` object in `config.js`):
+
+| Parameter | config.json  | process.env  |
 | :---:   | :-: | :-: |
 | Dashboard enabled | dashboardActivated | DASHBOARD_ACTIVATED |
 | Email for dashboard | userEmail | USER_EMAIL |
