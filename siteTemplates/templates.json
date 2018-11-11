@@ -1,0 +1,79 @@
+[
+  {
+    "template": {
+      "name": "Blog",
+      "description": "The template for blog."
+    },
+    "icon": "blog.png",
+    "models": [
+      {
+        "model": {
+          "nameId": "Author",
+          "name": "Author",
+          "description": "",
+          "color": "rgba(187, 34, 230, 1)"
+        },
+        "fields": [
+          {
+            "name": "Name",
+            "nameId": "Name",
+            "color": "rgba(16, 178, 99, 1)",
+            "type": "Short Text",
+            "appearance": "Single line",
+            "isTitle": true,
+            "isList": false,
+            "isDisabled": false,
+            "isRequired": true,
+            "order": 0
+          },
+          {
+            "name": "Biography",
+            "nameId": "Biography",
+            "color": "rgba(245, 200, 30, 1)",
+            "type": "Long Text",
+            "appearance": "Multi-line",
+            "isDisabled": false,
+            "isTitle": false,
+            "isList": false,
+            "isRequired": false,
+            "order": 1
+          }
+        ]
+      },
+      {
+        "model": {
+          "color": "rgba(210, 230, 8, 1)",
+          "nameId": "Post",
+          "name": "Post",
+          "description": ""
+        },
+        "fields": [
+          {
+            "name": "Title",
+            "nameId": "Title",
+            "color": "rgba(255, 32, 89, 1)",
+            "type": "Short Text",
+            "appearance": "Single line",
+            "isDisabled": false,
+            "isTitle": true,
+            "isList": false,
+            "isRequired": true,
+            "order": 0
+          },
+          {
+            "name": "Author",
+            "nameId": "Author",
+            "color": "rgba(1, 34, 54, 1)",
+            "type": "Reference",
+            "appearance": "Reference",
+            "isList": false,
+            "isTitle": false,
+            "isDisabled": false,
+            "isRequired": true,
+            "order": 4
+          }
+        ]
+      }
+    ]
+  }
+]

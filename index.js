@@ -18,6 +18,9 @@ const DASHBOARD_ACTIVATED = process.env.DASHBOARD_ACTIVATED || config.extraConfi
 const DASH_USER_EMAIL     = process.env.USER_EMAIL          || config.extraConfig.userEmail;
 const DASH_USER_PASSWORD  = process.env.USER_PASS           || config.extraConfig.userPassword;
 
+const SITE_TEMPLATES  = process.env.SITE_TEMPLATES           || config.extraConfig.siteTemplates;
+
+
 Object.assign(parseConfig, {
   appId: APP_ID,
   masterKey: MASTER_KEY,
@@ -68,6 +71,57 @@ if (DASHBOARD_ACTIVATED) {
 }
 
 
-app.listen(PORT, () => {
+app.listen(PORT, async () => {
+  
+  // set templates
+  if (SITE_TEMPLATES) {
+    const Parse = require('parse/node');
+    
+    Parse.initialize(APP_ID);
+    Parse.serverURL = URL_SERVER;
+   
+    const setTemplates = async () => {
+      const templates = require('./siteTemplates/templates.json');
+      const fs = require('fs');
+    
+      const Template = Parse.Object.extend('Template');
+      const Model = Parse.Object.extend('Model');
+      const ModelField = Parse.Object.extend('ModelField');
+      
+      for (let template of templates) {
+        const template_o = new Template();
+        template_o.set(template.template);
+    
+        if (template.icon) {
+          const iconData = fs.readFileSync(`./siteTemplates/icons/${template.icon}`);
+          const iconFile = new Parse.File("icon.png", [...iconData]);
+          await iconFile.save();
+          template_o.set('icon', iconFile);
+        }
+        
+        await template_o.save();
+        
+        for (let model of template.models) {
+          const model_o = new Model();
+          model_o.set(model.model);
+          model_o.set('template', template_o);
+          await model_o.save();
+          
+          for (let field of model.fields) {
+            const field_o = new ModelField();
+            field_o.set(field);
+            field_o.set('model', model_o);
+            field_o.save();
+          }
+        }
+      }
+    };
+  
+    // setting templates only if there are no templates
+    const res = await new Parse.Query("Template").find();
+    if (!res || !res.length)
+      await setTemplates();
+  }
+  
   console.log(`Parse server running on port ${PORT}.`);
 });
