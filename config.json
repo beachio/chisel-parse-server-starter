@@ -52,8 +52,7 @@
   "extraConfig": {
     "dashboardActivated": true,
     "userEmail": "test",
-    "userPassword": "123456"
-
+    "userPassword": "123456",
     "siteTemplates": true
   }
 }
