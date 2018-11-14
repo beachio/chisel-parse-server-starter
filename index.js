@@ -90,7 +90,9 @@ app.listen(PORT, async () => {
       
       for (let template of templates) {
         const template_o = new Template();
-        template_o.set(template.template);
+        
+        template_o.set('name',        template.name);
+        template_o.set('description', template.description);
     
         if (template.icon) {
           const iconData = fs.readFileSync(`./siteTemplates/icons/${template.icon}`);
@@ -103,8 +105,13 @@ app.listen(PORT, async () => {
         
         for (let model of template.models) {
           const model_o = new Model();
-          model_o.set(model.model);
+          
+          model_o.set('name',         model.name);
+          model_o.set('nameId',       model.nameId);
+          model_o.set('description',  model.description);
+          model_o.set('color',        model.color);
           model_o.set('template', template_o);
+          
           await model_o.save();
           
           for (let field of model.fields) {

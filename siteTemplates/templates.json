@@ -1,18 +1,14 @@
 [
   {
-    "template": {
-      "name": "Blog",
-      "description": "The template for blog."
-    },
+    "name": "Blog",
+    "description": "The template for blog.",
     "icon": "blog.png",
     "models": [
       {
-        "model": {
-          "nameId": "Author",
-          "name": "Author",
-          "description": "",
-          "color": "rgba(187, 34, 230, 1)"
-        },
+        "nameId": "Author",
+        "name": "Author",
+        "description": "",
+        "color": "rgba(187, 34, 230, 1)",
         "fields": [
           {
             "name": "Name",
@@ -41,12 +37,10 @@
         ]
       },
       {
-        "model": {
-          "color": "rgba(210, 230, 8, 1)",
-          "nameId": "Post",
-          "name": "Post",
-          "description": ""
-        },
+        "name": "Post",
+        "nameId": "Post",
+        "description": "",
+        "color": "rgba(210, 230, 8, 1)",
         "fields": [
           {
             "name": "Title",
