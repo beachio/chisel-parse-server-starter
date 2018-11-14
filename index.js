@@ -77,7 +77,7 @@ app.listen(PORT, async () => {
   if (SITE_TEMPLATES) {
     const Parse = require('parse/node');
     
-    Parse.initialize(APP_ID);
+    Parse.initialize(APP_ID, null, MASTER_KEY);
     Parse.serverURL = URL_SERVER;
    
     const setTemplates = async () => {
