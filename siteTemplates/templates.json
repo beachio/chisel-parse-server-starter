@@ -240,5 +240,329 @@
         ]
       }
     ]
+  },
+  {
+    "name": "Knowledge Base",
+    "description": "The template for knowledge base.",
+    "icon": "knowledge.png",
+    "models": [
+      {
+        "name": "Author",
+        "nameId": "Author",
+        "description": "",
+        "tableName": "ct____golovin_2enik_40gmail_2ecom__knowledge____Author",
+        "color": "rgba(244, 31, 177, 1)",
+        "fields": [
+          {
+            "name": "Name",
+            "nameId": "Name",
+            "type": "Short Text",
+            "appearance": "Single line",
+            "color": "rgba(27, 80, 58, 1)",
+            "boolTextYes": "",
+            "boolTextNo": "",
+            "validValues": [],
+            "isRequired": false,
+            "isTitle": true,
+            "isList": false,
+            "isDisabled": false,
+            "order": 0,
+            "validations": null
+          },
+          {
+            "name": "Profile Photo",
+            "nameId": "Profile_Photo",
+            "type": "Media",
+            "appearance": "Media",
+            "color": "rgba(42, 202, 65, 1)",
+            "boolTextYes": "",
+            "boolTextNo": "",
+            "validValues": [],
+            "isRequired": false,
+            "isTitle": false,
+            "isList": false,
+            "isDisabled": false,
+            "order": 1,
+            "validations": null
+          },
+          {
+            "name": "Biography",
+            "nameId": "Biography",
+            "type": "Long Text",
+            "appearance": "Markdown",
+            "color": "rgba(109, 77, 248, 1)",
+            "boolTextYes": "",
+            "boolTextNo": "",
+            "validValues": [],
+            "isRequired": false,
+            "isTitle": false,
+            "isList": false,
+            "isDisabled": false,
+            "order": 2,
+            "validations": null
+          },
+          {
+            "name": "Twitter Handle",
+            "nameId": "Twitter_Handle",
+            "type": "Short Text",
+            "appearance": "Single line",
+            "color": "rgba(108, 128, 3, 1)",
+            "boolTextYes": "",
+            "boolTextNo": "",
+            "validValues": [],
+            "isRequired": false,
+            "isTitle": false,
+            "isList": false,
+            "isDisabled": false,
+            "order": 3,
+            "validations": null
+          }
+        ]
+      },
+      {
+        "name": "Article",
+        "nameId": "Article",
+        "description": "",
+        "tableName": "ct____golovin_2enik_40gmail_2ecom__knowledge____Article",
+        "color": "rgba(66, 134, 177, 1)",
+        "fields": [
+          {
+            "name": "Title",
+            "nameId": "Title",
+            "type": "Short Text",
+            "appearance": "Single line",
+            "color": "rgba(212, 144, 167, 1)",
+            "boolTextYes": "",
+            "boolTextNo": "",
+            "validValues": [],
+            "isRequired": false,
+            "isTitle": true,
+            "isList": false,
+            "isDisabled": false,
+            "order": 0,
+            "validations": null
+          },
+          {
+            "name": "Slug",
+            "nameId": "Slug",
+            "type": "Short Text",
+            "appearance": "Slug",
+            "color": "rgba(143, 32, 133, 1)",
+            "boolTextYes": "",
+            "boolTextNo": "",
+            "validValues": [],
+            "isRequired": true,
+            "isTitle": false,
+            "isList": false,
+            "isDisabled": false,
+            "order": 1,
+            "validations": null
+          },
+          {
+            "name": "Author",
+            "nameId": "Author",
+            "type": "Reference",
+            "appearance": "Reference",
+            "color": "rgba(153, 60, 209, 1)",
+            "boolTextYes": "",
+            "boolTextNo": "",
+            "validValues": [],
+            "isRequired": false,
+            "isTitle": false,
+            "isList": false,
+            "isDisabled": false,
+            "order": 2,
+            "validations": {
+              "models": {
+                "active": true,
+                "modelsList": [
+                  "Author"
+                ],
+                "errorMsg": "",
+                "isError": false
+              }
+            }
+          },
+          {
+            "name": "Thumb Image",
+            "nameId": "Thumb_Image",
+            "type": "Media",
+            "appearance": "Media",
+            "color": "rgba(187, 244, 159, 1)",
+            "boolTextYes": "",
+            "boolTextNo": "",
+            "validValues": [],
+            "isRequired": true,
+            "isTitle": false,
+            "isList": false,
+            "isDisabled": false,
+            "order": 3,
+            "validations": null
+          },
+          {
+            "name": "Banner Image",
+            "nameId": "Banner_Image",
+            "type": "Media",
+            "appearance": "Media",
+            "color": "rgba(221, 206, 126, 1)",
+            "boolTextYes": "",
+            "boolTextNo": "",
+            "validValues": [],
+            "isRequired": true,
+            "isTitle": false,
+            "isList": false,
+            "isDisabled": false,
+            "order": 4,
+            "validations": null
+          },
+          {
+            "name": "Description",
+            "nameId": "Description",
+            "type": "Long Text",
+            "appearance": "Markdown",
+            "color": "rgba(248, 240, 138, 1)",
+            "boolTextYes": "",
+            "boolTextNo": "",
+            "validValues": [],
+            "isRequired": true,
+            "isTitle": false,
+            "isList": false,
+            "isDisabled": false,
+            "order": 5,
+            "validations": null
+          },
+          {
+            "name": "Body",
+            "nameId": "Body",
+            "type": "Long Text",
+            "appearance": "Markdown",
+            "color": "rgba(148, 57, 100, 1)",
+            "boolTextYes": "",
+            "boolTextNo": "",
+            "validValues": [],
+            "isRequired": true,
+            "isTitle": false,
+            "isList": false,
+            "isDisabled": false,
+            "order": 6,
+            "validations": null
+          },
+          {
+            "name": "Publish Date",
+            "nameId": "Publish_Date",
+            "type": "Date/time",
+            "appearance": "Date & time",
+            "color": "rgba(149, 203, 177, 1)",
+            "boolTextYes": "",
+            "boolTextNo": "",
+            "validValues": [],
+            "isRequired": true,
+            "isTitle": false,
+            "isList": false,
+            "isDisabled": false,
+            "order": 7,
+            "validations": null
+          },
+          {
+            "name": "Tags",
+            "nameId": "Tags",
+            "type": "Short Text",
+            "appearance": "Single line",
+            "color": "rgba(211, 169, 128, 1)",
+            "boolTextYes": "",
+            "boolTextNo": "",
+            "validValues": [],
+            "isRequired": false,
+            "isTitle": false,
+            "isList": true,
+            "isDisabled": false,
+            "order": 8,
+            "validations": null
+          },
+          {
+            "name": "Categories",
+            "nameId": "Categories",
+            "type": "Reference",
+            "appearance": "Reference",
+            "color": "rgba(228, 149, 237, 1)",
+            "boolTextYes": "",
+            "boolTextNo": "",
+            "validValues": [],
+            "isRequired": false,
+            "isTitle": false,
+            "isList": true,
+            "isDisabled": false,
+            "order": 9,
+            "validations": {
+              "models": {
+                "active": true,
+                "modelsList": [
+                  "Category"
+                ],
+                "errorMsg": "",
+                "isError": false
+              }
+            }
+          }
+        ]
+      },
+      {
+        "name": "Category",
+        "nameId": "Category",
+        "description": "",
+        "tableName": "ct____golovin_2enik_40gmail_2ecom__knowledge____Category",
+        "color": "rgba(61, 166, 37, 1)",
+        "fields": [
+          {
+            "name": "Title",
+            "nameId": "Title",
+            "type": "Short Text",
+            "appearance": "Single line",
+            "color": "rgba(93, 74, 112, 1)",
+            "boolTextYes": "",
+            "boolTextNo": "",
+            "validValues": [],
+            "isRequired": false,
+            "isTitle": true,
+            "isList": false,
+            "isDisabled": false,
+            "order": 0,
+            "validations": null
+          },
+          {
+            "name": "Icon",
+            "nameId": "Icon",
+            "type": "Media",
+            "appearance": "Media",
+            "color": "rgba(105, 88, 155, 1)",
+            "boolTextYes": "",
+            "boolTextNo": "",
+            "validValues": [],
+            "isRequired": true,
+            "isTitle": false,
+            "isList": false,
+            "isDisabled": false,
+            "order": 1,
+            "validations": null
+          },
+          {
+            "name": "Description",
+            "nameId": "Description",
+            "type": "Long Text",
+            "appearance": "Markdown",
+            "color": "rgba(173, 51, 112, 1)",
+            "boolTextYes": "",
+            "boolTextNo": "",
+            "validValues": [],
+            "isRequired": false,
+            "isTitle": false,
+            "isList": false,
+            "isDisabled": false,
+            "order": 2,
+            "validations": null
+          }
+        ]
+      }
+    ]
   }
 ]
