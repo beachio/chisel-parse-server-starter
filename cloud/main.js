@@ -761,7 +761,7 @@ Parse.Cloud.define("onContentModify", request => {
     return 'Warning! There is no content hook!';
 
   return Parse.Cloud.httpRequest({
-    URL,
+    url: URL,
     method: 'GET'
   })
     .then(response => {
