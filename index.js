@@ -2,6 +2,7 @@ const express = require('express');
 const ParseServer = require('parse-server').ParseServer;
 const ParseDashboard = require('parse-dashboard');
 
+const packageJSON = require('./package.json');
 
 const config = require('./config.json');
 let parseConfig = config.parseConfig;
@@ -130,5 +131,5 @@ app.listen(PORT, async () => {
       await setTemplates();
   }
   
-  console.log(`Parse server running on port ${PORT}.`);
+  console.log(`Chisel Parse server v${packageJSON.version} running on port ${PORT}.`);
 });
