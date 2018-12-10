@@ -728,27 +728,6 @@ Parse.Cloud.beforeSave(`ModelField`, async request => {
   field.setACL(fieldACL);
 });
 
-Parse.Cloud.define("onContentModify", request => {
-  if (!request.user)
-    throw 'Must be signed in to call this Cloud Function.';
-
-  const {URL} = request.params;
-  if (!URL)
-    return 'Warning! There is no content hook!';
-
-  return Parse.Cloud.httpRequest({
-    url: URL,
-    method: 'GET'
-  })
-    .then(response => {
-      if (response.status == 200)
-        return response.data;
-      else
-        throw response.status;
-    });
-});
-
-
 Parse.Cloud.beforeSave(`MediaItem`, async request => {
   const item = request.object;
   if (item.id)
@@ -776,6 +755,26 @@ Parse.Cloud.beforeSave(`MediaItem`, async request => {
   item.setACL(itemACL);
 });
 
+
+Parse.Cloud.define("onContentModify", request => {
+  if (!request.user)
+    throw 'Must be signed in to call this Cloud Function.';
+
+  const {URL} = request.params;
+  if (!URL)
+    return 'Warning! There is no content hook!';
+
+  return Parse.Cloud.httpRequest({
+    url: URL,
+    method: 'GET'
+  })
+    .then(response => {
+      if (response.status == 200)
+        return response.data;
+      else
+        throw response.status;
+    });
+});
 
 Parse.Cloud.define("inviteUser", request => {
   if (!request.user)
