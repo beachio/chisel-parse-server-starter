@@ -493,7 +493,7 @@ const onCollaborationModify = (collab, deleting = false) => {
         //!! uncontrolled async operation
         getTableData(tableName)
           .then(response => {
-            let CLP = response.classLevelPermissions;
+            let CLP = response ? response.classLevelPermissions : null;
             if (!CLP)
               CLP = {
                 'get': {},
