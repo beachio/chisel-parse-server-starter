@@ -749,51 +749,31 @@ Parse.Cloud.define("onContentModify", request => {
 });
 
 
-Parse.Cloud.define("onMediaItemAdd", request => {
-  if (!request.user)
-    throw 'Must be signed in to call this Cloud Function.';
+Parse.Cloud.beforeSave(`MediaItem`, async request => {
+  const item = request.object;
+  if (item.id)
+    return;
 
-  const {itemId} = request.params;
-  if (!itemId)
-    throw 'There is no itemId param!';
+  const site = item.get('site');
+  await site.fetch({useMasterKey: true});
+  
+  //ACL for collaborations
+  const owner = site.get('owner');
+  const itemACL = new Parse.ACL(owner);
+  
+  const collabs = await getAllObjects(
+    new Parse.Query('Collaboration')
+      .equalTo('site', site));
+    
+  for (let collab of collabs) {
+    const user = collab.get('user');
+    const role = collab.get('role');
 
-  let item, site, itemACL;
-  
-  return new Parse.Query("MediaItem")
-    .get(itemId, {useMasterKey: true})
+    itemACL.setReadAccess(user, true);
+    itemACL.setWriteAccess(user, role == ROLE_ADMIN);
+  }
 
-    .then(p_item => {
-      item = p_item;
-      
-      site = item.get('site');
-      return site.fetch({useMasterKey: true});
-    })
-    
-    .then(() => {
-      //ACL for collaborations
-      const owner = site.get('owner');
-      itemACL = new Parse.ACL(owner);
-      
-      return getAllObjects(
-        new Parse.Query('Collaboration')
-          .equalTo('site', site));
-    })
-    
-    .then(collabs => {
-      for (let collab of collabs) {
-        const user = collab.get('user');
-        const role = collab.get('role');
-  
-        itemACL.setReadAccess(user, true);
-        itemACL.setWriteAccess(user, role == ROLE_ADMIN);
-      }
-  
-      item.setACL(itemACL);
-      //!! uncontrolled async operation
-      item.save(null, {useMasterKey: true});
-    })
-    
-    .then(() => 'ACL setup ends!');
+  item.setACL(itemACL);
 });
 
 
