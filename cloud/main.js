@@ -698,43 +698,34 @@ Parse.Cloud.beforeSave(`Model`, async request => {
   await setTableData(model.get('tableName'), data);
 });
 
-Parse.Cloud.beforeSave(`ModelField`, request => {
+Parse.Cloud.beforeSave(`ModelField`, async request => {
   const field = request.object;
   if (field.id)
     return;
   
   const model = field.get('model');
+  await model.fetch({useMasterKey: true});
 
-  let site, owner, fieldACL;
+  const site = model.get('site');
+  await site.fetch({useMasterKey: true});
   
-  return model.fetch({useMasterKey: true})
+  //ACL for collaborations
+  const owner = site.get('owner');
+  const fieldACL = new Parse.ACL(owner);
 
-    .then(() => {
-      site = model.get('site');
-      return site.fetch({useMasterKey: true});
-    })
+  const collabs = await getAllObjects(
+    new Parse.Query('Collaboration')
+      .equalTo('site', site));
 
-    .then(() => {
-      //ACL for collaborations
-      owner = site.get('owner');
-      fieldACL = new Parse.ACL(owner);
-    
-      return getAllObjects(
-        new Parse.Query('Collaboration')
-          .equalTo('site', site));
-    })
+  for (let collab of collabs) {
+    const user = collab.get('user');
+    const role = collab.get('role');
 
-    .then(collabs => {
-      for (let collab of collabs) {
-        const user = collab.get('user');
-        const role = collab.get('role');
-  
-        fieldACL.setReadAccess(user, true);
-        fieldACL.setWriteAccess(user, role == ROLE_ADMIN);
-      }
-    
-      field.setACL(fieldACL);
-    });
+    fieldACL.setReadAccess(user, true);
+    fieldACL.setWriteAccess(user, role == ROLE_ADMIN);
+  }
+
+  field.setACL(fieldACL);
 });
 
 Parse.Cloud.define("onContentModify", request => {
