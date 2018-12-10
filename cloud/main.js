@@ -49,11 +49,11 @@ const getAllObjects = query => {
 };
 
 
-const getTableData = table => {
+const getTableData = async (table) => {
   const endpoint = '/schemas/' + table;
   
-  return new Promise((resolve, reject) => {
-    Parse.Cloud.httpRequest({
+  try {
+    const response = await Parse.Cloud.httpRequest({
       url: config.serverURL + endpoint,
       method: 'GET',
       mode: 'cors',
@@ -63,63 +63,53 @@ const getTableData = table => {
         'X-Parse-Application-Id': config.appId,
         'X-Parse-Master-Key': config.masterKey
       }
-    })
-      .then(response => {
-        if (response.status == 200)
-          resolve(response.data);
-        else
-          resolve(null);
-      }, () => resolve(null));
-  });
+    });
+  
+    if (response.status == 200)
+      return response.data;
+    
+  } catch (e) {}
+  
+  return null;
 };
 
-const setTableData = (table, data, method = 'POST') => {
+const setTableData = async (table, data, method = 'POST') => {
   const endpoint = '/schemas/' + table;
   
-  return new Promise((resolve, reject) => {
-    Parse.Cloud.httpRequest({
-      url: config.serverURL + endpoint,
-      method,
-      mode: 'cors',
-      cache: 'no-cache',
-      headers: {
-        'Content-Type': 'application/json',
-        'X-Parse-Application-Id': config.appId,
-        'X-Parse-Master-Key': config.masterKey
-      },
-      body: JSON.stringify(data)
-    })
-      .then(response => {
-        if (response.status == 200)
-          resolve();
-        else
-          reject();
-      }, reject);
+  const response = await Parse.Cloud.httpRequest({
+    url: config.serverURL + endpoint,
+    method,
+    mode: 'cors',
+    cache: 'no-cache',
+    headers: {
+      'Content-Type': 'application/json',
+      'X-Parse-Application-Id': config.appId,
+      'X-Parse-Master-Key': config.masterKey
+    },
+    body: JSON.stringify(data)
   });
+  
+  if (response.status != 200)
+    throw response.status;
 };
 
-const deleteTable = table => {
+const deleteTable = async (table) => {
   const endpoint = '/schemas/' + table;
   
-  return new Promise((resolve, reject) => {
-    Parse.Cloud.httpRequest({
-      url: config.serverURL + endpoint,
-      method: 'DELETE',
-      mode: 'cors',
-      cache: 'no-cache',
-      headers: {
-        'Content-Type': 'application/json',
-        'X-Parse-Application-Id': config.appId,
-        'X-Parse-Master-Key': config.masterKey
-      }
-    })
-      .then(response => {
-        if (response.status == 200)
-          resolve();
-        else
-          reject();
-      }, reject);
+  const response = await Parse.Cloud.httpRequest({
+    url: config.serverURL + endpoint,
+    method: 'DELETE',
+    mode: 'cors',
+    cache: 'no-cache',
+    headers: {
+      'Content-Type': 'application/json',
+      'X-Parse-Application-Id': config.appId,
+      'X-Parse-Master-Key': config.masterKey
+    }
   });
+  
+  if (response.status != 200)
+    throw response.status;
 };
 
 const deleteContentItem = (user, tableName, itemId) => {
