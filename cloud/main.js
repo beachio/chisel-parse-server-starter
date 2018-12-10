@@ -635,87 +635,67 @@ Parse.Cloud.beforeSave("Site", async request => {
   return true;
 });
 
-Parse.Cloud.define("onModelAdd", request => {
-  if (!request.user)
-    throw 'Must be signed in to call this Cloud Function.';
-
-  const {modelId} = request.params;
-  if (!modelId)
-    throw 'There is no modelId param!';
-
-  let model, site, owner, modelACL;
+Parse.Cloud.beforeSave(`Model`, async request => {
+  const model = request.object;
+  if (model.id)
+    return;
   
-  return new Parse.Query("Model")
-    .get(modelId, {useMasterKey: true})
-
-    .then(p_model => {
-      model = p_model;
-      
-      site = model.get('site');
-      return site.fetch({useMasterKey: true});
-    })
+  const site = model.get('site');
+  await site.fetch({useMasterKey: true});
+  
+  //ACL for collaborations
+  const owner = site.get('owner');
+  const modelACL = new Parse.ACL(owner);
+  
+  const collabs = await getAllObjects(
+    new Parse.Query('Collaboration')
+      .equalTo('site', site));
+  
+  const admins = [owner.id];
+  const writers = [owner.id];
+  const all = [owner.id];
+  
+  for (let collab of collabs) {
+    const user = collab.get('user');
+    const role = collab.get('role');
     
-    .then(() => {
-      //ACL for collaborations
-      owner = site.get('owner');
-      modelACL = new Parse.ACL(owner);
-      
-      return getAllObjects(
-        new Parse.Query('Collaboration')
-          .equalTo('site', site));
-    })
+    modelACL.setReadAccess(user, true);
+    modelACL.setWriteAccess(user, role == ROLE_ADMIN);
     
-    .then(collabs => {
-      const admins = [owner.id];
-      const writers = [owner.id];
-      const all = [owner.id];
-      
-      for (let collab of collabs) {
-        const user = collab.get('user');
-        const role = collab.get('role');
+    if (role == ROLE_ADMIN)
+      admins.push(user.id);
+    if (role == ROLE_ADMIN || role == ROLE_EDITOR)
+      writers.push(user.id);
+    all.push(user.id);
+  }
   
-        modelACL.setReadAccess(user, true);
-        modelACL.setWriteAccess(user, role == ROLE_ADMIN);
+  model.setACL(modelACL);
   
-        if (role == ROLE_ADMIN)
-          admins.push(user.id);
-        if (role == ROLE_ADMIN || role == ROLE_EDITOR)
-          writers.push(user.id);
-        all.push(user.id);
-      }
+  //set CLP for content table
+  const CLP = {
+    'get': {},
+    'find': {},
+    'create': {},
+    'update': {},
+    'delete': {},
+    'addField': {}
+  };
   
-      model.setACL(modelACL);
-      //!! uncontrolled async operation
-      model.save(null, {useMasterKey: true});
-      
-      //set CLP for content table
-      const CLP = {
-        'get': {},
-        'find': {},
-        'create': {},
-        'update': {},
-        'delete': {},
-        'addField': {}
-      };
-      
-      for (let user of all) {
-        CLP['get'][user] = true;
-        CLP['find'][user] = true;
-      }
-      for (let user of writers) {
-        CLP['create'][user] = true;
-        CLP['update'][user] = true;
-        CLP['delete'][user] = true;
-      }
-      for (let user of admins) {
-        CLP['addField'][user] = true;
-      }
+  for (let user of all) {
+    CLP['get'][user] = true;
+    CLP['find'][user] = true;
+  }
+  for (let user of writers) {
+    CLP['create'][user] = true;
+    CLP['update'][user] = true;
+    CLP['delete'][user] = true;
+  }
+  for (let user of admins) {
+    CLP['addField'][user] = true;
+  }
   
-      const data = {"classLevelPermissions": CLP};
-      return setTableData(model.get('tableName'), data);
-    })
-    
-    .then(() => 'ACL setup ends!');
+  const data = {"classLevelPermissions": CLP};
+  await setTableData(model.get('tableName'), data);
 });
 
 Parse.Cloud.define("onFieldAdd", request => {
