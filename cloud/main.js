@@ -698,25 +698,16 @@ Parse.Cloud.beforeSave(`Model`, async request => {
   await setTableData(model.get('tableName'), data);
 });
 
-Parse.Cloud.define("onFieldAdd", request => {
-  if (!request.user)
-    throw 'Must be signed in to call this Cloud Function.';
-
-  const {fieldId} = request.params;
-  if (!fieldId)
-    throw 'There is no fieldId param!';
-
-  let field, model, site, owner, fieldACL;
+Parse.Cloud.beforeSave(`ModelField`, request => {
+  const field = request.object;
+  if (field.id)
+    return;
   
-  return new Parse.Query("ModelField")
-    .get(fieldId, {useMasterKey: true})
+  const model = field.get('model');
 
-    .then(p_field => {
-      field = p_field;
+  let site, owner, fieldACL;
   
-      model = field.get('model');
-      return model.fetch({useMasterKey: true});
-    })
+  return model.fetch({useMasterKey: true})
 
     .then(() => {
       site = model.get('site');
@@ -743,11 +734,7 @@ Parse.Cloud.define("onFieldAdd", request => {
       }
     
       field.setACL(fieldACL);
-      //!! uncontrolled async operation
-      field.save(null, {useMasterKey: true});
-    })
-  
-    .then(() => 'ACL setup ends!');
+    });
 });
 
 Parse.Cloud.define("onContentModify", request => {
