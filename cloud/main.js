@@ -607,6 +607,9 @@ Parse.Cloud.afterSave(Parse.User, request => {
 });
 
 Parse.Cloud.beforeSave("Site", async request => {
+  if (request.master)
+    return;
+  
   //updating an existing site
   if (request.object.id)
     return true;
@@ -636,6 +639,9 @@ Parse.Cloud.beforeSave("Site", async request => {
 });
 
 Parse.Cloud.beforeSave(`Model`, async request => {
+  if (request.master)
+    return;
+  
   const model = request.object;
   if (model.id)
     return;
@@ -699,6 +705,9 @@ Parse.Cloud.beforeSave(`Model`, async request => {
 });
 
 Parse.Cloud.beforeSave(`ModelField`, async request => {
+  if (request.master)
+    return;
+  
   const field = request.object;
   if (field.id)
     return;
@@ -729,6 +738,9 @@ Parse.Cloud.beforeSave(`ModelField`, async request => {
 });
 
 Parse.Cloud.beforeSave(`MediaItem`, async request => {
+  if (request.master)
+    return;
+  
   const item = request.object;
   if (item.id)
     return;
