@@ -617,6 +617,35 @@ Parse.Cloud.afterSave(Parse.User, request => {
     .catch(() => {});
 });
 
+Parse.Cloud.beforeSave("Site", async request => {
+  const user = request.user;
+  if (!user)
+    throw 'Must be signed in to save sites.';
+  
+  //updating an existing site
+  if (request.object.id)
+    return true;
+  
+  const payPlan = user.get('payPlan');
+  if (!payPlan)
+    return true;
+  
+  await payPlan.fetch();
+  
+  const sitesLimit = payPlan.get('limitSites');
+  if (!sitesLimit)
+    return true;
+    
+  const sites = await new Parse.Query('Site')
+    .equalTo('owner', user)
+    .count({useMasterKey: true});
+  
+  if (sites >= sitesLimit)
+    throw `The user has exhausted their sites' limit!`;
+    
+  return true;
+});
+
 Parse.Cloud.define("onModelAdd", request => {
   if (!request.user)
     throw 'Must be signed in to call this Cloud Function.';
