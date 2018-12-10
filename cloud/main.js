@@ -617,13 +617,13 @@ Parse.Cloud.afterSave(Parse.User, request => {
 });
 
 Parse.Cloud.beforeSave("Site", async request => {
-  const user = request.user;
-  if (!user)
-    throw 'Must be signed in to save sites.';
-  
   //updating an existing site
   if (request.object.id)
     return true;
+  
+  const user = request.user;
+  if (!user)
+    throw 'Must be signed in to save sites.';
   
   const payPlan = user.get('payPlan');
   if (!payPlan)
