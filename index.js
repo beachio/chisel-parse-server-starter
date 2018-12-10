@@ -98,11 +98,11 @@ app.listen(PORT, async () => {
         if (template.icon) {
           const iconData = fs.readFileSync(`./siteTemplates/icons/${template.icon}`);
           const iconFile = new Parse.File("icon.png", [...iconData]);
-          await iconFile.save();
+          await iconFile.save(null, {useMasterKey: true});
           template_o.set('icon', iconFile);
         }
         
-        await template_o.save();
+        await template_o.save(null, {useMasterKey: true});
         
         for (let model of template.models) {
           const model_o = new Model();
@@ -113,13 +113,13 @@ app.listen(PORT, async () => {
           model_o.set('color',        model.color);
           model_o.set('template', template_o);
           
-          await model_o.save();
+          await model_o.save(null, {useMasterKey: true});
           
           for (let field of model.fields) {
             const field_o = new ModelField();
             field_o.set(field);
             field_o.set('model', model_o);
-            field_o.save();
+            field_o.save(null, {useMasterKey: true});
           }
         }
       }
