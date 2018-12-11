@@ -257,65 +257,39 @@ Parse.Cloud.beforeDelete(`Model`, async request => {
   }
 });
 
-Parse.Cloud.define("deleteSite", request => {
-  if (!request.user)
-    throw 'Must be signed in to call this Cloud Function.';
-
-  const {siteId} = request.params;
-  if (!siteId)
-    throw 'There is no siteId param!';
-
-  let site;
+Parse.Cloud.beforeDelete(`Site`, async request => {
+  if (request.master)
+    return;
   
-  return new Parse.Query("Site")
-    .get(siteId, {useMasterKey: true})
-
-    .then(p_site => {
-      site = p_site;
-      
-      if (!checkRights(request.user, site))
-        throw "Access denied!";
-      
-      return getAllObjects(
-        new Parse.Query('Model')
-          .equalTo('site', site));
-    })
-    
-    .then(models => {
-      const promises = [];
-      for (let model of models)
-        promises.push(promisifyW(
-          deleteModel(request.user, model, false)
-        ));
-      
-      return promises;
-    })
-    
-    .then(() => {
-      return getAllObjects(
-        new Parse.Query('Collaboration')
-          .equalTo('site', site));
-    })
+  const site = request.object;
   
-    .then(collabs => {
-      const promises = [];
-      for (let collab of collabs) {
-        if (checkRights(request.user, collab))
-          promises.push(promisifyW(collab.destroy({useMasterKey: true})));
-      }
+  if (!checkRights(request.user, site))
+    throw "Access denied!";
   
-      return Promise.all(promises);
-    })
+  //removing site's models
+  const models = await getAllObjects(
+    new Parse.Query('Model')
+      .equalTo('site', site));
   
-    //.catch(() => Promise.resolve())
-    
-    .then(() => site.destroy({useMasterKey: true}))
+  let promises = [];
+  for (let model of models)
+    promises.push(promisifyW(
+      deleteModel(request.user, model, false)
+    ));
+  await Promise.all(promises);
   
-    .then(() => "Successfully deleted site.")
   
-    .catch(error => {
-      throw `Could not delete site: ${JSON.stringify(error, null, 2)}`;
-    });
+  //removing site's collaborations
+  const collabs = await getAllObjects(
+    new Parse.Query('Collaboration')
+      .equalTo('site', site));
+  
+  promises = [];
+  for (let collab of collabs)
+    promises.push(promisifyW(
+      collab.destroy({useMasterKey: true})
+    ));
+  await Promise.all(promises);
 });
 
 
