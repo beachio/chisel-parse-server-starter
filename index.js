@@ -88,12 +88,17 @@ app.listen(PORT, async () => {
       const Template = Parse.Object.extend('Template');
       const Model = Parse.Object.extend('Model');
       const ModelField = Parse.Object.extend('ModelField');
+  
+      const ACL = new Parse.ACL();
+      ACL.setPublicReadAccess(true);
+      ACL.setPublicWriteAccess(false);
       
       for (let template of templates) {
         const template_o = new Template();
         
         template_o.set('name',        template.name);
         template_o.set('description', template.description);
+        template_o.setACL(ACL);
     
         if (template.icon) {
           const iconData = fs.readFileSync(`./siteTemplates/icons/${template.icon}`);
@@ -112,6 +117,7 @@ app.listen(PORT, async () => {
           model_o.set('description',  model.description);
           model_o.set('color',        model.color);
           model_o.set('template', template_o);
+          model_o.setACL(ACL);
           
           await model_o.save(null, {useMasterKey: true});
           
@@ -119,6 +125,7 @@ app.listen(PORT, async () => {
             const field_o = new ModelField();
             field_o.set(field);
             field_o.set('model', model_o);
+            field_o.setACL(ACL);
             field_o.save(null, {useMasterKey: true});
           }
         }
