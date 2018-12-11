@@ -361,214 +361,194 @@ Parse.Cloud.define("deleteSite", request => {
 });
 
 
-const onCollaborationModify = (collab, deleting = false) => {
+const onCollaborationModify = async (collab, deleting = false) => {
   const site = collab.get('site');
   const user = collab.get('user');
   const role = collab.get('role');
   
-  let owner, collabACL;
+  if (!user)
+    return;
   
+  await site.fetch({useMasterKey: true});
   
-  return site.fetch({useMasterKey: true})
+  //ACL for collaborations
+  const owner = site.get('owner');
+  let collabACL = collab.getACL();
+  if (!collabACL)
+    collabACL = new Parse.ACL(owner);
     
-    .then(() => {
-      //ACL for collaborations
-      owner = site.get('owner');
-      
-      collabACL = collab.getACL();
-      if (!collabACL)
-        collabACL = new Parse.ACL(owner);
-      
-      //getting all site collabs
-      return getAllObjects(
-        new Parse.Query('Collaboration')
-          .equalTo('site', site));
-    })
+  //getting all site collabs
+  const collabs = await getAllObjects(
+    new Parse.Query('Collaboration')
+      .equalTo('site', site)
+      .notEqualTo('user', user));
+  
+  for (let tempCollab of collabs) {
+    if (tempCollab.id == collab.id)
+      continue;
     
-    .then(collabs => {
-      if (!user)
-        return;
-      
-      for (let tempCollab of collabs) {
-        //set ACL for others collab
-        let tempCollabACL = tempCollab.getACL();
-        if (!tempCollabACL)
-          tempCollabACL = new Parse.ACL(owner);
-        
-        if (collab.get('email') == user.get('email'))
-          continue;
-        
-        tempCollabACL.setReadAccess(user, !deleting && role == ROLE_ADMIN);
-        tempCollabACL.setWriteAccess(user, !deleting && role == ROLE_ADMIN);
-        
-        tempCollab.setACL(tempCollabACL);
-        //!! uncontrolled async operation
-        tempCollab.save(null, {useMasterKey: true});
-        
-        //set ACL for current collab
-        if (!deleting) {
-          const tempRole = tempCollab.get('role');
-          const tempUser = tempCollab.get('user');
-          collabACL.setReadAccess(tempUser, tempRole == ROLE_ADMIN);
-          collabACL.setWriteAccess(tempUser, tempRole == ROLE_ADMIN);
-        }
-      }
-      
-      collabACL.setReadAccess(user, true);
-      collabACL.setWriteAccess(user, true);
-      collab.setACL(collabACL);
-      //!! uncontrolled async operation
-      collab.save(null, {useMasterKey: true});
-    })
+    //set ACL for others collab
+    let tempCollabACL = tempCollab.getACL();
+    if (!tempCollabACL)
+      tempCollabACL = new Parse.ACL(owner);
     
-    .then(() => {
-      if (!user)
-        return;
-      
-      //ACL for site
-      let siteACL = site.getACL();
-      if (!siteACL)
-        siteACL = new Parse.ACL(owner);
-      
-      siteACL.setReadAccess(user, !deleting);
-      siteACL.setWriteAccess(user, !deleting && role == ROLE_ADMIN);
-      site.setACL(siteACL);
-      //!! uncontrolled async operation
-      site.save(null, {useMasterKey: true});
-  
-      //ACL for media items
-      return getAllObjects(
-        new Parse.Query('MediaItem')
-          .equalTo('site', site));
-    })
-  
-    .then(mediaItems => {
-      if (!user)
-        return;
-  
-      for (let item of mediaItems) {
-        let itemACL = item.getACL();
-        if (!itemACL)
-          itemACL = new Parse.ACL(owner);
-  
-        itemACL.setReadAccess(user, !deleting);
-        itemACL.setWriteAccess(user, !deleting && role == ROLE_ADMIN);
-        item.setACL(itemACL);
-        //!! uncontrolled async operation
-        item.save(null, {useMasterKey: true});
-      }
-      
-      //ACL for models and content items
-      return getAllObjects(
-        new Parse.Query('Model')
-          .equalTo('site', site));
-    })
+    tempCollabACL.setReadAccess(user, !deleting && role == ROLE_ADMIN);
+    tempCollabACL.setWriteAccess(user, !deleting && role == ROLE_ADMIN);
     
-    .then(models => {
-      if (!user)
-        return;
-      
-      for (let model of models) {
-        let modelACL = model.getACL();
-        if (!modelACL)
-          modelACL = new Parse.ACL(owner);
-        
-        modelACL.setReadAccess(user, !deleting);
-        modelACL.setWriteAccess(user, !deleting && role == ROLE_ADMIN);
-        model.setACL(modelACL);
-        //!! uncontrolled async operation
-        model.save(null, {useMasterKey: true});
+    tempCollab.setACL(tempCollabACL);
+    //!! uncontrolled async operation
+    tempCollab.save(null, {useMasterKey: true});
+    
+    //set ACL for current collab
+    if (!deleting) {
+      const tempRole = tempCollab.get('role');
+      const tempUser = tempCollab.get('user');
+      collabACL.setReadAccess(tempUser, tempRole == ROLE_ADMIN);
+      collabACL.setWriteAccess(tempUser, tempRole == ROLE_ADMIN);
+    }
+  }
+  
+  collabACL.setReadAccess(user, true);
+  collabACL.setWriteAccess(user, true);
+  collab.setACL(collabACL);
+  
+  
+  //ACL for site
+  let siteACL = site.getACL();
+  if (!siteACL)
+    siteACL = new Parse.ACL(owner);
+  
+  siteACL.setReadAccess(user, !deleting);
+  siteACL.setWriteAccess(user, !deleting && role == ROLE_ADMIN);
+  site.setACL(siteACL);
+  //!! uncontrolled async operation
+  site.save(null, {useMasterKey: true});
 
-        const tableName = model.get('tableName');
-        //!! uncontrolled async operation
-        getTableData(tableName)
-          .then(response => {
-            let CLP = response ? response.classLevelPermissions : null;
-            if (!CLP)
-              CLP = {
-                'get': {},
-                'find': {},
-                'create': {},
-                'update': {},
-                'delete': {},
-                'addField': {}
-              };
-            
-            if (!deleting) {
-              CLP['get'][user.id] = true;
-              CLP['find'][user.id] = true;
-            } else {
-              if (CLP['get'].hasOwnProperty(user.id))
-                delete CLP['get'][user.id];
-              if (CLP['find'].hasOwnProperty(user.id))
-                delete CLP['find'][user.id];
-            }
-            
-            if (!deleting && (role == ROLE_ADMIN || role == ROLE_EDITOR)) {
-              CLP['create'][user.id] = true;
-              CLP['update'][user.id] = true;
-              CLP['delete'][user.id] = true;
-            } else {
-              if (CLP['create'].hasOwnProperty(user.id))
-                delete CLP['create'][user.id];
-              if (CLP['update'].hasOwnProperty(user.id))
-                delete CLP['update'][user.id];
-              if (CLP['delete'].hasOwnProperty(user.id))
-                delete CLP['delete'][user.id];
-            }
-            
-            if (!deleting && role == ROLE_ADMIN)
-              CLP['addField'][user.id] = true;
-            else if (CLP['addField'].hasOwnProperty(user.id))
-              delete CLP['addField'][user.id];
-            
-            //!! uncontrolled async operation
-            const data = {"classLevelPermissions": CLP};
-            setTableData(tableName, data)
-              .catch(() => setTableData(tableName, data, 'PUT'));
-          });
-      }
   
-      return getAllObjects(
-        new Parse.Query('ModelField')
-          .containedIn('model', models));
-    })
+  //ACL for media items
+  const mediaItems = await getAllObjects(
+    new Parse.Query('MediaItem')
+      .equalTo('site', site));
+  
+  for (let item of mediaItems) {
+    let itemACL = item.getACL();
+    if (!itemACL)
+      itemACL = new Parse.ACL(owner);
+
+    itemACL.setReadAccess(user, !deleting);
+    itemACL.setWriteAccess(user, !deleting && role == ROLE_ADMIN);
+    item.setACL(itemACL);
+    //!! uncontrolled async operation
+    item.save(null, {useMasterKey: true});
+  }
+  
+  
+  //ACL for models and content items
+  const models = await getAllObjects(
+    new Parse.Query('Model')
+      .equalTo('site', site));
+      
+  for (let model of models) {
+    let modelACL = model.getACL();
+    if (!modelACL)
+      modelACL = new Parse.ACL(owner);
     
-    .then(fields => {
-      for (let field of fields) {
-        let fieldACL = field.getACL();
-        if (!fieldACL)
-          fieldACL = new Parse.ACL(owner);
-  
-        fieldACL.setReadAccess(user, !deleting);
-        fieldACL.setWriteAccess(user, !deleting && role == ROLE_ADMIN);
-        field.setACL(fieldACL);
+    modelACL.setReadAccess(user, !deleting);
+    modelACL.setWriteAccess(user, !deleting && role == ROLE_ADMIN);
+    model.setACL(modelACL);
+    //!! uncontrolled async operation
+    model.save(null, {useMasterKey: true});
+
+    const tableName = model.get('tableName');
+    //!! uncontrolled async operation
+    getTableData(tableName)
+      .then(response => {
+        let CLP = response ? response.classLevelPermissions : null;
+        if (!CLP)
+          CLP = {
+            'get': {},
+            'find': {},
+            'create': {},
+            'update': {},
+            'delete': {},
+            'addField': {}
+          };
+        
+        if (!deleting) {
+          CLP['get'][user.id] = true;
+          CLP['find'][user.id] = true;
+        } else {
+          if (CLP['get'].hasOwnProperty(user.id))
+            delete CLP['get'][user.id];
+          if (CLP['find'].hasOwnProperty(user.id))
+            delete CLP['find'][user.id];
+        }
+        
+        if (!deleting && (role == ROLE_ADMIN || role == ROLE_EDITOR)) {
+          CLP['create'][user.id] = true;
+          CLP['update'][user.id] = true;
+          CLP['delete'][user.id] = true;
+        } else {
+          if (CLP['create'].hasOwnProperty(user.id))
+            delete CLP['create'][user.id];
+          if (CLP['update'].hasOwnProperty(user.id))
+            delete CLP['update'][user.id];
+          if (CLP['delete'].hasOwnProperty(user.id))
+            delete CLP['delete'][user.id];
+        }
+        
+        if (!deleting && role == ROLE_ADMIN)
+          CLP['addField'][user.id] = true;
+        else if (CLP['addField'].hasOwnProperty(user.id))
+          delete CLP['addField'][user.id];
+        
         //!! uncontrolled async operation
-        field.save(null, {useMasterKey: true});
-      }
-    });
+        const data = {"classLevelPermissions": CLP};
+        setTableData(tableName, data)
+          .catch(() => setTableData(tableName, data, 'PUT'));
+      });
+  }
+  
+  
+  //ACL for fields
+  const fields = await getAllObjects(
+    new Parse.Query('ModelField')
+      .containedIn('model', models));
+      
+  for (let field of fields) {
+    let fieldACL = field.getACL();
+    if (!fieldACL)
+      fieldACL = new Parse.ACL(owner);
+
+    fieldACL.setReadAccess(user, !deleting);
+    fieldACL.setWriteAccess(user, !deleting && role == ROLE_ADMIN);
+    field.setACL(fieldACL);
+    //!! uncontrolled async operation
+    field.save(null, {useMasterKey: true});
+  }
 };
 
 
-Parse.Cloud.define("onCollaborationModify", request => {
-  if (!request.user)
-    throw 'Must be signed in to call this Cloud Function.';
-
-  const {collabId, deleting} = request.params;
-  if (!collabId)
-    throw 'There is no collabId param!';
-
-  return new Parse.Query("Collaboration")
-    .get(collabId, {useMasterKey: true})
-
-    .then(collab => {
-      if (!checkRights(request.user, collab))
-        throw "Access denied!";
-      
-      return onCollaborationModify(collab, deleting);
-    })
+Parse.Cloud.beforeSave("Collaboration", async request => {
+  if (request.master)
+    return;
+  
+  const collab = request.object;
+  if (!checkRights(request.user, collab))
+    throw "Access denied!";
     
-    .then(() => 'ACL setup ends!');
+  return onCollaborationModify(collab);
+});
+
+Parse.Cloud.beforeDelete("Collaboration", async request => {
+  if (request.master)
+    return;
+  
+  const collab = request.object;
+  if (!checkRights(request.user, collab))
+    throw "Access denied!";
+  
+  return onCollaborationModify(collab, true);
 });
 
 Parse.Cloud.beforeSave(Parse.User, request => {
@@ -578,32 +558,27 @@ Parse.Cloud.beforeSave(Parse.User, request => {
     user.set('username', email);
 });
 
-Parse.Cloud.afterSave(Parse.User, request => {
+Parse.Cloud.afterSave(Parse.User, async request => {
   const user = request.object;
   
-  return new Parse.Query('Collaboration')
+  const collabs = await new Parse.Query('Collaboration')
     .equalTo('email', user.get('email'))
-    .find({useMasterKey: true})
-    
-    .then(p_collabs => {
-      const promises = [];
+    .find({useMasterKey: true});
 
-      for (let collab of p_collabs) {
-        if (collab.get('user'))
-          throw 'user also exists!';
+  const promises = [];
+
+  for (let collab of collabs) {
+    if (collab.get('user'))
+      continue;
   
-        collab.set('user', user);
-        collab.set('email', '');
-        
-        promises.push(
-          collab.save(null, {useMasterKey: true})
-            .then(() => onCollaborationModify(collab))
-        );
-      }
-      return Promise.all(promises);
-    })
-    
-    .catch(() => {});
+    collab.set('user', user);
+    collab.set('email', '');
+  
+    promises.push(collab.save(null, {useMasterKey: true}));
+    promises.push(promisifyW(onCollaborationModify(collab)));
+  }
+  
+  await Promise.all(promises);
 });
 
 Parse.Cloud.beforeSave("Site", async request => {
