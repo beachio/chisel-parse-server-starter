@@ -112,65 +112,51 @@ const deleteTable = async (table) => {
     throw response.status;
 };
 
-const deleteContentItem = (user, tableName, itemId) => {
-  let item, itemDraft, tableData;
-  
-  return new Parse.Query(tableName)
-    .get(itemId, {useMasterKey: true})
+const deleteContentItem = async (user, tableName, itemId) => {
+  const item = await new Parse.Query(tableName)
+    .get(itemId, {useMasterKey: true});
 
-    .then(p_item => {
-      item = p_item;
-      
-      if (!checkRights(user, item))
-        throw "Access denied!";
-      
-      return getTableData(tableName);
-    })
-    
-    //removing MediaItem's belonging to content item
-    .then(_tableData => {
-      tableData = _tableData;
-      for (let field in tableData.fields) {
-        const val = tableData.fields[field];
-        if (val.type == 'Pointer' && val.targetClass == 'MediaItem') {
-          const media = item.get(field);
-          //!! uncontrolled async operation
-          if (media)
-            media.destroy({useMasterKey: true});
-        }
-      }
-    })
-    
-    //seeking draft version of content item
-    .then(() => new Parse.Query(tableName)
-      .equalTo('t__owner', item)
-      .first({useMasterKey: true}))
+  if (!checkRights(user, item))
+    throw "Access denied!";
   
-    .then(p_itemDraft => {
-      itemDraft = p_itemDraft;
-      if (!itemDraft)
-        return;
-    
-      if (!checkRights(user, itemDraft))
-        throw "Access denied!";
-      
-      for (let field in tableData.fields) {
-        const val = tableData.fields[field];
-        if (val.type == 'Pointer' && val.targetClass == 'MediaItem') {
-          const media = itemDraft.get(field);
-          //!! uncontrolled async operation
-          if (media)
-            media.destroy({useMasterKey: true});
-        }
+  
+  //removing MediaItem's belonging to content item
+  const tableData = await getTableData(tableName);
+  
+  for (let field in tableData.fields) {
+    const val = tableData.fields[field];
+    if (val.type == 'Pointer' && val.targetClass == 'MediaItem') {
+      const media = item.get(field);
+      //!! uncontrolled async operation
+      if (media)
+        media.destroy({useMasterKey: true});
+    }
+  }
+  
+  
+  //seeking draft version of content item
+  const itemDraft = await new Parse.Query(tableName)
+    .equalTo('t__owner', item)
+    .first({useMasterKey: true});
+  
+  if (itemDraft) {
+    if (!checkRights(user, itemDraft))
+      throw "Access denied!";
+  
+    for (let field in tableData.fields) {
+      const val = tableData.fields[field];
+      if (val.type == 'Pointer' && val.targetClass == 'MediaItem') {
+        const media = itemDraft.get(field);
+        //!! uncontrolled async operation
+        if (media)
+          media.destroy({useMasterKey: true});
       }
-    })
-    
-    .then(() => item.destroy({useMasterKey: true}))
-    
-    .then(() => {
-      if (itemDraft)
-        return itemDraft.destroy({useMasterKey: true});
-    });
+    }
+  
+    await itemDraft.destroy({useMasterKey: true});
+  }
+  
+  await item.destroy({useMasterKey: true});
 };
 
 const deleteModel = (user, model) => {
@@ -224,7 +210,7 @@ const deleteModel = (user, model) => {
 };
 
 
-Parse.Cloud.define("deleteContentItem", request => {
+Parse.Cloud.define("deleteContentItem", async (request) => {
   if (!request.user)
     throw 'Must be signed in to call this Cloud Function.';
 
@@ -232,11 +218,12 @@ Parse.Cloud.define("deleteContentItem", request => {
   if (!tableName || !itemId)
     throw 'There is no tableName or itemId params!';
 
-  return deleteContentItem(request.user, tableName, itemId)
-    .then(() => "Successfully deleted content item.")
-    .catch(error => {
-      throw `Could not delete content item: ${error}`;
-    });
+  try {
+    await deleteContentItem(request.user, tableName, itemId);
+    return "Successfully deleted content item.";
+  } catch (error) {
+    throw `Could not delete content item: ${error}`;
+  }
 });
 
 Parse.Cloud.define("deleteModel", request => {
