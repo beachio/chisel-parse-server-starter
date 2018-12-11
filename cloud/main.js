@@ -159,13 +159,13 @@ const deleteContentItem = async (user, tableName, itemId) => {
   await item.destroy({useMasterKey: true});
 };
 
-const deleteModel = async (user, model) => {
+const deleteModel = async (user, model, deleteRef = true, deleteModel = true) => {
   if (!checkRights(user, model))
     throw "Access denied!";
   
   
   //removing model fields
-  const fields = await getAllObjects(
+  let fields = await getAllObjects(
     new Parse.Query('ModelField')
       .equalTo('model', model)
   );
@@ -175,7 +175,6 @@ const deleteModel = async (user, model) => {
     if (checkRights(user, field))
       promises.push(promisifyW(field.destroy({useMasterKey: true})));
   }
-  
   await Promise.all(promises);
   
   
@@ -193,8 +192,40 @@ const deleteModel = async (user, model) => {
   } catch (e) {}
   
   
+  //removing reference validation to model
+  if (deleteRef) {
+    const models = await getAllObjects(
+      new Parse.Query('Model')
+        .equalTo('site', model.get('site'))
+    );
+    fields = await getAllObjects(
+      new Parse.Query('ModelField')
+        .containedIn('model', models)
+        .notEqualTo('model', model)
+        .equalTo('type', 'Reference')
+    );
+  
+    const promises = [];
+    for (let field of fields) {
+      const validations = field.get('validations');
+      if (!validations || !validations.models || !validations.models.active || !validations.models.modelsList)
+        continue;
+    
+      const i = validations.models.modelsList.indexOf(model.get('nameId'));
+      if (i == -1)
+        continue;
+    
+      validations.models.modelsList.splice(i, 1);
+      field.set('validations', validations);
+      promises.push(promisifyW(field.save(null, {useMasterKey: true})));
+    }
+    await Promise.all(promises);
+  }
+  
+  
   //remove model
-  await model.destroy({useMasterKey: true});
+  if (deleteModel)
+    await model.destroy({useMasterKey: true});
 };
 
 
@@ -214,64 +245,16 @@ Parse.Cloud.define("deleteContentItem", async (request) => {
   }
 });
 
-Parse.Cloud.define("deleteModel", request => {
-  if (!request.user)
-    throw 'Must be signed in to call this Cloud Function.';
 
-  const {modelId} = request.params;
-  if (!modelId)
-    throw 'There is no modelId param!';
+Parse.Cloud.beforeDelete(`Model`, async request => {
+  if (request.master)
+    return;
   
-  let model;
-
-  return new Parse.Query("Model")
-    .get(modelId, {useMasterKey: true})
-
-    .then(_model => {
-      model = _model;
-      return deleteModel(request.user, model);
-    })
-
-    //removing reference validation to model
-    .then(() =>
-      getAllObjects(
-        new Parse.Query('Model')
-          .equalTo('site', model.get('site'))
-      )
-    )
-  
-    .then(models =>
-      getAllObjects(
-        new Parse.Query('ModelField')
-          .containedIn('model', models)
-          .notEqualTo('model', model)
-          .equalTo('type', 'Reference')
-      )
-    )
-  
-    .then(fields => {
-      const promises = [];
-      for (let field of fields) {
-        const validations = field.get('validations');
-        if (!validations || !validations.models || !validations.models.active || !validations.models.modelsList)
-          continue;
-      
-        const i = validations.models.modelsList.indexOf(model.get('nameId'));
-        if (i == -1)
-          continue;
-      
-        validations.models.modelsList.splice(i, 1);
-        field.set('validations', validations);
-        promises.push(promisifyW(field.save(null, {useMasterKey: true})));
-      }
-      return Promise.all(promises);
-    })
-  
-    .then(() => "Successfully deleted model.")
-  
-    .catch(error => {
-      throw `Could not delete model: ${JSON.stringify(error, null, 2)}`;
-    });
+  try {
+    return await deleteModel(request.user, request.object, true, false);
+  } catch (error) {
+    throw `Could not delete model: ${JSON.stringify(error, null, 2)}`;
+  }
 });
 
 Parse.Cloud.define("deleteSite", request => {
@@ -302,7 +285,7 @@ Parse.Cloud.define("deleteSite", request => {
       const promises = [];
       for (let model of models)
         promises.push(promisifyW(
-          deleteModel(request.user, model)
+          deleteModel(request.user, model, false)
         ));
       
       return promises;
