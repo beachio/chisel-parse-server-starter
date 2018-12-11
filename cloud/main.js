@@ -112,6 +112,7 @@ const deleteTable = async (table) => {
     throw response.status;
 };
 
+
 const deleteContentItem = async (user, tableName, itemId) => {
   const item = await new Parse.Query(tableName)
     .get(itemId, {useMasterKey: true});
@@ -244,7 +245,6 @@ Parse.Cloud.define("deleteContentItem", async (request) => {
     throw `Could not delete content item: ${error}`;
   }
 });
-
 
 Parse.Cloud.beforeDelete(`Model`, async request => {
   if (request.master)
@@ -675,7 +675,7 @@ Parse.Cloud.beforeSave(`MediaItem`, async request => {
 });
 
 
-Parse.Cloud.define("onContentModify", request => {
+Parse.Cloud.define("onContentModify", async request => {
   if (!request.user)
     throw 'Must be signed in to call this Cloud Function.';
 
@@ -683,19 +683,18 @@ Parse.Cloud.define("onContentModify", request => {
   if (!URL)
     return 'Warning! There is no content hook!';
 
-  return Parse.Cloud.httpRequest({
+  const response = await Parse.Cloud.httpRequest({
     url: URL,
     method: 'GET'
-  })
-    .then(response => {
-      if (response.status == 200)
-        return response.data;
-      else
-        throw response.status;
-    });
+  });
+  
+  if (response.status == 200)
+    return response.data;
+  else
+    throw response.status;
 });
 
-Parse.Cloud.define("inviteUser", request => {
+Parse.Cloud.define("inviteUser", async request => {
   if (!request.user)
     throw 'Must be signed in to call this Cloud Function.';
   
@@ -711,47 +710,20 @@ Parse.Cloud.define("inviteUser", request => {
   const emailSelf = request.user.get('email');
   const link = `${SITE}/sign?mode=register&email=${email}`;
 
-  return emailAdapter.send({
-    templateName: 'inviteEmail',
-    recipient: email,
-    variables: {siteName, emailSelf, link}
-  })
-    .then(() => {
-      console.log(`Invite sent to ${email} ${new Date()}`);
-      return "Invite email sent!";
-    })
-    .catch (error => {
-      console.log(`Got an error in inviteUser: ${error}`);
-      throw error;
+  try {
+    await emailAdapter.send({
+      templateName: 'inviteEmail',
+      recipient: email,
+      variables: {siteName, emailSelf, link}
     });
-});
-
-/*
-const Mailgun = require('mailgun-js');
-const mailgunConfig = configs.mailgunConfig;
-const mailgun = new Mailgun(mailgunConfig);
-
-Parse.Cloud.define("sendEmail", function(request, response) {
-  console.log("sendEmail " + new Date());
+    console.log(`Invite sent to ${email} ${new Date()}`);
+    return "Invite email sent!";
   
-  let data = {
-    from:     mailgunConfig.fromAddress,
-    to:       request.params.address,
-    subject:  request.params.subject,
-    html:     request.params.body
-  };
-  
-  mailgun.messages().send(data, error => {
-    if (error) {
-      console.log("got an error in sendEmail: " + error);
-      response.error(error);
-    }	else {
-      console.log("email sent to " + toEmail + " " + new Date());
-      response.success("Email sent!");
-    }
-  });
+  } catch (error) {
+    console.log(`Got an error in inviteUser: ${error}`);
+    throw error;
+  }
 });
-*/
 
 Parse.Cloud.define("checkPassword", request => {
   if (!request.user)
