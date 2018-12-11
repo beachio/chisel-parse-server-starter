@@ -159,54 +159,42 @@ const deleteContentItem = async (user, tableName, itemId) => {
   await item.destroy({useMasterKey: true});
 };
 
-const deleteModel = (user, model) => {
+const deleteModel = async (user, model) => {
   if (!checkRights(user, model))
     throw "Access denied!";
   
-  let tableName;
   
   //removing model fields
-  return getAllObjects(
+  const fields = await getAllObjects(
     new Parse.Query('ModelField')
       .equalTo('model', model)
-  )
-    .then(fields => {
-      const promises = [];
-      for (let field of fields) {
-        if (checkRights(user, field))
-          promises.push(promisifyW(field.destroy({useMasterKey: true})));
-      }
-    
-      return Promise.all(promises);
-    })
-    
-    .catch(() => {})
+  );
   
-    //removing content items of model
-    .then(() => {
-      tableName = model.get('tableName');
-      return getAllObjects(
-        new Parse.Query(tableName));
-    })
+  let promises = [];
+  for (let field of fields) {
+    if (checkRights(user, field))
+      promises.push(promisifyW(field.destroy({useMasterKey: true})));
+  }
   
-    .then(items => {
-      const promises = [];
-      for (let item of items) {
-        promises.push(promisifyW(deleteContentItem(user, tableName, item.id)));
-      }
-    
-      return Promise.all(promises);
-    })
+  await Promise.all(promises);
   
-    .catch(() => {})
   
-    //removing table of model
-    .then(() => deleteTable(tableName))
+  //removing content items of model
+  const tableName = model.get('tableName');
+  const items = await getAllObjects(new Parse.Query(tableName));
+  promises = [];
+  for (let item of items) {
+    promises.push(promisifyW(deleteContentItem(user, tableName, item.id)));
+  }
+  await Promise.all(promises);
+
+  try {
+    await deleteTable(tableName);
+  } catch (e) {}
   
-    .catch(() => {})
   
-    //remove model
-    .then(() => model.destroy({useMasterKey: true}));
+  //remove model
+  await model.destroy({useMasterKey: true});
 };
 
 
