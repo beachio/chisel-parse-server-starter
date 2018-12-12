@@ -5,8 +5,12 @@ const ParseDashboard = require('parse-dashboard');
 const packageJSON = require('./package.json');
 
 const config = require('./config.json');
-let parseConfig = config.parseConfig;
 
+config.parseConfig.emailAdapter.options.fromAddress = process.env.FROM_ADDRESS || config.parseConfig.emailAdapter.options.fromAddress;
+config.parseConfig.emailAdapter.options.domain = process.env.MAILGUN_DOMAIN || config.parseConfig.emailAdapter.options.domain;
+config.parseConfig.emailAdapter.options.apiKey = process.env.MAILGUN_API_KEY || config.parseConfig.emailAdapter.options.apiKey;
+
+let parseConfig = config.parseConfig;
 const PORT        = process.env.PORT          || parseConfig.port;
 const URL_SERVER  = process.env.SERVER_URL    || parseConfig.URLserver;
 const URL_DB      = process.env.DATABASE_URI  ||
