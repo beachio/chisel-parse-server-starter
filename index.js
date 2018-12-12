@@ -6,11 +6,8 @@ const packageJSON = require('./package.json');
 
 const config = require('./config.json');
 
-config.parseConfig.emailAdapter.options.fromAddress = process.env.FROM_ADDRESS || config.parseConfig.emailAdapter.options.fromAddress;
-config.parseConfig.emailAdapter.options.domain = process.env.MAILGUN_DOMAIN || config.parseConfig.emailAdapter.options.domain;
-config.parseConfig.emailAdapter.options.apiKey = process.env.MAILGUN_API_KEY || config.parseConfig.emailAdapter.options.apiKey;
-
 let parseConfig = config.parseConfig;
+
 const PORT        = process.env.PORT          || parseConfig.port;
 const URL_SERVER  = process.env.SERVER_URL    || parseConfig.URLserver;
 const URL_DB      = process.env.DATABASE_URI  ||
@@ -23,7 +20,13 @@ const DASHBOARD_ACTIVATED = process.env.DASHBOARD_ACTIVATED || config.extraConfi
 const DASH_USER_EMAIL     = process.env.USER_EMAIL          || config.extraConfig.userEmail;
 const DASH_USER_PASSWORD  = process.env.USER_PASS           || config.extraConfig.userPassword;
 
-const SITE_TEMPLATES  = process.env.SITE_TEMPLATES           || config.extraConfig.siteTemplates;
+const SITE_TEMPLATES      = process.env.SITE_TEMPLATES      || config.extraConfig.siteTemplates;
+
+
+let emailOptions = parseConfig.emailAdapter.options;
+emailOptions.fromAddress  = process.env.FROM_ADDRESS    || emailOptions.fromAddress;
+emailOptions.domain       = process.env.MAILGUN_DOMAIN  || emailOptions.domain;
+emailOptions.apiKey       = process.env.MAILGUN_API_KEY || emailOptions.apiKey;
 
 
 Object.assign(parseConfig, {
