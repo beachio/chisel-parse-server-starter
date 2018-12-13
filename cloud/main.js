@@ -739,3 +739,21 @@ Parse.Cloud.define("checkPassword", request => {
 
   return Parse.User.logIn(username, password);
 });
+
+Parse.Cloud.define("savePaymentInfo", async request => {
+  const {user} = request;
+  if (!user)
+    throw 'Must be signed in to call this Cloud Function.';
+  
+  const {token} = request.params;
+  if (!token)
+    throw 'There is no token param!';
+  
+  const customer = await stripe.customers.create({
+    source: token,
+    email: user.get('email')
+  });
+  
+  request.user.set('paymentInfo', customer.id);
+  await request.user.save(null, {useMasterKey: true});
+});
