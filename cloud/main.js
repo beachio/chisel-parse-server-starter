@@ -773,4 +773,22 @@ Parse.Cloud.define("savePaymentInfo", async request => {
   
   return paymentElm;
 });
+
+Parse.Cloud.define('paySubscribe', async request => {
+  const {user} = request;
+  if (!user)
+    throw 'Must be signed in to call this Cloud Function.';
+  
+  const {plan} = request.params;
+  if (!plan)
+    throw 'There is no plan param!';
+  
+  const customerId = user.get('paymentInfo');
+  if (!customerId)
+    throw 'There is no user payment info!';
+  
+  const charge = await stripe.subscriptions.create({
+    customer: customerId,
+    items: [{plan}]
+  });
 });
