@@ -745,15 +745,32 @@ Parse.Cloud.define("savePaymentInfo", async request => {
   if (!user)
     throw 'Must be signed in to call this Cloud Function.';
   
-  const {token} = request.params;
-  if (!token)
+  const {tokenId, card} = request.params;
+  if (!tokenId)
     throw 'There is no token param!';
   
   const customer = await stripe.customers.create({
-    source: token,
+    source: tokenId,
     email: user.get('email')
   });
   
-  request.user.set('paymentInfo', customer.id);
-  await request.user.save(null, {useMasterKey: true});
+  let paymentInfo = user.get('paymentInfo');
+  if (!paymentInfo)
+    paymentInfo = [];
+  
+  const paymentElm = {
+    id: customer.id
+  };
+  if (card) {
+    paymentElm.last4 = card.last4;
+    paymentElm.brand = card.brand;
+    paymentElm.name = card.name;
+  }
+  paymentInfo.push(paymentElm);
+  user.set('paymentInfo', paymentInfo);
+  
+  await user.save(null, {useMasterKey: true});
+  
+  return paymentElm;
+});
 });
