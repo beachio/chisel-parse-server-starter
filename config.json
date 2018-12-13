@@ -51,8 +51,11 @@
 
   "extraConfig": {
     "dashboardActivated": true,
-    "userEmail": "test",
-    "userPassword": "123456",
-    "siteTemplates": true
+    "siteTemplates": true,
+
+    "StripeConfig": {
+      "keyPublic": "pk_test_sample",
+      "keyPrivate": "sk_test_sample"
+    }
   }
 }

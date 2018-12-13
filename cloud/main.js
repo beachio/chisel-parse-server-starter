@@ -5,6 +5,8 @@ const configs = require('../index.js');
 const config = configs.parseConfig;
 const SITE = configs['URL_SITE'];
 
+const stripe = require("stripe")(configs.StripeConfig.keyPrivate);
+
 
 const ROLE_ADMIN = "ADMIN";
 const ROLE_EDITOR = "EDITOR";

@@ -1,12 +1,16 @@
 const express = require('express');
 const ParseServer = require('parse-server').ParseServer;
 const ParseDashboard = require('parse-dashboard');
+const Parse = require('parse/node');
+const request = require('request');
+
 
 const packageJSON = require('./package.json');
 
 const config = require('./config.json');
 
 let parseConfig = config.parseConfig;
+let StripeConfig = config.extraConfig.StripeConfig;
 
 const PORT        = process.env.PORT          || parseConfig.port;
 const URL_SERVER  = process.env.SERVER_URL    || parseConfig.URLserver;
@@ -46,7 +50,7 @@ for (let p in cps) {
 
 module.exports.parseConfig = parseConfig;
 module.exports.URL_SITE = URL_SITE;
-//module.exports.mailgunConfig = parseConfig.emailAdapter.options;
+module.exports.StripeConfig = StripeConfig;
 
 
 const API = new ParseServer(parseConfig);
@@ -79,15 +83,30 @@ if (DASHBOARD_ACTIVATED) {
 }
 
 
-app.listen(PORT, async () => {
+const postStart = async () => {
+  Parse.initialize(APP_ID, null, MASTER_KEY);
+  Parse.serverURL = URL_SERVER;
+  
+  if (StripeConfig) {
+    try {
+      await request({
+        url: URL_SERVER + '/config',
+        method: 'PUT',
+        json: true,
+        headers: {
+          'X-Parse-Application-Id': parseConfig.appId,
+          'X-Parse-Master-Key': parseConfig.masterKey
+        },
+        body: {params: {StripeKeyPublic: StripeConfig.keyPublic}}
+      });
+    
+    } catch (e) {
+      console.error(e);
+    }
+  }
   
   // set templates
   if (SITE_TEMPLATES) {
-    const Parse = require('parse/node');
-    
-    Parse.initialize(APP_ID, null, MASTER_KEY);
-    Parse.serverURL = URL_SERVER;
-   
     const setTemplates = async () => {
       const templates = require('./siteTemplates/templates.json');
       const fs = require('fs');
@@ -144,6 +163,10 @@ app.listen(PORT, async () => {
     if (!res || !res.length)
       await setTemplates();
   }
-  
+};
+
+
+app.listen(PORT, async () => {
+  await postStart();
   console.log(`Chisel Parse server v${packageJSON.version} running on port ${PORT}.`);
 });
