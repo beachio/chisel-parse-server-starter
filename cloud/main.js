@@ -740,55 +740,78 @@ Parse.Cloud.define("checkPassword", request => {
   return Parse.User.logIn(username, password);
 });
 
-Parse.Cloud.define("savePaymentInfo", async request => {
+Parse.Cloud.define("savePaymentSource", async request => {
   const {user} = request;
   if (!user)
     throw 'Must be signed in to call this Cloud Function.';
   
-  const {tokenId, card} = request.params;
+  const {tokenId, card, setDefault} = request.params;
   if (!tokenId)
     throw 'There is no token param!';
   
-  const customer = await stripe.customers.create({
-    source: tokenId,
-    email: user.get('email')
-  });
-  
-  let paymentInfo = user.get('paymentInfo');
-  if (!paymentInfo)
-    paymentInfo = [];
-  
-  const paymentElm = {
-    id: customer.id
-  };
-  if (card) {
-    paymentElm.last4 = card.last4;
-    paymentElm.brand = card.brand;
-    paymentElm.name = card.name;
+  let customerId = user.get('StripeId');
+  if (customerId) {
+    const source = await stripe.customers.createSource(customerId, {source: tokenId});
+    if (setDefault)
+      await stripe.customers.update(customerId, {default_source: source.id});
+    
+  } else {
+    const customer = await stripe.customers.create({
+      source: tokenId,
+      email: user.get('email')
+    });
+    user.set('StripeId', customer.id);
+    await user.save(null, {useMasterKey: true});
   }
-  paymentInfo.push(paymentElm);
-  user.set('paymentInfo', paymentInfo);
-  
-  await user.save(null, {useMasterKey: true});
-  
-  return paymentElm;
 });
 
-Parse.Cloud.define('paySubscribe', async request => {
+Parse.Cloud.define("getStripeData", async request => {
   const {user} = request;
   if (!user)
     throw 'Must be signed in to call this Cloud Function.';
   
-  const {plan} = request.params;
-  if (!plan)
+  const customerId = user.get('StripeId');
+  if (!customerId)
+    return null;
+  
+  const customer = await stripe.customers.retrieve(customerId);
+  
+  return {
+    defaultSource: customer.default_source,
+    sources: customer.sources.data,
+    subscription: customer.subscriptions.data[0]
+  };
+});
+
+Parse.Cloud.define('paySubscription', async request => {
+  const {user} = request;
+  if (!user)
+    throw 'Must be signed in to call this Cloud Function.';
+  
+  const customerId = user.get('StripeId');
+  if (!customerId)
+    throw 'There are no payment methods!';
+  
+  const {planId, source, isYearly} = request.params;
+  if (!planId)
     throw 'There is no plan param!';
   
-  const customerId = user.get('paymentInfo');
-  if (!customerId)
-    throw 'There is no user payment info!';
+  const payPlan = await new Parse.Query("PayPlan").get(planId);
+  if (!payPlan)
+    throw 'There is no pay plan!';
   
-  const charge = await stripe.subscriptions.create({
+  const subscriptionId = isYearly ? payPlan.get('StripeIdYearly') : payPlan.get('StripeIdMonthly');
+  if (!subscriptionId)
+    throw 'Wrong pay plan!';
+  
+  const subscription = await stripe.subscriptions.create({
     customer: customerId,
-    items: [{plan}]
+    items: [{plan: subscriptionId}],
+    default_source: source
   });
+  
+  user.set('payPlan', payPlan);
+  await user.save(null, {useMasterKey: true});
+  
+  return subscription;
 });
