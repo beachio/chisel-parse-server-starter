@@ -750,18 +750,27 @@ Parse.Cloud.define("savePaymentSource", async request => {
     throw 'There is no token param!';
   
   let customerId = user.get('StripeId');
-  if (customerId) {
-    const source = await stripe.customers.createSource(customerId, {source: tokenId});
+  let customer;
+  try {
+    customer = await stripe.customers.retrieve(customerId);
+  } catch (e) {}
+  
+  if (customer && !customer.deleted) {
+    await stripe.customers.createSource(customerId, {source: tokenId});
     if (setDefault)
       await stripe.customers.update(customerId, {default_source: source.id});
     
+    return null;
+  
   } else {
-    const customer = await stripe.customers.create({
+    customer = await stripe.customers.create({
       source: tokenId,
       email: user.get('email')
     });
     user.set('StripeId', customer.id);
     await user.save(null, {useMasterKey: true});
+  
+    return customer.id;
   }
 });
 
@@ -774,8 +783,13 @@ Parse.Cloud.define("getStripeData", async request => {
   if (!customerId)
     return null;
   
-  const customer = await stripe.customers.retrieve(customerId);
-  
+  let customer;
+  try {
+    customer = await stripe.customers.retrieve(customerId);
+  } catch (e) {}
+  if (!customer || customer.deleted)
+    return null;
+    
   return {
     defaultSource: customer.default_source,
     sources: customer.sources.data,
@@ -800,15 +814,29 @@ Parse.Cloud.define('paySubscription', async request => {
   if (!payPlan)
     throw 'There is no pay plan!';
   
-  const subscriptionId = isYearly ? payPlan.get('StripeIdYearly') : payPlan.get('StripeIdMonthly');
-  if (!subscriptionId)
+  const StripePlanId = isYearly ? payPlan.get('StripeIdYearly') : payPlan.get('StripeIdMonthly');
+  if (!StripePlanId)
     throw 'Wrong pay plan!';
   
-  const subscription = await stripe.subscriptions.create({
-    customer: customerId,
-    items: [{plan: subscriptionId}],
-    default_source: source
-  });
+  const customer = await stripe.customers.retrieve(customerId);
+  
+  let subscription = customer.subscriptions.data[0];
+  if (subscription) {
+    await stripe.subscriptions.update(subscription.id, {
+      items: [{
+        id: subscription.items.data[0].id,
+        plan: StripePlanId
+      }],
+      default_source: source
+    });
+  
+  } else {
+    subscription = await stripe.subscriptions.create({
+      customer: customerId,
+      items: [{plan: StripePlanId}],
+      default_source: source
+    });
+  }
   
   user.set('payPlan', payPlan);
   await user.save(null, {useMasterKey: true});
