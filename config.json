@@ -51,6 +51,9 @@
 
   "extraConfig": {
     "dashboardActivated": true,
+    "userEmail": "test",
+    "userPassword": "123456",
+
     "siteTemplates": true,
 
     "StripeConfig": {
