@@ -774,6 +774,22 @@ Parse.Cloud.define("savePaymentSource", async request => {
   }
 });
 
+Parse.Cloud.define("removePaymentSource", async request => {
+  const {user} = request;
+  if (!user)
+    throw 'Must be signed in to call this Cloud Function.';
+  
+  const {source} = request.params;
+  if (!source)
+    throw 'There is no source param!';
+  
+  let customerId = user.get('StripeId');
+  if (!customerId)
+    throw 'There is no customer object yet!';
+  
+  return await stripe.customers.deleteCard(customerId, source);
+});
+
 Parse.Cloud.define("getStripeData", async request => {
   const {user} = request;
   if (!user)
