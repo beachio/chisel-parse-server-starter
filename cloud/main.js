@@ -773,14 +773,14 @@ Parse.Cloud.define("savePaymentSource", async request => {
   if (!tokenId)
     throw 'There is no token param!';
   
-  let customerId = user.get('StripeId');
+  const customerId = user.get('StripeId');
   let customer;
   try {
     customer = await stripe.customers.retrieve(customerId);
   } catch (e) {}
   
   if (customer && !customer.deleted) {
-    await stripe.customers.createSource(customerId, {source: tokenId});
+    const source = await stripe.customers.createSource(customerId, {source: tokenId});
     if (asDefault)
       await stripe.customers.update(customerId, {default_source: source.id});
     
@@ -829,7 +829,11 @@ Parse.Cloud.define("removePaymentSource", async request => {
   if (!customerId)
     throw 'There is no customer object yet!';
   
-  return await stripe.customers.deleteCard(customerId, sourceId);
+  await stripe.customers.deleteCard(customerId, sourceId);
+  
+  const customer = await stripe.customers.retrieve(customerId);
+  
+  return {defaultSource: customer.default_source};
 });
 
 Parse.Cloud.define('paySubscription', async request => {
