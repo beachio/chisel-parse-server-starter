@@ -741,6 +741,29 @@ Parse.Cloud.define("checkPassword", request => {
 });
 
 
+Parse.Cloud.define("getStripeData", async request => {
+  const {user} = request;
+  if (!user)
+    throw 'Must be signed in to call this Cloud Function.';
+  
+  const customerId = user.get('StripeId');
+  if (!customerId)
+    return null;
+  
+  let customer;
+  try {
+    customer = await stripe.customers.retrieve(customerId);
+  } catch (e) {}
+  if (!customer || customer.deleted)
+    return null;
+  
+  return {
+    defaultSource: customer.default_source,
+    sources: customer.sources.data,
+    subscription: customer.subscriptions.data[0]
+  };
+});
+
 Parse.Cloud.define("savePaymentSource", async request => {
   const {user} = request;
   if (!user)
@@ -807,29 +830,6 @@ Parse.Cloud.define("removePaymentSource", async request => {
     throw 'There is no customer object yet!';
   
   return await stripe.customers.deleteCard(customerId, sourceId);
-});
-
-Parse.Cloud.define("getStripeData", async request => {
-  const {user} = request;
-  if (!user)
-    throw 'Must be signed in to call this Cloud Function.';
-  
-  const customerId = user.get('StripeId');
-  if (!customerId)
-    return null;
-  
-  let customer;
-  try {
-    customer = await stripe.customers.retrieve(customerId);
-  } catch (e) {}
-  if (!customer || customer.deleted)
-    return null;
-    
-  return {
-    defaultSource: customer.default_source,
-    sources: customer.sources.data,
-    subscription: customer.subscriptions.data[0]
-  };
 });
 
 Parse.Cloud.define('paySubscription', async request => {
