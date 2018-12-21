@@ -740,12 +740,13 @@ Parse.Cloud.define("checkPassword", request => {
   return Parse.User.logIn(username, password);
 });
 
+
 Parse.Cloud.define("savePaymentSource", async request => {
   const {user} = request;
   if (!user)
     throw 'Must be signed in to call this Cloud Function.';
   
-  const {tokenId, card, setDefault} = request.params;
+  const {tokenId, asDefault} = request.params;
   if (!tokenId)
     throw 'There is no token param!';
   
@@ -757,7 +758,7 @@ Parse.Cloud.define("savePaymentSource", async request => {
   
   if (customer && !customer.deleted) {
     await stripe.customers.createSource(customerId, {source: tokenId});
-    if (setDefault)
+    if (asDefault)
       await stripe.customers.update(customerId, {default_source: source.id});
     
     return null;
@@ -797,15 +798,15 @@ Parse.Cloud.define("removePaymentSource", async request => {
   if (!user)
     throw 'Must be signed in to call this Cloud Function.';
   
-  const {source} = request.params;
-  if (!source)
-    throw 'There is no source param!';
+  const {sourceId} = request.params;
+  if (!sourceId)
+    throw 'There is no sourceId param!';
   
   let customerId = user.get('StripeId');
   if (!customerId)
     throw 'There is no customer object yet!';
   
-  return await stripe.customers.deleteCard(customerId, source);
+  return await stripe.customers.deleteCard(customerId, sourceId);
 });
 
 Parse.Cloud.define("getStripeData", async request => {
@@ -840,7 +841,7 @@ Parse.Cloud.define('paySubscription', async request => {
   if (!customerId)
     throw 'There are no payment methods!';
   
-  const {planId, source, isYearly} = request.params;
+  const {planId, isYearly} = request.params;
   if (!planId)
     throw 'There is no plan param!';
   
@@ -860,15 +861,13 @@ Parse.Cloud.define('paySubscription', async request => {
       items: [{
         id: subscription.items.data[0].id,
         plan: StripePlanId
-      }],
-      default_source: source
+      }]
     });
   
   } else {
     subscription = await stripe.subscriptions.create({
       customer: customerId,
-      items: [{plan: StripePlanId}],
-      default_source: source
+      items: [{plan: StripePlanId}]
     });
   }
   
