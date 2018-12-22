@@ -463,6 +463,43 @@ const onCollaborationModify = async (collab, deleting = false) => {
 };
 
 
+let defaultPayPlan;
+
+const getDefaultPayPlan = async () => {
+  if (!defaultPayPlan)
+    defaultPayPlan = await new Parse.Query('PayPlan')
+      .equalTo('priceMonthly', 0)
+      .first();
+  
+  return defaultPayPlan;
+};
+
+const getPayPlan = async (user) => {
+  const customerId = user.get('StripeId');
+  if (!customerId)
+    return getDefaultPayPlan();
+  
+  let customer;
+  try {
+    customer = await stripe.customers.retrieve(customerId);
+  } catch (e) {}
+  if (!customer || customer.deleted)
+    return getDefaultPayPlan();
+  
+  const subscription = customer.subscriptions.data[0];
+  if (!subscription || subscription.status == 'canceled' || !subscription.plan)
+    return getDefaultPayPlan();
+  
+  const payPlan = await new Parse.Query('PayPlan')
+    .equalTo('StripeId', subscription.plan.product)
+    .first();
+  if (!payPlan)
+    return getDefaultPayPlan();
+  
+  return payPlan;
+};
+
+
 Parse.Cloud.beforeSave("Collaboration", async request => {
   if (request.master)
     return;
@@ -527,11 +564,7 @@ Parse.Cloud.beforeSave("Site", async request => {
   if (!user)
     throw 'Must be signed in to save sites.';
   
-  const payPlan = user.get('payPlan');
-  if (!payPlan)
-    return true;
-  
-  await payPlan.fetch();
+  const payPlan = await getPayPlan(user);
   
   const sitesLimit = payPlan.get('limitSites');
   if (!sitesLimit)
