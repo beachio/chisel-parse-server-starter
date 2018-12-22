@@ -762,10 +762,14 @@ Parse.Cloud.define("getStripeData", async request => {
     sources.push(source);
   }
   
+  let subscription = customer.subscriptions.data[0];
+  if (subscription && subscription.status == 'canceled')
+    subscription = null;
+  
   return {
     defaultSource: customer.default_source,
     sources,
-    subscription: customer.subscriptions.data[0]
+    subscription
   };
 });
 
