@@ -885,3 +885,26 @@ Parse.Cloud.define('paySubscription', async request => {
   
   return subscription;
 });
+
+Parse.Cloud.define('cancelSubscription', async request => {
+  const {user} = request;
+  if (!user)
+    throw 'Must be signed in to call this Cloud Function.';
+  
+  const customerId = user.get('StripeId');
+  if (!customerId)
+    throw 'There are no Stripe customer!';
+  
+  const customer = await stripe.customers.retrieve(customerId);
+  
+  const subscription = customer.subscriptions.data[0];
+  if (!subscription)
+    throw 'There are no subscription!';
+  
+  await stripe.subscriptions.del(subscription.id);
+  
+  user.set('payPlan', null);
+  await user.save(null, {useMasterKey: true});
+  
+  return null;
+});
