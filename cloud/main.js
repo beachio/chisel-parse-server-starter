@@ -757,9 +757,14 @@ Parse.Cloud.define("getStripeData", async request => {
   if (!customer || customer.deleted)
     return null;
   
+  const sources = [];
+  for await (const source of stripe.customers.listSources(customerId)) {
+    sources.push(source);
+  }
+  
   return {
     defaultSource: customer.default_source,
-    sources: customer.sources.data,
+    sources,
     subscription: customer.subscriptions.data[0]
   };
 });
