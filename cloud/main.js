@@ -903,11 +903,12 @@ Parse.Cloud.define('paySubscription', async request => {
   
   let subscription = customer.subscriptions.data[0];
   if (subscription) {
-    await stripe.subscriptions.update(subscription.id, {
+    subscription = await stripe.subscriptions.update(subscription.id, {
       items: [{
         id: subscription.items.data[0].id,
         plan: StripePlanId
-      }]
+      }],
+      cancel_at_period_end: false
     });
   
   } else {
@@ -937,11 +938,6 @@ Parse.Cloud.define('cancelSubscription', async request => {
   const subscription = customer.subscriptions.data[0];
   if (!subscription)
     throw 'There are no subscription!';
-  
-  await stripe.subscriptions.del(subscription.id);
-  
-  user.set('payPlan', null);
-  await user.save(null, {useMasterKey: true});
-  
-  return null;
+
+  return await stripe.subscriptions.update(subscription.id, {cancel_at_period_end: true});
 });
