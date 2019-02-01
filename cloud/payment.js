@@ -1,9 +1,8 @@
+const {StripeConfig, CLOUD_ERROR_CODE__STRIPE_INIT_ERROR} = require('./common');
+
 let stripe;
-//if (configs.StripeConfig && configs.StripeConfig.keyPrivate)
-  //stripe = require("stripe")(configs.StripeConfig.keyPrivate);
-
-const {CLOUD_ERROR_CODE__STRIPE_INIT_ERROR} = require('./common');
-
+if (StripeConfig && StripeConfig.keyPrivate)
+  stripe = require("stripe")(StripeConfig.keyPrivate);
 
 
 let defaultPayPlan;

@@ -1,3 +1,12 @@
+const configs = require('../index.js');
+module.exports.config = configs.parseConfig;
+module.exports.SITE = configs['URL_SITE'];
+module.exports.StripeConfig = configs.StripeConfig;
+
+
+module.exports.ROLE_ADMIN = "ADMIN";
+module.exports.ROLE_EDITOR = "EDITOR";
+
 module.exports.CLOUD_ERROR_CODE__STRIPE_INIT_ERROR   = 701;
 
 module.exports.promisifyW = pp => {

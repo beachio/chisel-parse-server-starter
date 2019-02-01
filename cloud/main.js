@@ -1,18 +1,9 @@
 console.log('Cloud code connected');
 
+const {config, SITE, ROLE_ADMIN, ROLE_EDITOR, promisifyW, getAllObjects} = require('./common');
+
 const {getPayPlan} = require('./payment');
 
-
-const configs = require('../index.js');
-const config = configs.parseConfig;
-const SITE = configs['URL_SITE'];
-
-
-const ROLE_ADMIN = "ADMIN";
-const ROLE_EDITOR = "EDITOR";
-
-
-const {promisifyW, getAllObjects} = require('./common');
 
 const checkRights = (user, obj) => {
   const acl = obj.getACL();
