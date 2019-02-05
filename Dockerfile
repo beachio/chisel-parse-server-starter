@@ -13,4 +13,4 @@ RUN export NODE_PATH=/parse/node_modules
 # A main.js file must be present, if not Parse will not start
 
 # VOLUME /parse/cloud
-CMD npm start
+CMD npm run updateConfAndStart
