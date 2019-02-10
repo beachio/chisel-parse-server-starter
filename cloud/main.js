@@ -492,9 +492,6 @@ Parse.Cloud.beforeSave("Site", async request => {
   if (request.object.id)
     return true;
 
-  if (!stripe)
-    return true;
-  
   const user = request.user;
   if (!user)
     throw 'Must be signed in to save sites.';
