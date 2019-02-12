@@ -107,61 +107,60 @@ const postStart = async () => {
   
   // set templates
   if (SITE_TEMPLATES) {
-    const setTemplates = async () => {
-      const templates = require('./siteTemplates/templates.json');
-      const fs = require('fs');
-    
-      const Template = Parse.Object.extend('Template');
-      const Model = Parse.Object.extend('Model');
-      const ModelField = Parse.Object.extend('ModelField');
-  
-      const ACL = new Parse.ACL();
-      ACL.setPublicReadAccess(true);
-      ACL.setPublicWriteAccess(false);
-      
-      for (let template of templates) {
-        const template_o = new Template();
-        
-        template_o.set('name',        template.name);
-        template_o.set('description', template.description);
-        template_o.setACL(ACL);
-    
-        if (template.icon) {
-          const iconData = fs.readFileSync(`./siteTemplates/icons/${template.icon}`);
-          const iconFile = new Parse.File("icon.png", [...iconData]);
-          await iconFile.save(null, {useMasterKey: true});
-          template_o.set('icon', iconFile);
-        }
-        
-        await template_o.save(null, {useMasterKey: true});
-        
-        for (let model of template.models) {
-          const model_o = new Model();
-          
-          model_o.set('name',         model.name);
-          model_o.set('nameId',       model.nameId);
-          model_o.set('description',  model.description);
-          model_o.set('color',        model.color);
-          model_o.set('template', template_o);
-          model_o.setACL(ACL);
-          
-          await model_o.save(null, {useMasterKey: true});
-          
-          for (let field of model.fields) {
-            const field_o = new ModelField();
-            field_o.set(field);
-            field_o.set('model', model_o);
-            field_o.setACL(ACL);
-            field_o.save(null, {useMasterKey: true});
-          }
+    const templates = require('./siteTemplates/templates.json');
+    const fs = require('fs');
+
+    const Template = Parse.Object.extend('Template');
+    const Model = Parse.Object.extend('Model');
+    const ModelField = Parse.Object.extend('ModelField');
+
+    const ACL = new Parse.ACL();
+    ACL.setPublicReadAccess(true);
+    ACL.setPublicWriteAccess(false);
+
+    for (let template of templates) {
+      const res = await new Parse.Query("Template")
+        .equalTo('name', template.name)
+        .first();
+      if (res)
+        continue;
+
+      const template_o = new Template();
+
+      template_o.set('name',        template.name);
+      template_o.set('description', template.description);
+      template_o.setACL(ACL);
+
+      if (template.icon) {
+        const iconData = fs.readFileSync(`./siteTemplates/icons/${template.icon}`);
+        const iconFile = new Parse.File("icon.png", [...iconData]);
+        await iconFile.save(null, {useMasterKey: true});
+        template_o.set('icon', iconFile);
+      }
+
+      await template_o.save(null, {useMasterKey: true});
+
+      for (let model of template.models) {
+        const model_o = new Model();
+
+        model_o.set('name',         model.name);
+        model_o.set('nameId',       model.nameId);
+        model_o.set('description',  model.description);
+        model_o.set('color',        model.color);
+        model_o.set('template', template_o);
+        model_o.setACL(ACL);
+
+        await model_o.save(null, {useMasterKey: true});
+
+        for (let field of model.fields) {
+          const field_o = new ModelField();
+          field_o.set(field);
+          field_o.set('model', model_o);
+          field_o.setACL(ACL);
+          field_o.save(null, {useMasterKey: true});
         }
       }
-    };
-  
-    // setting templates only if there are no templates
-    const res = await new Parse.Query("Template").find();
-    if (!res || !res.length)
-      await setTemplates();
+    }
   }
 };
 
