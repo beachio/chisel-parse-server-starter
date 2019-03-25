@@ -1,9 +1,12 @@
 console.log('Cloud code connected');
 
-const {config, SITE, ROLE_ADMIN, ROLE_EDITOR, promisifyW, getAllObjects} = require('./common');
+const {config, SITE, ROLE_ADMIN, ROLE_EDITOR, promisifyW, getAllObjects, StripeConfig} = require('./common');
 
 const {getPayPlan} = require('./payment');
 
+let stripe;
+if (StripeConfig && StripeConfig.keyPrivate)
+    stripe = require("stripe")(StripeConfig.keyPrivate);
 
 const checkRights = (user, obj) => {
   const acl = obj.getACL();
@@ -487,7 +490,6 @@ Parse.Cloud.afterSave(Parse.User, async request => {
 Parse.Cloud.beforeSave("Site", async request => {
   if (request.master)
     return;
-  
   //updating an existing site
   if (request.object.id)
     return true;
@@ -495,20 +497,18 @@ Parse.Cloud.beforeSave("Site", async request => {
   const user = request.user;
   if (!user)
     throw 'Must be signed in to save sites.';
-  
+
   const payPlan = await getPayPlan(user);
-  
-  const sitesLimit = payPlan.get('limitSites');
+  const sitesLimit = stripe ? payPlan.get('limitSites') : payPlan.limitSites;
   if (!sitesLimit)
     return true;
-    
+
   const sites = await new Parse.Query('Site')
     .equalTo('owner', user)
     .count({useMasterKey: true});
   
   if (sites >= sitesLimit)
     throw `The user has exhausted their sites' limit!`;
-    
   return true;
 });
 

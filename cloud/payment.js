@@ -3,25 +3,38 @@ const {StripeConfig, CLOUD_ERROR_CODE__STRIPE_INIT_ERROR} = require('./common');
 let stripe;
 if (StripeConfig && StripeConfig.keyPrivate)
   stripe = require("stripe")(StripeConfig.keyPrivate);
-
-
 let defaultPayPlan;
 
 const getDefaultPayPlan = async () => {
   if (!defaultPayPlan)
-    defaultPayPlan = await new Parse.Query('PayPlan')
-      .equalTo('priceMonthly', 0)
-      .first();
+    if (!stripe)
+    {
+      defaultPayPlan = {
+          StripeIdMonthly: undefined,
+          StripeIdYearly: "",
+          isFree: true,
+          limitSites: 0,
+          name: "Free",
+          priceMonthly: 0,
+          priceYearly: undefined
+      }
+
+    }
+    else
+    {
+        defaultPayPlan = await new Parse.Query('PayPlan')
+        .equalTo('priceMonthly', 0)
+        .first();
+    }
 
   return defaultPayPlan;
 };
-
 const getPayPlan = async (user) => {
-  if (!stripe)
-    throw {errorMsg: 'Stripe is not initialized!', errorCode: 701};
+  // if (!stripe)
+  //   throw {errorMsg: 'Stripe is not initialized!', errorCode: 701};
 
   const customerId = user.get('StripeId');
-  if (!customerId)
+  if (!customerId || !stripe)
     return getDefaultPayPlan();
 
   let customer;
@@ -48,15 +61,16 @@ module.exports.getPayPlan = getPayPlan;
 
 
 Parse.Cloud.define("getStripeData", async request => {
-  if (!stripe)
-    throw {errorMsg: 'Stripe is not initialized!', errorCode: CLOUD_ERROR_CODE__STRIPE_INIT_ERROR};
+
+  // if (!stripe)
+  //   throw {errorMsg: 'Stripe is not initialized!', errorCode: CLOUD_ERROR_CODE__STRIPE_INIT_ERROR};
 
   const {user} = request;
   if (!user)
     throw 'Must be signed in to call this Cloud Function.';
 
   const customerId = user.get('StripeId');
-  if (!customerId)
+  if (!customerId || !stripe)
     return null;
 
   let customer;
@@ -74,7 +88,6 @@ Parse.Cloud.define("getStripeData", async request => {
   let subscription = customer.subscriptions.data[0];
   if (subscription && subscription.status == 'canceled')
     subscription = null;
-
   return {
     defaultSource: customer.default_source,
     sources,
