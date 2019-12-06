@@ -7,6 +7,7 @@ if (StripeConfig && StripeConfig.keyPrivate)
 
 let defaultPayPlan;
 
+//if there are no pay plans, return null
 const getDefaultPayPlan = async () => {
   if (!defaultPayPlan)
     defaultPayPlan = await new Parse.Query('PayPlan')
@@ -17,8 +18,17 @@ const getDefaultPayPlan = async () => {
 };
 
 const getPayPlan = async (user) => {
-  if (!stripe)
-    throw {errorMsg: 'Stripe is not initialized!', errorCode: 701};
+  if (!stripe) {
+    //return null;
+    //throw {errorMsg: 'Stripe is not initialized!', errorCode: 701};
+
+    let payPlan = user.get('payPlan');
+    if (!payPlan)
+      return null;
+
+    await payPlan.fetch();
+    return payPlan;
+  }
 
   const customerId = user.get('StripeId');
   if (!customerId)

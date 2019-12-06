@@ -497,6 +497,8 @@ Parse.Cloud.beforeSave("Site", async request => {
     throw 'Must be signed in to save sites.';
   
   const payPlan = await getPayPlan(user);
+  if (!payPlan)
+    return true;
   
   const sitesLimit = payPlan.get('limitSites');
   if (!sitesLimit)
