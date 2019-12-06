@@ -156,7 +156,7 @@ Parse.Cloud.define("removePaymentSource", async request => {
   if (!customerId)
     throw 'There is no customer object yet!';
 
-  await stripe.customers.deleteCard(customerId, sourceId);
+  await stripe.customers.deleteSource(customerId, sourceId);
 
   const customer = await stripe.customers.retrieve(customerId);
 
