@@ -113,7 +113,7 @@ Parse.Cloud.define("savePaymentSource", async request => {
   if (customer && !customer.deleted) {
     const source = await stripe.customers.createSource(customerId, {source: tokenId});
     if (asDefault)
-      await stripe.customers.update(customerId, {default_source: source.id});
+      await stripe.customers.update(customerId, {default_source: source.id});
 
     return null;
 
@@ -145,7 +145,7 @@ Parse.Cloud.define("setDefaultPaymentSource", async request => {
   if (!customerId)
     throw 'There is no customer object yet!';
 
-  await stripe.customers.update(customerId, {default_source: sourceId});
+  await stripe.customers.update(customerId, {default_source: sourceId});
 
   return null;
 });
