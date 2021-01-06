@@ -1,6 +1,6 @@
 const express = require('express');
 const ParseServer = require('parse-server').ParseServer;
-const ParseDashboard = require('parse-dashboard');
+//const ParseDashboard = require('parse-dashboard');
 const Parse = require('parse/node');
 const request = require('request');
 
@@ -58,7 +58,7 @@ const app = new express();
 app.use('/parse', API);
 
 
-if (DASHBOARD_ACTIVATED) {
+/*if (DASHBOARD_ACTIVATED) {
   const dashboardConfig = {
     apps: [{
       serverURL: URL_SERVER,
@@ -80,7 +80,7 @@ if (DASHBOARD_ACTIVATED) {
   module.exports.dashboardConfig = dashboardConfig;
   const dashboard = new ParseDashboard(dashboardConfig, {allowInsecureHTTP: true});
   app.use('/dashboard', dashboard);
-}
+}*/
 
 
 const postStart = async () => {
