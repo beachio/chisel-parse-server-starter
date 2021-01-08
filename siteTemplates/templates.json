@@ -1448,15 +1448,14 @@
     ]
   },
   {
-    "name": "Event",
-    "description": "The template for event.",
+    "name": "Conference",
+    "description": "The template for Conference.",
     "icon": "blog.png",
     "models": [
       {
         "name": "Participant",
         "nameId": "Participant",
         "description": "",
-        "tableName": "Participant",
         "color": "rgba(99, 92, 192, 1)",
         "fields": [
           {
@@ -1569,7 +1568,6 @@
         "name": "Stage",
         "nameId": "Stage",
         "description": "",
-        "tableName": "ct____steves_40mural_2eco__Virtual_Event____Stage",
         "color": "rgba(139, 122, 17, 1)",
         "fields": [
           {
@@ -1698,7 +1696,6 @@
         "name": "Speaker",
         "nameId": "Speaker",
         "description": "",
-        "tableName": "ct____steves_40mural_2eco__Virtual_Event____Speaker",
         "color": "rgba(162, 40, 244, 1)",
         "fields": [
           {
@@ -1886,7 +1883,6 @@
         "name": "Talk",
         "nameId": "Talk",
         "description": "",
-        "tableName": "ct____steves_40mural_2eco__Virtual_Event____Talk",
         "color": "rgba(231, 187, 201, 1)",
         "fields": [
           {
@@ -2057,7 +2053,6 @@
         "name": "Team",
         "nameId": "Team",
         "description": "",
-        "tableName": "ct____steves_40mural_2eco__Virtual_Event____Team",
         "color": "rgba(170, 178, 201, 1)",
         "fields": [
           {
@@ -2109,7 +2104,6 @@
         "name": "Challenge",
         "nameId": "Challenge",
         "description": "",
-        "tableName": "ct____steves_40mural_2eco__Virtual_Event____Challenge",
         "color": "rgba(249, 84, 58, 1)",
         "fields": [
           {
@@ -2294,7 +2288,6 @@
         "name": "Exercise",
         "nameId": "Exercise",
         "description": "",
-        "tableName": "ct____steves_40mural_2eco__Virtual_Event____Exercise",
         "color": "rgba(223, 199, 249, 1)",
         "fields": [
           {
@@ -2354,7 +2347,6 @@
         "name": "Question",
         "nameId": "Question",
         "description": "",
-        "tableName": "ct____steves_40mural_2eco__Virtual_Event____Question",
         "color": "rgba(201, 200, 92, 1)",
         "fields": [
           {
@@ -2474,7 +2466,6 @@
         "name": "Question Set",
         "nameId": "Question_Set",
         "description": "",
-        "tableName": "ct____steves_40mural_2eco__Virtual_Event____Question_Set",
         "color": "rgba(70, 109, 208, 1)",
         "fields": [
           {
@@ -2543,7 +2534,6 @@
         "name": "Sponsor",
         "nameId": "Sponsor",
         "description": "",
-        "tableName": "ct____steves_40mural_2eco__Virtual_Event____Sponsor",
         "color": "rgba(145, 243, 18, 1)",
         "fields": [
           {
@@ -2739,7 +2729,6 @@
         "name": "Job",
         "nameId": "Job",
         "description": "",
-        "tableName": "ct____steves_40mural_2eco__Virtual_Event____Job",
         "color": "rgba(198, 210, 143, 1)",
         "fields": [
           {
@@ -2833,7 +2822,6 @@
         "name": "Product",
         "nameId": "Product",
         "description": "",
-        "tableName": "ct____steves_40mural_2eco__Virtual_Event____Product",
         "color": "rgba(162, 195, 161, 1)",
         "fields": [
           {
@@ -2907,70 +2895,9 @@
         ]
       },
       {
-        "name": "Exercise",
-        "nameId": "Exercise",
-        "description": "",
-        "tableName": "ct____steves_40mural_2eco__Virtual_Event____Exercise",
-        "color": "rgba(223, 199, 249, 1)",
-        "fields": [
-          {
-            "name": "Name",
-            "nameId": "Name",
-            "type": "Short Text",
-            "appearance": "Single line",
-            "color": "rgba(159, 132, 132, 1)",
-            "boolTextYes": "",
-            "boolTextNo": "",
-            "validValues": [],
-            "isRequired": true,
-            "isTitle": true,
-            "isList": false,
-            "isDisabled": false,
-            "isUnique": false,
-            "order": 0,
-            "validations": null
-          },
-          {
-            "name": "Description",
-            "nameId": "Description",
-            "type": "Long Text",
-            "appearance": "Markdown",
-            "color": "rgba(15, 233, 3, 1)",
-            "boolTextYes": "",
-            "boolTextNo": "",
-            "validValues": [],
-            "isRequired": false,
-            "isTitle": false,
-            "isList": false,
-            "isDisabled": false,
-            "isUnique": false,
-            "order": 1,
-            "validations": null
-          },
-          {
-            "name": "Points Awarded",
-            "nameId": "Points_Awarded",
-            "type": "Number Int",
-            "appearance": "Decimal",
-            "color": "rgba(142, 99, 140, 1)",
-            "boolTextYes": "",
-            "boolTextNo": "",
-            "validValues": [],
-            "isRequired": false,
-            "isTitle": false,
-            "isList": false,
-            "isDisabled": false,
-            "isUnique": false,
-            "order": 2,
-            "validations": null
-          }
-        ]
-      },
-      {
         "name": "Resource",
         "nameId": "Resource",
         "description": "",
-        "tableName": "ct____steves_40mural_2eco__Virtual_Event____Resource",
         "color": "rgba(136, 210, 157, 1)",
         "fields": [
           {
