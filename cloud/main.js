@@ -3,6 +3,8 @@ const {config, SITE, ROLE_ADMIN, ROLE_EDITOR, promisifyW, getAllObjects} = requi
 
 const {getPayPlan} = require('./payment');
 
+const PARTTICIPANT_MODEL = 'ct____alfred_40gmail_2ecom__Mural_Conference____Participant';
+const CHALLENGE_MODEL = 'ct____alfred_40gmail_2ecom__Mural_Conference____Challenge';
 
 const checkRights = (user, obj) => {
   const acl = obj.getACL();
@@ -706,7 +708,7 @@ Parse.Cloud.define("checkPassword", request => {
   return Parse.User.logIn(username, password);
 });
 
-const PARTTICIPANT_MODEL = 'ct____alfred_40gmail_2ecom__Mural_Conference____Participant';
+
 
 Parse.Cloud.define("generateTicket", async request => {
   const {email} = request.params;
@@ -714,9 +716,6 @@ Parse.Cloud.define("generateTicket", async request => {
     throw 'There is no email param!';
   const participantQuery = new Parse.Query(PARTTICIPANT_MODEL);
   participantQuery.equalTo('t__status', 'Published');
-  // const results = await participantQuery.find({useMasterKey: true});
-
-
   participantQuery.equalTo('Email', email);
   const currentParticipant = await participantQuery.first({useMasterKey: true});
   if (!currentParticipant) 
@@ -737,4 +736,28 @@ Parse.Cloud.define("generateTicket", async request => {
   await currentParticipant.save({useMasterKey: true});
 
   return newTicketNumber;
+});
+
+
+Parse.Cloud.define("claimPoints", async request => {
+  const {code, participant} = request.params;
+  if (!code || !participant)
+    throw 'Insufficient Data!';
+  const challengeQuery = new Parse.Query(CHALLENGE_MODEL);
+  challengeQuery.equalTo('t__status', 'Published');
+  challengeQuery.equalTo('Enabled', true);
+  challengeQuery.equalTo('Code', code);
+  const currentChallenge = await challengeQuery.first({useMasterKey: true});
+  if (!currentChallenge)
+    throw 'There is no challenge with the given code!';
+
+  const participantQuery = new Parse.Query(PARTTICIPANT_MODEL);
+  participantQuery.equalTo('t__status', 'Published');
+  participantQuery.equalTo('Email', participant);
+  const currentParticipant = await participantQuery.first({useMasterKey: true});
+  if (!currentParticipant) 
+    throw 'There is no participant with the given email!';
+
+  currentParticipant.set('Points', currentParticipant.get('Points') + currentChallenge.get('Points'))
+  await currentParticipant.save({useMasterKey: true});
 });
