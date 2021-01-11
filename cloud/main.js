@@ -1,5 +1,4 @@
 console.log('Cloud code connected');
-
 const {config, SITE, ROLE_ADMIN, ROLE_EDITOR, promisifyW, getAllObjects} = require('./common');
 
 const {getPayPlan} = require('./payment');
@@ -705,4 +704,37 @@ Parse.Cloud.define("checkPassword", request => {
   const username = request.user.get('username');
 
   return Parse.User.logIn(username, password);
+});
+
+const PARTTICIPANT_MODEL = 'ct____alfred_40gmail_2ecom__Mural_Conference____Participant';
+
+Parse.Cloud.define("generateTicket", async request => {
+  const {email} = request.params;
+  if (!email)
+    throw 'There is no email param!';
+  const participantQuery = new Parse.Query(PARTTICIPANT_MODEL);
+  participantQuery.equalTo('t__status', 'Published');
+  // const results = await participantQuery.find({useMasterKey: true});
+
+
+  participantQuery.equalTo('Email', email);
+  const currentParticipant = await participantQuery.first({useMasterKey: true});
+  if (!currentParticipant) 
+    throw 'There is no participant with the given email!';
+
+  // If the record already has ticket information, no need to regenerate again.
+  if (currentParticipant.get('ticket')) return currentParticipant.get('ticket');
+
+  // generate the ticket, currently in order
+  const countQuery = new Parse.Query(PARTTICIPANT_MODEL);
+  countQuery.equalTo('t__status', 'Published');
+  countQuery.exists('ticket');
+  const count = await countQuery.count({useMasterKey: true});
+  
+  const newTicketNumber = ('000000' + (count + 1)).slice(-6);
+
+  currentParticipant.set('ticket', newTicketNumber);
+  await currentParticipant.save({useMasterKey: true});
+
+  return newTicketNumber;
 });
