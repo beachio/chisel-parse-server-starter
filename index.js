@@ -57,6 +57,10 @@ const API = new ParseServer(parseConfig);
 const app = new express();
 app.use('/parse', API);
 
+app.use('/callback', function(req, res) {
+  res.send({status: 'OK'});
+})
+
 
 if (DASHBOARD_ACTIVATED) {
   const dashboardConfig = {
