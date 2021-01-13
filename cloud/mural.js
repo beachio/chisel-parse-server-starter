@@ -41,6 +41,7 @@ Parse.Cloud.define("claimPoints", async request => {
   const currentChallenge = await challengeQuery.first({useMasterKey: true});
   if (!currentChallenge)
     throw 'There is no challenge with the given code!';
+  console.log('currentChallenge', currentChallenge.get('Redeem_List'));
 
   const participantQuery = new Parse.Query(PARTTICIPANT_MODEL);
   participantQuery.equalTo('t__status', 'Published');
@@ -49,6 +50,17 @@ Parse.Cloud.define("claimPoints", async request => {
   if (!currentParticipant) 
     throw 'There is no participant with the given email!';
 
-  currentParticipant.set('Points', currentParticipant.get('Points') + currentChallenge.get('Points'))
-  await currentParticipant.save({useMasterKey: true});
+  
+  // check if participant already claim points of this challenge
+  const redeemList = currentChallenge.get('Redeem_List') || [];
+  const redeemIndex = redeemList.findIndex(participant => participant.id === currentParticipant.id);
+
+  // If no previous claim record of the participant, increase the points and append participant to redeem list
+  if (redeemIndex === -1) {
+    currentParticipant.set('Points', currentParticipant.get('Points') + currentChallenge.get('Points'))
+    await currentParticipant.save();
+
+    currentChallenge.set('Redeem_List', [...redeemList, currentParticipant]);
+    await currentChallenge.save();
+  }
 });
