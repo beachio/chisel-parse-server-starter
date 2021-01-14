@@ -37,7 +37,7 @@ Parse.Cloud.define("generateTicket", async request => {
 
   for (let i = 0; i < currentParticipant.length; i++) {
     currentParticipant[i].set('ticket', newTicketNumber);
-    await currentParticipant[i].save({useMasterKey: true});
+    await currentParticipant[i].save();
   }
 
   return newTicketNumber;
