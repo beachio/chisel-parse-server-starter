@@ -1448,8 +1448,8 @@
     ]
   },
   {
-    "name": "Conference",
-    "description": "The template for Conference.",
+    "name": "Event",
+    "description": "The template for Event.",
     "icon": "blog.png",
     "models": [
       {
