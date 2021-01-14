@@ -1,10 +1,23 @@
-const PARTTICIPANT_MODEL = 'ct____alfred_40gmail_2ecom__Mural_Conference____Participant';
-const CHALLENGE_MODEL = 'ct____alfred_40gmail_2ecom__Mural_Conference____Challenge';
+// Get Site nameId to generate Model names
+const getSiteNameId = async(siteId) => {
+  const siteQuery = new Parse.Query('Site');
+  siteQuery.equalTo('objectId', siteId);
+  const siteRecord = await siteQuery.first({useMasterKey: true});
+  if (!siteRecord || !siteRecord.get('nameId')) 
+    throw 'Invalid siteId';
+  
+  return siteRecord.get('nameId');
+}
 
 Parse.Cloud.define("generateTicket", async request => {
-  const {email} = request.params;
+  const {email, siteId} = request.params;
   if (!email)
     throw 'There is no email param!';
+  
+  // get site name Id and generate MODEL names based on that
+  const siteNameId = await getSiteNameId(siteId);
+  const PARTTICIPANT_MODEL = `ct____${siteNameId}____Participant`;
+
   const participantQuery = new Parse.Query(PARTTICIPANT_MODEL);
   participantQuery.equalTo('Email', email);
   const currentParticipant = await participantQuery.find({useMasterKey: true});
@@ -33,9 +46,15 @@ Parse.Cloud.define("generateTicket", async request => {
 
 Parse.Cloud.define("claimPoints", async request => {
   let i;
-  const {code, participant} = request.params;
+  const {code, participant, siteId} = request.params;
   if (!code || !participant)
     throw 'Insufficient Data!';
+  
+  // get site name Id and generate MODEL names based on that
+  const siteNameId = await getSiteNameId(siteId);
+  const PARTTICIPANT_MODEL = `ct____${siteNameId}____Participant`;
+  const CHALLENGE_MODEL = `ct____${siteNameId}____Challenge`;
+
   const challengeQuery = new Parse.Query(CHALLENGE_MODEL);
 //  challengeQuery.equalTo('t__status', 'Published');
   challengeQuery.equalTo('Enabled', true);
