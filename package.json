@@ -1,6 +1,6 @@
 {
   "name": "chisel-parse-server",
-  "version": "0.7.1",
+  "version": "0.7.2",
   "description": "Parse Server setup for Chisel CMS",
   "author": "Beach.io <beach.io>",
   "license": "MIT",
