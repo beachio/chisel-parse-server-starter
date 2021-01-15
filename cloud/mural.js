@@ -77,7 +77,7 @@ Parse.Cloud.define("claimPoints", async request => {
   const redeemIndex = redeemList.findIndex(participant => participant.id === currentParticipant[0].id);
 
   // If no previous claim record of the participant, increase the points and append participant to redeem list
-  if (redeemIndex === -1) {
+  if (redeemIndex === -1 || currentChallenge[0].get('Redeem_Once') === false) {
     const pointsToAdd = currentChallenge[0].get('Points');
     for (i = 0; i < currentParticipant.length; i++) {
       currentParticipant[i].set('Points', currentParticipant[i].get('Points') + pointsToAdd);
