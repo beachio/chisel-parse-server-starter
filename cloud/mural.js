@@ -43,10 +43,7 @@ Parse.Cloud.define("generateTicket", async request => {
   return { status: 'success', ticket: newTicketNumber };
 });
 
-
-Parse.Cloud.define("claimPoints", async request => {
-  let i;
-  const {code, participant, siteId} = request.params;
+const claimPoints = async (code, participant, siteId) => {
   if (!code || !participant)
     return { status: 'error', message: 'Insufficient Data!' };
   
@@ -92,4 +89,12 @@ Parse.Cloud.define("claimPoints", async request => {
   }
 
   return { status: 'success', point: 0 };
+}
+module.exports.claimPoints = claimPoints;
+
+Parse.Cloud.define("claimPoints", async request => {
+  let i;
+  const {code, participant, siteId} = request.params;
+  const result = await claimPoints(code, participant, siteId);
+  return result;
 });
