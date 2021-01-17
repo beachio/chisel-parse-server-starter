@@ -3,6 +3,7 @@ const ParseServer = require('parse-server').ParseServer;
 const ParseDashboard = require('parse-dashboard');
 const Parse = require('parse/node');
 const request = require('request');
+const http = require('http');
 
 
 const packageJSON = require('./package.json');
@@ -40,7 +41,11 @@ Object.assign(parseConfig, {
   databaseURI: URL_DB,
   
   serverURL: URL_SERVER,
-  publicServerURL: URL_SERVER
+  publicServerURL: URL_SERVER,
+
+  liveQuery: {
+    classNames: ['Site', 'Model', 'ModelField']
+  }
 });
 
 const cps = parseConfig.customPages;
@@ -164,8 +169,10 @@ const postStart = async () => {
   }
 };
 
-
-app.listen(PORT, async () => {
+const httpServer = http.createServer(app);
+httpServer.listen(PORT, async () => {
   await postStart();
   console.log(`Chisel Parse server v${packageJSON.version} running on port ${PORT}.`);
 });
+
+const lqServer = ParseServer.createLiveQueryServer(httpServer);
