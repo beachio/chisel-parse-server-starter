@@ -4,7 +4,8 @@ const ParseDashboard = require('parse-dashboard');
 const Parse = require('parse/node');
 const request = require('request');
 const http = require('http');
-
+const path = require('path');
+const fs = require('fs');
 
 const packageJSON = require('./package.json');
 
@@ -113,7 +114,6 @@ const postStart = async () => {
   // set templates
   if (SITE_TEMPLATES) {
     const templates = require('./siteTemplates/templates.json');
-    const fs = require('fs');
 
     const Template = Parse.Object.extend('Template');
     const Model = Parse.Object.extend('Model');
@@ -168,6 +168,18 @@ const postStart = async () => {
     }
   }
 };
+const clear_log_interval = 1000 * 60 * 60 * 24;
+const logs_directory = './logs';
+function clearLogs () {
+    fs.readdir(logs_directory, (err, files) => {
+        if (err) console.log(err);
+    for (const file of files) {
+        fs.unlink(path.join(logs_directory, file), err => {
+            if (err) console.log(err);
+    });
+    }
+});
+}
 
 const httpServer = http.createServer(app);
 httpServer.listen(PORT, async () => {
@@ -176,3 +188,7 @@ httpServer.listen(PORT, async () => {
 });
 
 const lqServer = ParseServer.createLiveQueryServer(httpServer);
+clearLogs();
+setInterval(function () {
+    clearLogs()
+}, clear_log_interval);
