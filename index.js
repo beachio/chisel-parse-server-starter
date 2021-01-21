@@ -40,7 +40,7 @@ Object.assign(parseConfig, {
   masterKey: MASTER_KEY,
   cloud: "./cloud/main",
   databaseURI: URL_DB,
-  
+
   serverURL: URL_SERVER,
   publicServerURL: URL_SERVER,
 
@@ -82,7 +82,7 @@ if (DASHBOARD_ACTIVATED) {
       user: DASH_USER_EMAIL,
       pass: DASH_USER_PASSWORD
     }];
-  
+
   module.exports.dashboardConfig = dashboardConfig;
   const dashboard = new ParseDashboard(dashboardConfig, {allowInsecureHTTP: true});
   app.use('/dashboard', dashboard);
@@ -92,7 +92,7 @@ if (DASHBOARD_ACTIVATED) {
 const postStart = async () => {
   Parse.initialize(APP_ID, null, MASTER_KEY);
   Parse.serverURL = URL_SERVER;
-  
+
   if (StripeConfig) {
     try {
       await request({
@@ -105,12 +105,12 @@ const postStart = async () => {
         },
         body: {params: {StripeKeyPublic: StripeConfig.keyPublic}}
       });
-    
+
     } catch (e) {
       console.error(e);
     }
   }
-  
+
   // set templates
   if (SITE_TEMPLATES) {
     const templates = require('./siteTemplates/templates.json');
