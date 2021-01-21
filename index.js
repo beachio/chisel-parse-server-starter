@@ -168,18 +168,27 @@ const postStart = async () => {
     }
   }
 };
-const clear_log_interval = 1000 * 60 * 60 * 24;
-const logs_directory = './logs';
+
+// Clearing logs
+const clearLogInterval = 1000 * 60 * 60 * 24;
+const logsDirectory = './logs';
 function clearLogs () {
-    fs.readdir(logs_directory, (err, files) => {
-        if (err) console.log(err);
+  fs.readdir(logsDirectory, (err, files) => {
+    if (err)
+      console.error(err);
+
     for (const file of files) {
-        fs.unlink(path.join(logs_directory, file), err => {
-            if (err) console.log(err);
-    });
+      fs.unlink(path.join(logsDirectory, file), err => {
+        if (err)
+          console.error(err);
+      });
     }
-});
+    console.info("Logs was cleaned");
+  });
 }
+clearLogs();
+setInterval(clearLogs, clearLogInterval);
+
 
 const httpServer = http.createServer(app);
 httpServer.listen(PORT, async () => {
@@ -188,7 +197,3 @@ httpServer.listen(PORT, async () => {
 });
 
 const lqServer = ParseServer.createLiveQueryServer(httpServer);
-clearLogs();
-setInterval(function () {
-    clearLogs()
-}, clear_log_interval);
