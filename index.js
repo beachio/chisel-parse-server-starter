@@ -4,7 +4,8 @@ const ParseDashboard = require('parse-dashboard');
 const Parse = require('parse/node');
 const request = require('request');
 const http = require('http');
-
+const path = require('path');
+const fs = require('fs');
 
 const packageJSON = require('./package.json');
 
@@ -113,7 +114,6 @@ const postStart = async () => {
   // set templates
   if (SITE_TEMPLATES) {
     const templates = require('./siteTemplates/templates.json');
-    const fs = require('fs');
 
     const Template = Parse.Object.extend('Template');
     const Model = Parse.Object.extend('Model');
@@ -168,6 +168,27 @@ const postStart = async () => {
     }
   }
 };
+
+// Clearing logs
+const clearLogInterval = 1000 * 60 * 60 * 24;
+const logsDirectory = './logs';
+function clearLogs () {
+  fs.readdir(logsDirectory, (err, files) => {
+    if (err)
+      console.error(err);
+
+    for (const file of files) {
+      fs.unlink(path.join(logsDirectory, file), err => {
+        if (err)
+          console.error(err);
+      });
+    }
+    console.info("Logs was cleaned");
+  });
+}
+clearLogs();
+setInterval(clearLogs, clearLogInterval);
+
 
 const httpServer = http.createServer(app);
 httpServer.listen(PORT, async () => {

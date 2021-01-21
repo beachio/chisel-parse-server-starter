@@ -23,7 +23,8 @@
     "parse-server": "^4.5.0",
     "parse-server-mailgun": "^2.4.15",
     "request": "^2.88.2",
-    "stripe": "^7.63.1"
+    "stripe": "^7.63.1",
+    "yarn": "^1.22.5"
   },
   "engines": {
     "node": ">=10.0.0",
