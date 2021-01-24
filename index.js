@@ -14,14 +14,14 @@ const config = require('./config.json');
 let parseConfig = config.parseConfig;
 let StripeConfig = config.extraConfig.StripeConfig;
 
-const PORT        = process.env.PORT          || parseConfig.port;
-const URL_SERVER  = process.env.SERVER_URL    || parseConfig.URLserver;
+const PORT            = process.env.PORT          || parseConfig.port;
+const URL_SERVER      = process.env.SERVER_URL    || parseConfig.URLserver;
 const GRAPHQL_SERVER  = process.env.GRAPHQL_SERVER_URL    || parseConfig.GraphQLURLserver;
-const URL_DB      = process.env.DATABASE_URI  ||
+const URL_DB          = process.env.DATABASE_URI  ||
                     process.env.MONGODB_URI   || parseConfig.URLdb;
-const URL_SITE    = process.env.SITE_URL      || parseConfig.URLsite;
-const APP_ID      = process.env.APP_ID        || parseConfig.appId;
-const MASTER_KEY  = process.env.MASTER_KEY    || parseConfig.masterKey;
+const URL_SITE        = process.env.SITE_URL      || parseConfig.URLsite;
+const APP_ID          = process.env.APP_ID        || parseConfig.appId;
+const MASTER_KEY      = process.env.MASTER_KEY    || parseConfig.masterKey;
 
 const DASHBOARD_ACTIVATED = process.env.DASHBOARD_ACTIVATED || config.extraConfig.dashboardActivated;
 const DASH_USER_EMAIL     = process.env.USER_EMAIL          || config.extraConfig.userEmail;
