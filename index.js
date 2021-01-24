@@ -16,6 +16,7 @@ let StripeConfig = config.extraConfig.StripeConfig;
 
 const PORT        = process.env.PORT          || parseConfig.port;
 const URL_SERVER  = process.env.SERVER_URL    || parseConfig.URLserver;
+const GRAPHQL_SERVER  = process.env.GRAPHQL_SERVER_URL    || parseConfig.GraphQLURLserver;
 const URL_DB      = process.env.DATABASE_URI  ||
                     process.env.MONGODB_URI   || parseConfig.URLdb;
 const URL_SITE    = process.env.SITE_URL      || parseConfig.URLsite;
@@ -68,6 +69,7 @@ if (DASHBOARD_ACTIVATED) {
   const dashboardConfig = {
     apps: [{
       serverURL: URL_SERVER,
+      graphQLServerURL: GRAPHQL_SERVER,
       appId: APP_ID,
       masterKey: MASTER_KEY,
       appName: parseConfig.appName
