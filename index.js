@@ -1,5 +1,5 @@
 const express = require('express');
-const ParseServer = require('parse-server').ParseServer;
+const { default: ParseServer, ParseGraphQLServer } = require('parse-server');
 const ParseDashboard = require('parse-dashboard');
 const Parse = require('parse/node');
 const request = require('request');
@@ -60,9 +60,14 @@ module.exports.URL_SITE = URL_SITE;
 module.exports.StripeConfig = StripeConfig;
 
 
-const API = new ParseServer(parseConfig);
+const parseServer = new ParseServer(parseConfig);
+const parseGraphQLServer = new ParseGraphQLServer(
+  parseServer,
+  {graphQLPath: '/graphql'}
+);
 const app = new express();
-app.use('/parse', API);
+app.use('/parse', parseServer.app);
+parseGraphQLServer.applyGraphQL(app);
 
 
 if (DASHBOARD_ACTIVATED) {
