@@ -1,5 +1,5 @@
 const express = require('express');
-const { default: ParseServer, ParseGraphQLServer } = require('parse-server');
+const { default: ParseServer, ParseGraphQLServer } = require('@nessi/parse-server');
 const ParseDashboard = require('parse-dashboard');
 const Parse = require('parse/node');
 const request = require('request');
@@ -46,7 +46,7 @@ Object.assign(parseConfig, {
   publicServerURL: URL_SERVER,
 
   liveQuery: {
-    classNames: ['Site', 'Model', 'ModelField']
+    classNames: ['Site', 'Model', 'ModelField', 'ct____.*']
   }
 });
 
