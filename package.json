@@ -17,7 +17,7 @@
     "updateConfAndStart": "node update_stripe_in_config.js && node index.js"
   },
   "dependencies": {
-    "@nessi/parse-server": "^4.5.1",
+    "@nessi/parse-server": "^4.5.2",
     "express": "^4.17.1",
     "parse": "^2.19.0",
     "parse-dashboard": "^2.1.0",
