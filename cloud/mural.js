@@ -98,3 +98,57 @@ Parse.Cloud.define("claimPoints", async request => {
   const result = await claimPoints(code, participant, siteId);
   return result;
 });
+
+
+
+
+
+
+
+const getMyTalks = async ( participant, siteId ) => {
+  if (!participant)
+    return { status: 'error', message: 'Insufficient Data!' };
+  
+  // get site name Id and generate MODEL names based on that
+  const siteNameId = await getSiteNameId(siteId);
+  if (siteNameId === null) return { status: 'error', message: 'Invalid siteId' };
+  const PARTTICIPANT_MODEL = `ct____${siteNameId}____Participant`;
+  const TALK_MODEL = `ct____${siteNameId}____Talk`;
+  const TALKWRAP_MODEL = `ct____${siteNameId}____TalkWrap`;
+
+
+  const talks = [];
+  const talkIds = [];
+  for (const talkWrap of filteredTalkWraps) {
+    const talk = new Talk();
+    talk.id = talkWrap.get('Talk')[0].id;
+    talkIds.push(talk.id);
+    talks.push(talk);
+  }
+
+  const talksQuery = new ParseFront.Query(TALK_MODEL_NAME);
+  talksQuery.equalTo('t__status', 'Published');
+  talksQuery.containedIn('objectId', talkIds);
+  const myParseTalks = await talksQuery.find();
+      
+  let myTalks = [];
+  if (myParseTalks) {
+    myTalks = myParseTalks.map((parseTalk) => ({
+      id: parseTalk.id,
+      start: parseTalk.get('start'),
+      end: parseTalk.get('end'),
+      slug: parseTalk.get('slug')
+    }));
+  }
+
+  
+  return { status: 'success', myTalks };
+}
+module.exports.getMyTalks = getMyTalks;
+
+Parse.Cloud.define('myTalks', async request => {
+  let i;
+  const { participant, siteId } = request.params;
+  const result = await getMyTalks( participant, siteId );
+  return result;
+});
