@@ -160,6 +160,64 @@ Parse.Cloud.define("joinTalk", async(request) => {
 });
 
 
+
+Parse.Cloud.define("dropTalk", async(request) => {
+  const { slug, participantId, siteId } = request.params;
+  try {
+    if (!participantId || !slug)
+      return { status: 'error', message: 'Insufficient Data!' };
+
+      
+    // get site name Id and generate MODEL names based on that
+    const siteNameId = await getSiteNameId(siteId);
+    if (siteNameId === null) return { status: 'error', message: 'Invalid siteId' };
+
+    const PARTICIPANT_MODEL = `ct____${siteNameId}____Participant`;
+    const TALK_MODEL = `ct____${siteNameId}____Talk`;
+    const TALK_WRAP_MODEL = `ct____${siteNameId}____TalkWrap`;
+    
+   
+    const Participant = Parse.Object.extend(PARTICIPANT_MODEL);
+    const user = new Participant();
+    user.id = participantId;
+
+    // Server Data Update
+    const talkQuery = new Parse.Query(TALK_MODEL);
+    talkQuery.equalTo('slug', slug);
+    talkQuery.equalTo('t__status', 'Published');
+    const talkParseObject = await talkQuery.first();
+    if (!talkParseObject) {
+      throw ('No Talk record found. Please contact administrator.');
+    }
+
+    const self_assign = talkQuery.get('self_assign');
+    if (!self_assign) 
+      throw('Talk is not self assignable, you can\'t drop from the talk');
+
+    const talkWrapQuery = new Parse.Query(TALK_WRAP_MODEL);
+    talkWrapQuery.equalTo('Talk', talkParseObject);
+    talkWrapQuery.equalTo('Participants', user);
+    talkWrapQuery.equalTo('t__status', 'Published');
+    let talkWrapParseObject = await talkWrapQuery.first();
+    if (!talkWrapParseObject || !talkWrapParseObject.get('Participants')) {
+      throw('No participant record found')
+    }
+    
+    // Drop by participantId
+    const participants = talkWrapParseObject.get('Participants');
+    const filteredParticipants = participants.filter(participant => participant.id !== participantId);
+    talkWrapParseObject.set('Participants', filteredParticipants);
+    await talkWrapParseObject.save();
+
+    const newMyTalks = await getMyTalks(participantId, siteId);
+    return { status: 'success', myTalks: newMyTalks };
+  } catch(error) {
+    console.log("inside dropTalk", error);
+    return { status: 'error', error };
+  }
+});
+
+
 /* isJoinable check utility functions */
 const isTimeslotAvailable = (myTalks, start) => {
   for (const talk of myTalks) {
