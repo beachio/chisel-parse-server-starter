@@ -18,6 +18,17 @@ Parse.Cloud.define("myTalks", async (request) => {
     if (!participant)
       return { status: 'error', message: 'Insufficient Data!' };
     
+    const myTalks = await getMyTalks(participant, siteId);
+    
+    return { status: 'success', myTalks };
+  } catch (error) {
+    console.log('inside getMyTalks', error);
+    return { status: 'error', error };
+  }
+});
+
+const getMyTalks = async (participant, siteId) => {
+  try {
     // get site name Id and generate MODEL names based on that
     const siteNameId = await getSiteNameId(siteId);
     if (siteNameId === null) return { status: 'error', message: 'Invalid siteId' };
@@ -58,15 +69,112 @@ Parse.Cloud.define("myTalks", async (request) => {
         slug: parseTalk.get('slug')
       }));
     }
-
-    
-    return { status: 'success', myTalks };
+    return myTalks;
   } catch (error) {
-    console.log('inside getMyTalks', error);
+    console.log("inside  myTalks function")
+    throw error;
+  }
+}
+
+
+Parse.Cloud.define("joinTalk", async(request) => {
+  const { slug, participantId, siteId } = request.params;
+  try {
+    if (!participantId || !slug)
+      return { status: 'error', message: 'Insufficient Data!' };
+
+      
+    // get site name Id and generate MODEL names based on that
+    const siteNameId = await getSiteNameId(siteId);
+    if (siteNameId === null) return { status: 'error', message: 'Invalid siteId' };
+
+    const PARTICIPANT_MODEL = `ct____${siteNameId}____Participant`;
+    const TALK_MODEL = `ct____${siteNameId}____Talk`;
+    const TALK_WRAP_MODEL = `ct____${siteNameId}____TalkWrap`;
+    
+   
+    const Participant = Parse.Object.extend(PARTICIPANT_MODEL);
+    const user = new Participant();
+    user.id = participantId;
+
+    // Server Data Update
+    const talkQuery = new Parse.Query(TALK_MODEL);
+    talkQuery.equalTo('slug', slug);
+    talkQuery.equalTo('t__status', 'Published');
+    const talkParseObject = await talkQuery.first();
+    if (!talkParseObject) {
+      throw ('No Talk record found. Please contact administrator.');
+    }
+
+    const title = talkParseObject.get('title');
+    const start = talkParseObject.get('start');
+    const end = talkParseObject.get('end');
+    const max_capacity = talkParseObject.get('max_capacity');
+    const self_assign = talkParseObject.get('self_assign');
+    if(!self_assign) {
+      throw('Not joinable: Talk is not self-assignable.');
+    }
+
+    const myTalks = await getMyTalks(participantId, siteId);
+    let isJoinable = self_assign && isTimeslotAvailable(myTalks, start);
+    if (!isJoinable) {
+      throw('Not joinable: Timeslot unavailable.');
+    }
+    isJoinable = isJoinable && abracademyConditionCheck(myTalks, slug);
+    if (!isJoinable) {
+      throw('Not joinable: Abracademy unavailable.');
+    }
+
+    const talkWrapQuery = new Parse.Query(TALK_WRAP_MODEL);
+    talkWrapQuery.equalTo('task', talkParseObject);
+    talkWrapQuery.equalTo('t__status', 'Published');
+    let talkWrapParseObject = await talkWrapQuery.first();
+    if (!talkWrapParseObject) {
+      const TalkWrap = Parse.Object.extend(TALK_WRAP_MODEL); 
+      const talkWrapName=`${title}-${start}-${end}`;
+      talkWrapParseObject = new TalkWrap();
+      talkWrapParseObject.set('Name', talkWrapName);
+      talkWrapParseObject.set('Talk', [talkParseObject]);
+      talkWrapParseObject.set('Participants', [user]);
+      talkWrapParseObject.set('t__status', 'Published');
+    } else {
+      const participantIds = talkWrapParseObject.get('Participants');
+      const alreadyBooked = participantIds.reduce((acc, cur) => (acc || cur.id === participantId), false);
+      if (alreadyBooked) {
+        throw('Not joinable: Already Booked');
+      }
+      isJoinable = (!isNaN(max_capacity) && (max_capacity ===0 || max_capacity > participantIds.length));
+      if (!isJoinable) {
+        throw('Not joinable: Out of capacity');
+      }
+      talkWrapParseObject.set('Participants', [...(talkWrapParseObject.get('Participants') || []), user])
+    }
+    await talkWrapParseObject.save();
+
+    const newMyTalks = await getMyTalks(participantId, siteId);
+    return { status: 'success', myTalks: newMyTalks };
+  } catch(error) {
+    console.log("inside joinTalk", error);
     return { status: 'error', error };
   }
-  
 });
+
+
+/* isJoinable check utility functions */
+const isTimeslotAvailable = (myTalks, start) => {
+  for (const talk of myTalks) {
+    if (talk.start === start) return false;
+  }
+  return true;
+}
+
+const abracademyConditionCheck = (myTalks, slug) => {
+  if (slug.includes('abracademy-workshop') === false) return true;
+  for (const talk of myTalks) {
+    if (talk.slug.includes('abracademy-workshop')) return false;
+  }
+  return true;
+}
 
 
 
