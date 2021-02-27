@@ -3,6 +3,8 @@ const { default: ParseServer, ParseGraphQLServer } = require('@nessi/parse-serve
 const ParseDashboard = require('parse-dashboard');
 const Parse = require('parse/node');
 const request = require('request');
+const { claimPoints } = require('./cloud/mural');
+
 const http = require('http');
 const path = require('path');
 const fs = require('fs');
@@ -69,6 +71,16 @@ const app = new express();
 app.use('/parse', parseServer.app);
 parseGraphQLServer.applyGraphQL(app);
 
+app.use('/callback', function(req, res) {
+  console.log("----------------CALLBACK REQUEST---------------", req.query);
+  // http://localhost:1337/callback?code=2fa9409b-6dd5-44a7-b58a-9381c1f9351e&scopes=profile%3Aread&state=Alfred
+  res.send({status: 'OK'});
+})
+
+app.use('/claimPoints', async function(req, res) {
+  const result = await claimPoints(req.query.code, req.query.participant, req.query.siteId);
+  res.send(result);
+})
 
 if (DASHBOARD_ACTIVATED) {
   const dashboardConfig = {
