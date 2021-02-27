@@ -17,13 +17,14 @@
     "updateConfAndStart": "node update_stripe_in_config.js && node index.js"
   },
   "dependencies": {
+    "@nessi/parse-server": "^4.5.2",
     "express": "^4.17.1",
     "parse": "^2.19.0",
     "parse-dashboard": "^2.1.0",
-    "parse-server": "^4.5.0",
     "parse-server-mailgun": "^2.4.15",
     "request": "^2.88.2",
-    "stripe": "^7.63.1"
+    "stripe": "^7.63.1",
+    "yarn": "^1.22.5"
   },
   "engines": {
     "node": ">=10.0.0",

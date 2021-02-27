@@ -6,6 +6,7 @@
 
     "port": 1337,
     "URLserver": "http://localhost:1337/parse",
+    "GraphQLURLserver": "http://localhost:1337/graphql",
     "URLdb": "mongodb://localhost:27017/parse",
     "URLsite": "http://localhost:9000",
 

@@ -1,10 +1,13 @@
 const express = require('express');
-const ParseServer = require('parse-server').ParseServer;
+const { default: ParseServer, ParseGraphQLServer } = require('@nessi/parse-server');
 const ParseDashboard = require('parse-dashboard');
 const Parse = require('parse/node');
 const request = require('request');
 const { claimPoints } = require('./cloud/mural');
 
+const http = require('http');
+const path = require('path');
+const fs = require('fs');
 
 const packageJSON = require('./package.json');
 
@@ -13,13 +16,14 @@ const config = require('./config.json');
 let parseConfig = config.parseConfig;
 let StripeConfig = config.extraConfig.StripeConfig;
 
-const PORT        = process.env.PORT          || parseConfig.port;
-const URL_SERVER  = process.env.SERVER_URL    || parseConfig.URLserver;
-const URL_DB      = process.env.DATABASE_URI  ||
+const PORT            = process.env.PORT          || parseConfig.port;
+const URL_SERVER      = process.env.SERVER_URL    || parseConfig.URLserver;
+const GRAPHQL_SERVER  = process.env.GRAPHQL_SERVER_URL    || parseConfig.GraphQLURLserver;
+const URL_DB          = process.env.DATABASE_URI  ||
                     process.env.MONGODB_URI   || parseConfig.URLdb;
-const URL_SITE    = process.env.SITE_URL      || parseConfig.URLsite;
-const APP_ID      = process.env.APP_ID        || parseConfig.appId;
-const MASTER_KEY  = process.env.MASTER_KEY    || parseConfig.masterKey;
+const URL_SITE        = process.env.SITE_URL      || parseConfig.URLsite;
+const APP_ID          = process.env.APP_ID        || parseConfig.appId;
+const MASTER_KEY      = process.env.MASTER_KEY    || parseConfig.masterKey;
 
 const DASHBOARD_ACTIVATED = process.env.DASHBOARD_ACTIVATED || config.extraConfig.dashboardActivated;
 const DASH_USER_EMAIL     = process.env.USER_EMAIL          || config.extraConfig.userEmail;
@@ -39,9 +43,13 @@ Object.assign(parseConfig, {
   masterKey: MASTER_KEY,
   cloud: "./cloud/main",
   databaseURI: URL_DB,
-  
+
   serverURL: URL_SERVER,
-  publicServerURL: URL_SERVER
+  publicServerURL: URL_SERVER,
+
+  liveQuery: {
+    classNames: ['Site', 'Model', 'ModelField', 'ct____.*']
+  }
 });
 
 const cps = parseConfig.customPages;
@@ -54,9 +62,14 @@ module.exports.URL_SITE = URL_SITE;
 module.exports.StripeConfig = StripeConfig;
 
 
-const API = new ParseServer(parseConfig);
+const parseServer = new ParseServer(parseConfig);
+const parseGraphQLServer = new ParseGraphQLServer(
+  parseServer,
+  {graphQLPath: '/graphql'}
+);
 const app = new express();
-app.use('/parse', API);
+app.use('/parse', parseServer.app);
+parseGraphQLServer.applyGraphQL(app);
 
 app.use('/callback', function(req, res) {
   console.log("----------------CALLBACK REQUEST---------------", req.query);
@@ -73,6 +86,7 @@ if (DASHBOARD_ACTIVATED) {
   const dashboardConfig = {
     apps: [{
       serverURL: URL_SERVER,
+      graphQLServerURL: GRAPHQL_SERVER,
       appId: APP_ID,
       masterKey: MASTER_KEY,
       appName: parseConfig.appName
@@ -87,7 +101,7 @@ if (DASHBOARD_ACTIVATED) {
       user: DASH_USER_EMAIL,
       pass: DASH_USER_PASSWORD
     }];
-  
+
   module.exports.dashboardConfig = dashboardConfig;
   const dashboard = new ParseDashboard(dashboardConfig, {allowInsecureHTTP: true});
   app.use('/dashboard', dashboard);
@@ -97,7 +111,7 @@ if (DASHBOARD_ACTIVATED) {
 const postStart = async () => {
   Parse.initialize(APP_ID, null, MASTER_KEY);
   Parse.serverURL = URL_SERVER;
-  
+
   if (StripeConfig) {
     try {
       await request({
@@ -110,16 +124,15 @@ const postStart = async () => {
         },
         body: {params: {StripeKeyPublic: StripeConfig.keyPublic}}
       });
-    
+
     } catch (e) {
       console.error(e);
     }
   }
-  
+
   // set templates
   if (SITE_TEMPLATES) {
     const templates = require('./siteTemplates/templates.json');
-    const fs = require('fs');
 
     const Template = Parse.Object.extend('Template');
     const Model = Parse.Object.extend('Model');
@@ -175,8 +188,31 @@ const postStart = async () => {
   }
 };
 
+// Clearing logs
+const clearLogInterval = 1000 * 60 * 60 * 24;
+const logsDirectory = './logs';
+function clearLogs () {
+  fs.readdir(logsDirectory, (err, files) => {
+    if (err)
+      console.error(err);
 
-app.listen(PORT, async () => {
+    for (const file of files) {
+      fs.unlink(path.join(logsDirectory, file), err => {
+        if (err)
+          console.error(err);
+      });
+    }
+    console.info("Logs was cleaned");
+  });
+}
+clearLogs();
+setInterval(clearLogs, clearLogInterval);
+
+
+const httpServer = http.createServer(app);
+httpServer.listen(PORT, async () => {
   await postStart();
   console.log(`Chisel Parse server v${packageJSON.version} running on port ${PORT}.`);
 });
+
+const lqServer = ParseServer.createLiveQueryServer(httpServer);
