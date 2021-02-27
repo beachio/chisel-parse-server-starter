@@ -2,6 +2,74 @@ const {config, SITE, ROLE_ADMIN, ROLE_EDITOR, promisifyW, getAllObjects} = requi
 
 const {getPayPlan} = require('./payment');
 
+
+// Get Site nameId to generate Model names
+const getSiteNameId = async(siteId) => {
+  const siteQuery = new Parse.Query('Site');
+  siteQuery.equalTo('objectId', siteId);
+  const siteRecord = await siteQuery.first({useMasterKey: true});
+  if (!siteRecord || !siteRecord.get('nameId')) return null;
+  return siteRecord.get('nameId');
+}
+
+Parse.Cloud.define("myTalks", async (request) => {
+  const { participant, siteId } = request.params;
+  try {
+    if (!participant)
+      return { status: 'error', message: 'Insufficient Data!' };
+    
+    // get site name Id and generate MODEL names based on that
+    const siteNameId = await getSiteNameId(siteId);
+    if (siteNameId === null) return { status: 'error', message: 'Invalid siteId' };
+    const PARTICIPANT_MODEL = `ct____${siteNameId}____Participant`;
+    const TALK_MODEL = `ct____${siteNameId}____Talk`;
+    const TALK_WRAP_MODEL = `ct____${siteNameId}____TalkWrap`;
+    
+    const Participant = Parse.Object.extend(PARTICIPANT_MODEL);
+    const Talk = Parse.Object.extend(TALK_MODEL);
+    const user = new Participant();
+    user.id = participant;
+
+    const talkWrapQuery = new Parse.Query(TALK_WRAP_MODEL);
+    talkWrapQuery.equalTo('t__status', 'Published');
+    talkWrapQuery.equalTo('Participants', user);
+    const filteredTalkWraps = await talkWrapQuery.find();
+
+    const talks = [];
+    const talkIds = [];
+    for (const talkWrap of filteredTalkWraps) {
+      const talk = new Talk();
+      talk.id = talkWrap.get('Talk')[0].id;
+      talkIds.push(talk.id);
+      talks.push(talk);
+    }
+
+    const talksQuery = new Parse.Query(TALK_MODEL);
+    talksQuery.equalTo('t__status', 'Published');
+    talksQuery.containedIn('objectId', talkIds);
+    const myParseTalks = await talksQuery.find();
+        
+    let myTalks = [];
+    if (myParseTalks) {
+      myTalks = myParseTalks.map((parseTalk) => ({
+        id: parseTalk.id,
+        start: parseTalk.get('start'),
+        end: parseTalk.get('end'),
+        slug: parseTalk.get('slug')
+      }));
+    }
+
+    
+    return { status: 'success', myTalks };
+  } catch (error) {
+    console.log('inside getMyTalks', error);
+    return { status: 'error', error };
+  }
+  
+});
+
+
+
 const checkRights = (user, obj) => {
   const acl = obj.getACL();
   if (!acl)
@@ -703,169 +771,3 @@ Parse.Cloud.define("checkPassword", request => {
 
   return Parse.User.logIn(username, password);
 });
-
-
-
-
-
-Parse.Cloud.define("generateTicket", async request => {
-  const {email, siteId} = request.params;
-  if (!email)
-    return { status: 'error', message: 'There is no email param!' };
-  
-  // get site name Id and generate MODEL names based on that
-  const siteNameId = await getSiteNameId(siteId);
-  if (siteNameId === null) return { status: 'error', message: 'Invalid siteId' };
-
-  const PARTTICIPANT_MODEL = `ct____${siteNameId}____Participant`;
-
-  const participantQuery = new Parse.Query(PARTTICIPANT_MODEL);
-  participantQuery.equalTo('Email', email);
-  const currentParticipant = await participantQuery.find({useMasterKey: true});
-  if (!currentParticipant || currentParticipant.length < 1) 
-    return { status: 'error', message: 'There is no participant with the given email!' };
-
-  // If the record already has ticket information, no need to regenerate again.
-  if (currentParticipant[0].get('ticket')) return currentParticipant[0].get('ticket');
-
-  // generate the ticket, currently in order
-  const countQuery = new Parse.Query(PARTTICIPANT_MODEL);
-  countQuery.equalTo('t__status', 'Published');
-  countQuery.exists('ticket');
-  const count = await countQuery.count({useMasterKey: true});
-  
-  const newTicketNumber = ('000000' + (count + 1)).slice(-6);
-
-  for (let i = 0; i < currentParticipant.length; i++) {
-    currentParticipant[i].set('ticket', newTicketNumber);
-    await currentParticipant[i].save();
-  }
-
-  return { status: 'success', ticket: newTicketNumber };
-});
-
-const claimPoints = async (code, participant, siteId) => {
-  if (!code || !participant)
-    return { status: 'error', message: 'Insufficient Data!' };
-  
-  // get site name Id and generate MODEL names based on that
-  const siteNameId = await getSiteNameId(siteId);
-  if (siteNameId === null) return { status: 'error', message: 'Invalid siteId' };
-  const PARTTICIPANT_MODEL = `ct____${siteNameId}____Participant`;
-  const CHALLENGE_MODEL = `ct____${siteNameId}____Challenge`;
-
-  const challengeQuery = new Parse.Query(CHALLENGE_MODEL);
-//  challengeQuery.equalTo('t__status', 'Published');
-  challengeQuery.equalTo('Enabled', true);
-  challengeQuery.equalTo('Code', code);
-  const currentChallenge = await challengeQuery.find({useMasterKey: true});
-  if (!currentChallenge || currentChallenge.length < 1)
-    return { status: 'error', message: 'There is no challenge with the given code!' };
-
-  const participantQuery = new Parse.Query(PARTTICIPANT_MODEL);
-  // participantQuery.equalTo('t__status', 'Published');
-  participantQuery.equalTo('Email', participant);
-  const currentParticipant = await participantQuery.find({useMasterKey: true});
-  if (!currentParticipant || currentParticipant.length < 1) 
-    return { status: 'error', message: 'There is no participant with the given email!' };
-
-  
-  // check if participant already claim points of this challenge
-  const redeemList = currentChallenge[0].get('Redeem_List') || [];
-  const redeemIndex = redeemList.findIndex(participant => participant.id === currentParticipant[0].id);
-
-  // If no previous claim record of the participant, increase the points and append participant to redeem list
-  if (redeemIndex === -1 || currentChallenge[0].get('Redeem_Once') === false) {
-    const pointsToAdd = currentChallenge[0].get('Points');
-    for (i = 0; i < currentParticipant.length; i++) {
-      currentParticipant[i].set('Points', currentParticipant[i].get('Points') + pointsToAdd);
-      await currentParticipant[i].save();
-    }
-
-    for (i = 0; i < currentChallenge.length; i++) {
-      currentChallenge[i].set('Redeem_List', [...redeemList, ...currentParticipant]);
-      await currentChallenge[i].save();
-    }
-    return { status: 'success', point: pointsToAdd };
-  }
-
-  return { status: 'success', point: 0 };
-}
-module.exports.claimPoints = claimPoints;
-
-Parse.Cloud.define("claimPoints", async request => {
-  let i;
-  const {code, participant, siteId} = request.params;
-  const result = await claimPoints(code, participant, siteId);
-  return result;
-});
-
-
-
-
-
-
-// Get Site nameId to generate Model names
-const getSiteNameId = async(siteId) => {
-  const siteQuery = new Parse.Query('Site');
-  siteQuery.equalTo('objectId', siteId);
-  const siteRecord = await siteQuery.first({useMasterKey: true});
-  if (!siteRecord || !siteRecord.get('nameId')) return null;
-  return siteRecord.get('nameId');
-}
-
-const getMyTalks = async ( participant, siteId ) => {
-  if (!participant)
-    return { status: 'error', message: 'Insufficient Data!' };
-  
-  // get site name Id and generate MODEL names based on that
-  const siteNameId = await getSiteNameId(siteId);
-  if (siteNameId === null) return { status: 'error', message: 'Invalid siteId' };
-  const PARTICIPANT_MODEL = `ct____${siteNameId}____Participant`;
-  const TALK_MODEL = `ct____${siteNameId}____Talk`;
-  const TALK_WRAP_MODEL = `ct____${siteNameId}____TalkWrap`;
-  
-  const Participant = Parse.Object.extend(PARTICIPANT_MODEL);
-  const Talk = Parse.Object.extend(TALK_MODEL);
-  const user = new Participant();
-  user.id = participant;
-
-  const talkWrapQuery = new Parse.Query(TALK_WRAP_MODEL);
-  talkWrapQuery.equalTo('t__status', 'Published');
-  talkWrapQuery.equalTo('Participants', user);
-  const filteredTalkWraps = await talkWrapQuery.find();
-
-  const talks = [];
-  const talkIds = [];
-  for (const talkWrap of filteredTalkWraps) {
-    const talk = new Talk();
-    talk.id = talkWrap.get('Talk')[0].id;
-    talkIds.push(talk.id);
-    talks.push(talk);
-  }
-
-  const talksQuery = new Parse.Query(TALK_MODEL);
-  talksQuery.equalTo('t__status', 'Published');
-  talksQuery.containedIn('objectId', talkIds);
-  const myParseTalks = await talksQuery.find();
-      
-  let myTalks = [];
-  if (myParseTalks) {
-    myTalks = myParseTalks.map((parseTalk) => ({
-      id: parseTalk.id,
-      start: parseTalk.get('start'),
-      end: parseTalk.get('end'),
-      slug: parseTalk.get('slug')
-    }));
-  }
-
-  
-  return { status: 'success', myTalks };
-}
-
-Parse.Cloud.define("myTalks", async request => {
-  const { participant, siteId } = request.params;
-  const result = await getMyTalks( participant, siteId );
-  return result;
-});
-
