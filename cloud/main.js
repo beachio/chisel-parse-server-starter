@@ -306,6 +306,10 @@ const onCollaborationModify = async (collab, deleting = false) => {
     if (!deleting) {
       const tempRole = tempCollab.get('role');
       const tempUser = tempCollab.get('user');
+
+      if (!tempUser)
+        continue;
+
       collabACL.setReadAccess(tempUser, tempRole == ROLE_ADMIN);
       collabACL.setWriteAccess(tempUser, tempRole == ROLE_ADMIN);
     }
@@ -541,6 +545,9 @@ Parse.Cloud.beforeSave(`Model`, async request => {
     const user = collab.get('user');
     const role = collab.get('role');
 
+    if (!user)
+      continue;
+
     modelACL.setReadAccess(user, true);
     modelACL.setWriteAccess(user, role == ROLE_ADMIN);
 
@@ -606,6 +613,9 @@ Parse.Cloud.beforeSave(`ModelField`, async request => {
     const user = collab.get('user');
     const role = collab.get('role');
 
+    if (!user)
+      continue;
+
     fieldACL.setReadAccess(user, true);
     fieldACL.setWriteAccess(user, role == ROLE_ADMIN);
   }
@@ -635,6 +645,9 @@ Parse.Cloud.beforeSave(`MediaItem`, async request => {
   for (let collab of collabs) {
     const user = collab.get('user');
     const role = collab.get('role');
+
+    if (!user)
+      continue;
 
     itemACL.setReadAccess(user, true);
     itemACL.setWriteAccess(user, role == ROLE_ADMIN);
