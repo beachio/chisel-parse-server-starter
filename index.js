@@ -46,7 +46,7 @@ Object.assign(parseConfig, {
   publicServerURL: URL_SERVER,
 
   liveQuery: {
-    classNames: ['Site', 'Model', 'ModelField', 'ct____.*']
+    classNames: ['Site', 'Model', 'ModelField', 'Collaboration', 'MediaItem', 'ct____.*']
   }
 });
 
