@@ -1,6 +1,6 @@
 {
   "name": "chisel-parse-server",
-  "version": "0.7.2",
+  "version": "0.7.3",
   "description": "Parse Server setup for Chisel CMS",
   "author": "Beach.io <beach.io>",
   "license": "MIT",
@@ -19,6 +19,7 @@
   "dependencies": {
     "@nessi/parse-server": "^4.5.2",
     "express": "^4.17.1",
+    "express-http-proxy": "^1.6.2",
     "parse": "^2.19.0",
     "parse-dashboard": "^2.1.0",
     "parse-server-mailgun": "^2.4.15",
