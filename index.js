@@ -69,16 +69,28 @@ const app = new express();
 app.use('/parse', parseServer.app);
 parseGraphQLServer.applyGraphQL(app);
 
-app.post('/users_code', bodyParser.text({type: '*/*'}), (req, res, next) => {
+app.post('/users_code', bodyParser.json(), (req, res, next) => {
+  console.log(req.body.custom_code);
+  console.log(req.body.templates_json);
   if (req.headers['x-parse-application-id'] == APP_ID && req.headers['x-parse-rest-api-key'] == MASTER_KEY)
   {
-    fs.writeFile("./cloud/users_code.js", req.body, (err) =>{
-        if (err) {
-            res.send({ status: 'Failed' })
-            return
-        }
-        res.send({ status: 'SUCCESS' })
-    })
+    let usersCodeSuccess = false;
+    let customTemplatesSuccess = false;
+    let defaultData = JSON.parse(fs.readFileSync('./SiteTemplates/default_templates.json'));
+    let res_data = defaultData.concat(req.body.templates_json);
+    fs.writeFileSync("./cloud/users_code.js", req.body.custom_code, (err) =>{
+        if (!err)
+          usersCodeSuccess = true;
+    });
+    fs.writeFileSync('./SiteTemplates/templates.json', JSON.stringify(res_data), (err) => {
+      if (!err)
+        customTemplatesSuccess = true;
+    });
+    if (usersCodeSuccess && customTemplatesSuccess){
+      res.send({ status: 'SUCCESS' })
+    }
+    else
+      res.send({ status: 'Failed' })
   }
   else
     res.status(401).send({message: "Unauthorized"})
