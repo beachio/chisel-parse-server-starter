@@ -70,22 +70,22 @@ app.use('/parse', parseServer.app);
 parseGraphQLServer.applyGraphQL(app);
 
 app.post('/users_code', bodyParser.json(), (req, res, next) => {
-  console.log(req.body.custom_code);
-  console.log(req.body.templates_json);
   if (req.headers['x-parse-application-id'] == APP_ID && req.headers['x-parse-rest-api-key'] == MASTER_KEY)
   {
     let usersCodeSuccess = false;
-    let customTemplatesSuccess = false;
-    let defaultData = JSON.parse(fs.readFileSync('./SiteTemplates/default_templates.json'));
-    let res_data = defaultData.concat(req.body.templates_json);
+    let customTemplatesSuccess = true;
     fs.writeFileSync("./cloud/users_code.js", req.body.custom_code, (err) =>{
         if (!err)
           usersCodeSuccess = true;
     });
-    fs.writeFileSync('./SiteTemplates/templates.json', JSON.stringify(res_data), (err) => {
-      if (!err)
-        customTemplatesSuccess = true;
-    });
+    const path = './siteTemplates/default_templates.json'
+    if (fs.existsSync(path)) {
+      let defaultData = JSON.parse(fs.readFileSync(path));
+      let res_data = defaultData.concat(req.body.templates_json);
+      fs.writeFileSync('./siteTemplates/templates.json', JSON.stringify(res_data))
+    }
+    else
+      customTemplatesSuccess = true
     if (usersCodeSuccess && customTemplatesSuccess){
       res.send({ status: 'SUCCESS' })
     }
