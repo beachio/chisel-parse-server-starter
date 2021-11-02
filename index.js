@@ -172,7 +172,7 @@ const postStart = async () => {
 
       if (template.icon) {
         const iconData = fs.readFileSync(`./siteTemplates/icons/${template.icon}`);
-        const iconFile = new Parse.File("icon.png", [...iconData]);
+        const iconFile = new Parse.File("icon.svg", [...iconData]);
         await iconFile.save(null, {useMasterKey: true});
         template_o.set('icon', iconFile);
       }

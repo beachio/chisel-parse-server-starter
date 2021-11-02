@@ -2,7 +2,7 @@
   {
     "name": "Blog",
     "description": "The template for blog.",
-    "icon": "blog.png",
+    "icon": "blog.svg",
     "models": [
       {
         "name": "Author",
@@ -269,7 +269,7 @@
   {
     "name": "Knowledge Base",
     "description": "The template for knowledge base.",
-    "icon": "knowledge.png",
+    "icon": "knowledge.svg",
     "models": [
       {
         "name": "Author",
@@ -626,7 +626,7 @@
   {
     "name": "Photo Gallery",
     "description": "The template for photo gallery.",
-    "icon": "gallery.png",
+    "icon": "gallery.svg",
     "models": [
       {
         "name": "Author",
@@ -1017,7 +1017,7 @@
   {
     "name": "Product Catalogue",
     "description": "The template for product catalogue.",
-    "icon": "products.png",
+    "icon": "products.svg",
     "models": [
       {
         "name": "Brand",
