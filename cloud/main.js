@@ -103,6 +103,16 @@ const deleteContentItem = async (user, tableName, itemId) => {
       //!! uncontrolled async operation
       if (media)
         media.destroy({useMasterKey: true});
+
+    } else if (val.type == 'Array') {
+      const array = item.get(field);
+      if (array) {
+        for (let item of array) {
+          //!! uncontrolled async operation
+          if (item.className == 'MediaItem')
+            item.destroy({useMasterKey: true});
+        }
+      }
     }
   }
 
