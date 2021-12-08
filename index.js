@@ -2,6 +2,7 @@ const express = require('express');
 const { default: ParseServer, ParseGraphQLServer } = require('@nessi/parse-server');
 const ParseDashboard = require('parse-dashboard');
 const Parse = require('parse/node');
+const muralAuthAdapter = require('parse-server-mural-auth-adapter');
 const request = require('request');
 const http = require('http');
 const path = require('path');
@@ -47,6 +48,9 @@ Object.assign(parseConfig, {
 
   liveQuery: {
     classNames: ['Site', 'Model', 'ModelField', 'Collaboration', 'MediaItem', 'ct____.*']
+  },
+  auth: {
+    mural: muralAuthAdapter
   }
 });
 

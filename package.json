@@ -23,6 +23,7 @@
     "parse": "^2.19.0",
     "parse-dashboard": "^2.1.0",
     "parse-server-mailgun": "^2.4.15",
+    "parse-server-mural-auth-adapter": "^1.0.2",
     "request": "^2.88.2",
     "stripe": "^7.63.1",
     "yarn": "^1.22.5"
