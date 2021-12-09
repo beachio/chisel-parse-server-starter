@@ -384,27 +384,14 @@ const onCollaborationModify = async (collab, deleting = false) => {
         let CLP = response ? response.classLevelPermissions : null;
         if (!CLP)
           CLP = {
-            'get': {},
-            'find': {},
-            'count': {},
+            'get': {"*": true},
+            'find': {"*": true},
+            'count': {"*": true},
             'create': {},
             'update': {},
             'delete': {},
             'addField': {}
           };
-
-        if (!deleting) {
-          CLP['get'][user.id] = true;
-          CLP['find'][user.id] = true;
-          CLP['count'][user.id] = true;
-        } else {
-          if (CLP['get'].hasOwnProperty(user.id))
-            delete CLP['get'][user.id];
-          if (CLP['find'].hasOwnProperty(user.id))
-            delete CLP['find'][user.id];
-          if (CLP['count'].hasOwnProperty(user.id))
-            delete CLP['count'][user.id];
-        }
 
         if (!deleting && (role == ROLE_ADMIN || role == ROLE_EDITOR)) {
           CLP['create'][user.id] = true;
@@ -552,7 +539,6 @@ Parse.Cloud.beforeSave(`Model`, async request => {
       .equalTo('site', site));
 
   const writers = [owner.id];
-  const all = [owner.id];
 
   for (let collab of collabs) {
     const user = collab.get('user');
@@ -566,27 +552,21 @@ Parse.Cloud.beforeSave(`Model`, async request => {
 
     if (role == ROLE_ADMIN || role == ROLE_EDITOR)
       writers.push(user.id);
-    all.push(user.id);
   }
 
   model.setACL(modelACL);
 
   //set CLP for content table
   const CLP = {
-    'get': {},
-    'find': {},
-    'count': {},
+    'get': {"*": true},
+    'find': {"*": true},
+    'count': {"*": true},
     'create': {},
     'update': {},
     'delete': {},
     'addField': {}
   };
 
-  for (let user of all) {
-    CLP['get'][user] = true;
-    CLP['find'][user] = true;
-    CLP['count'][user] = true;
-  }
   for (let user of writers) {
     CLP['create'][user] = true;
     CLP['update'][user] = true;
