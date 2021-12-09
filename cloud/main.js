@@ -410,6 +410,7 @@ const onCollaborationModify = async (collab, deleting = false) => {
           CLP['create'][user.id] = true;
           CLP['update'][user.id] = true;
           CLP['delete'][user.id] = true;
+          CLP['addField'][user.id] = true;
         } else {
           if (CLP['create'].hasOwnProperty(user.id))
             delete CLP['create'][user.id];
@@ -417,12 +418,9 @@ const onCollaborationModify = async (collab, deleting = false) => {
             delete CLP['update'][user.id];
           if (CLP['delete'].hasOwnProperty(user.id))
             delete CLP['delete'][user.id];
+          if (CLP['addField'].hasOwnProperty(user.id))
+            delete CLP['addField'][user.id];
         }
-
-        if (!deleting && role == ROLE_ADMIN)
-          CLP['addField'][user.id] = true;
-        else if (CLP['addField'].hasOwnProperty(user.id))
-          delete CLP['addField'][user.id];
 
         //!! uncontrolled async operation
         const data = {"classLevelPermissions": CLP};
@@ -552,7 +550,6 @@ Parse.Cloud.beforeSave(`Model`, async request => {
     new Parse.Query('Collaboration')
       .equalTo('site', site));
 
-  const admins = [owner.id];
   const writers = [owner.id];
   const all = [owner.id];
 
@@ -566,8 +563,6 @@ Parse.Cloud.beforeSave(`Model`, async request => {
     modelACL.setReadAccess(user, true);
     modelACL.setWriteAccess(user, role == ROLE_ADMIN);
 
-    if (role == ROLE_ADMIN)
-      admins.push(user.id);
     if (role == ROLE_ADMIN || role == ROLE_EDITOR)
       writers.push(user.id);
     all.push(user.id);
@@ -595,8 +590,6 @@ Parse.Cloud.beforeSave(`Model`, async request => {
     CLP['create'][user] = true;
     CLP['update'][user] = true;
     CLP['delete'][user] = true;
-  }
-  for (let user of admins) {
     CLP['addField'][user] = true;
   }
 
