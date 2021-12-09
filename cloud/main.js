@@ -386,6 +386,7 @@ const onCollaborationModify = async (collab, deleting = false) => {
           CLP = {
             'get': {},
             'find': {},
+            'count': {},
             'create': {},
             'update': {},
             'delete': {},
@@ -395,11 +396,14 @@ const onCollaborationModify = async (collab, deleting = false) => {
         if (!deleting) {
           CLP['get'][user.id] = true;
           CLP['find'][user.id] = true;
+          CLP['count'][user.id] = true;
         } else {
           if (CLP['get'].hasOwnProperty(user.id))
             delete CLP['get'][user.id];
           if (CLP['find'].hasOwnProperty(user.id))
             delete CLP['find'][user.id];
+          if (CLP['count'].hasOwnProperty(user.id))
+            delete CLP['count'][user.id];
         }
 
         if (!deleting && (role == ROLE_ADMIN || role == ROLE_EDITOR)) {
@@ -575,6 +579,7 @@ Parse.Cloud.beforeSave(`Model`, async request => {
   const CLP = {
     'get': {},
     'find': {},
+    'count': {},
     'create': {},
     'update': {},
     'delete': {},
@@ -584,6 +589,7 @@ Parse.Cloud.beforeSave(`Model`, async request => {
   for (let user of all) {
     CLP['get'][user] = true;
     CLP['find'][user] = true;
+    CLP['count'][user] = true;
   }
   for (let user of writers) {
     CLP['create'][user] = true;
