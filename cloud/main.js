@@ -424,8 +424,8 @@ const onCollaborationModify = async (collab, deleting = false) => {
 
         //!! uncontrolled async operation
         const data = {"classLevelPermissions": CLP};
-        setTableData(tableName, data)
-          .catch(() => setTableData(tableName, data, 'PUT'));
+        setTableData(tableName, data, 'PUT')
+          .catch(() => setTableData(tableName, data, 'POST'));
       });
   }
 
@@ -535,6 +535,7 @@ Parse.Cloud.beforeSave(`Model`, async request => {
   if (request.master)
     return;
 
+  //updating an existing model
   const model = request.object;
   if (model.id)
     return;
