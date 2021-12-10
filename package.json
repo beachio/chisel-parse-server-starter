@@ -21,7 +21,7 @@
     "express": "^4.17.1",
     "express-http-proxy": "^1.6.2",
     "parse": "^2.19.0",
-    "parse-dashboard": "^2.1.0",
+    "parse-dashboard": "^3.2.1",
     "parse-server-mailgun": "^2.4.15",
     "parse-server-mural-auth-adapter": "^1.0.2",
     "request": "^2.88.2",
@@ -29,7 +29,7 @@
     "yarn": "^1.22.5"
   },
   "engines": {
-    "node": ">=10.0.0",
+    "node": ">=12.0.0",
     "yarn": "^1.22.5"
   }
 }
