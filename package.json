@@ -18,8 +18,10 @@
   },
   "dependencies": {
     "@nessi/parse-server": "^4.5.2",
+    "crypto": "^1.0.1",
     "express": "^4.17.1",
     "express-http-proxy": "^1.6.2",
+    "jose": "^4.3.7",
     "parse": "^2.19.0",
     "parse-dashboard": "^3.2.1",
     "parse-server-mailgun": "^2.4.15",
