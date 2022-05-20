@@ -22,6 +22,7 @@ const URL_DB          = process.env.DATABASE_URI  ||
                     process.env.MONGODB_URI   || parseConfig.URLdb;
 const URL_SITE        = process.env.SITE_URL      || parseConfig.URLsite;
 const APP_ID          = process.env.APP_ID        || parseConfig.appId;
+const MAX_UPLOAD_SIZE = process.env.MAX_UPLOAD_SIZE || parseConfig.maxUploadSize;
 const MASTER_KEY      = process.env.MASTER_KEY    || parseConfig.masterKey;
 
 const DASHBOARD_ACTIVATED = process.env.DASHBOARD_ACTIVATED || config.extraConfig.dashboardActivated;
@@ -42,6 +43,7 @@ Object.assign(parseConfig, {
   masterKey: MASTER_KEY,
   cloud: "./cloud/main",
   databaseURI: URL_DB,
+  maxUploadSize: MAX_UPLOAD_SIZE,
 
   serverURL: URL_SERVER,
   publicServerURL: URL_SERVER,
