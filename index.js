@@ -1,5 +1,5 @@
 const express = require('express');
-const { default: ParseServer, ParseGraphQLServer } = require('@nessi/parse-server');
+const { default: ParseServer, ParseGraphQLServer } = require('parse-server');
 const ParseDashboard = require('parse-dashboard');
 const Parse = require('parse/node');
 const muralAuthAdapter = require('parse-server-mural-auth-adapter');
@@ -53,7 +53,9 @@ Object.assign(parseConfig, {
   },
   auth: {
     mural: muralAuthAdapter
-  }
+  },
+
+  requestKeywordDenylist: []
 });
 
 const cps = parseConfig.customPages;

@@ -677,7 +677,7 @@ Parse.Cloud.define("inviteUser", async request => {
 
   console.log(`Send invite to ${email} ${new Date()}`);
 
-  const {AppCache} = require('@nessi/parse-server/lib/cache');
+  const {AppCache} = require('parse-server/lib/cache');
   const emailAdapter = AppCache.get(config.appId)['userController']['adapter'];
 
   const emailSelf = request.user.get('email');
