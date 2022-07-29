@@ -86,7 +86,7 @@ Parse.Cloud.define("getStripeData", async request => {
     subscription = null;
 
   return {
-    defaultSource: customer.defaultSource,
+    defaultSource: customer.default_source,
     sources,
     subscription
   };
@@ -113,7 +113,7 @@ Parse.Cloud.define("savePaymentSource", async request => {
   if (customer && !customer.deleted) {
     const source = await stripe.customers.createSource(customerId, {source: tokenId});
     if (asDefault)
-      await stripe.customers.update(customerId, {defaultSource: source.id});
+      await stripe.customers.update(customerId, {default_source: source.id});
 
     return null;
 
@@ -145,7 +145,7 @@ Parse.Cloud.define("setDefaultPaymentSource", async request => {
   if (!customerId)
     throw 'There is no customer object yet!';
 
-  await stripe.customers.update(customerId, {defaultSource: sourceId});
+  await stripe.customers.update(customerId, {default_source: sourceId});
 
   return null;
 });
@@ -170,7 +170,7 @@ Parse.Cloud.define("removePaymentSource", async request => {
 
   const customer = await stripe.customers.retrieve(customerId);
 
-  return {defaultSource: customer.defaultSource};
+  return {defaultSource: customer.default_source};
 });
 
 Parse.Cloud.define('paySubscription', async request => {
@@ -206,7 +206,7 @@ Parse.Cloud.define('paySubscription', async request => {
         id: subscription.items.data[0].id,
         plan: StripePlanId
       }],
-      cancelAtPeriodEnd: false
+      cancel_at_period_end: false
     });
 
   } else {
@@ -240,5 +240,5 @@ Parse.Cloud.define('cancelSubscription', async request => {
   if (!subscription)
     throw 'There are no subscription!';
 
-  return await stripe.subscriptions.update(subscription.id, {cancelAtPeriodEnd: true});
+  return await stripe.subscriptions.update(subscription.id, {cancel_at_period_end: true});
 });
