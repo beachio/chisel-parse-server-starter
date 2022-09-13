@@ -113,7 +113,9 @@ if (DASHBOARD_ACTIVATED) {
       appName: parseConfig.appName
     }],
     trustProxy: 1,
+    PARSE_DASHBOARD_COOKIE_SESSION_SECRET: APP_ID,
     PARSE_DASHBOARD_ALLOW_INSECURE_HTTP: 1,
+    PARSE_DASHBOARD_TRUST_PROXY: 1,
     allowInsecureHTTP: 1
   };
 
@@ -124,7 +126,7 @@ if (DASHBOARD_ACTIVATED) {
     }];
 
   module.exports.dashboardConfig = dashboardConfig;
-  const dashboard = new ParseDashboard(dashboardConfig, {allowInsecureHTTP: true});
+  const dashboard = new ParseDashboard(dashboardConfig);
   app.use('/dashboard', dashboard);
 }
 
@@ -164,11 +166,17 @@ const postStart = async () => {
     ACL.setPublicWriteAccess(false);
 
     for (let template of templates) {
-      const res = await new Parse.Query("Template")
-        .equalTo('name', template.name)
-        .first();
-      if (res)
-        continue;
+      try {
+        const res = await new Parse.Query("Template")
+          .equalTo('name', template.name)
+          .first({useMasterKey: true})
+        if (res)
+          continue;
+      }
+      catch (e) {
+        console.log(e);
+      }
+
 
       const template_o = new Template();
 
@@ -179,7 +187,7 @@ const postStart = async () => {
       if (template.icon) {
         const iconData = fs.readFileSync(`./siteTemplates/icons/${template.icon}`);
         const iconFile = new Parse.File("icon.svg", [...iconData]);
-        await iconFile.save(null, {useMasterKey: true});
+        await iconFile.save({useMasterKey: true});
         template_o.set('icon', iconFile);
       }
 
