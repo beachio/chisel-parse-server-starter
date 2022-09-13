@@ -17,7 +17,7 @@
     "updateConfAndStart": "node update_stripe_in_config.js && node index.js"
   },
   "dependencies": {
-    "@nessi/parse-server": "lumandra/parse-server#master",
+    "@nessi/parse-server": "lumandra/parse-server#v3.2.4",
     "crypto": "^1.0.1",
     "express": "^4.17.1",
     "express-http-proxy": "^1.6.2",
