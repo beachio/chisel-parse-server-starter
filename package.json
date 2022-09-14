@@ -23,7 +23,7 @@
     "express-http-proxy": "^1.6.2",
     "jose": "^4.3.7",
     "parse": "^2.19.0",
-    "parse-dashboard": "^3.2.1",
+    "parse-dashboard": "^4.1.4",
     "parse-server-mailgun": "^2.4.15",
     "parse-server-mural-auth-adapter": "^1.0.2",
     "request": "^2.88.2",
