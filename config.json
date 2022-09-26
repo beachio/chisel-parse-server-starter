@@ -10,6 +10,11 @@
     "URLdb": "mongodb://localhost:27017/parse",
     "URLsite": "http://localhost:9000",
 
+    "fileUpload":  {
+      "enableForPublic": true,
+      "enableForAnonymousUser": true,
+      "enableForAuthenticatedUser": true
+    },
     "maxUploadSize": "10mb",
 
     "verifyUserEmails": true,

@@ -19,7 +19,7 @@ const PORT            = process.env.PORT          || parseConfig.port;
 const URL_SERVER      = process.env.SERVER_URL    || parseConfig.URLserver;
 const GRAPHQL_SERVER  = process.env.GRAPHQL_SERVER_URL    || parseConfig.GraphQLURLserver;
 const URL_DB          = process.env.DATABASE_URI  ||
-                    process.env.MONGODB_URI   || parseConfig.URLdb;
+                        process.env.MONGODB_URI   || parseConfig.URLdb;
 const URL_SITE        = process.env.SITE_URL      || parseConfig.URLsite;
 const APP_ID          = process.env.APP_ID        || parseConfig.appId;
 const MAX_UPLOAD_SIZE = process.env.MAX_UPLOAD_SIZE || parseConfig.maxUploadSize;
