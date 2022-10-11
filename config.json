@@ -15,7 +15,7 @@
       "enableForAnonymousUser": true,
       "enableForAuthenticatedUser": true
     },
-    "maxUploadSize": "10mb",
+    "maxUploadSize": "14mb",
 
     "verifyUserEmails": true,
     "preventLoginWithUnverifiedEmail": true,
