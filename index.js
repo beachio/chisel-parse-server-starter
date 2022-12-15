@@ -52,7 +52,10 @@ Object.assign(parseConfig, {
     classNames: ['Site', 'Model', 'ModelField', 'Collaboration', 'MediaItem', 'ct____.*']
   },
   auth: {
-    mural: muralAuthAdapter
+    mural:
+    {
+      module: muralAuthAdapter
+    }
   }
 });
 
