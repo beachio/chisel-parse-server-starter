@@ -129,7 +129,7 @@ if (DASHBOARD_ACTIVATED) {
     }];
 
   module.exports.dashboardConfig = dashboardConfig;
-  const dashboard = new ParseDashboard(dashboardConfig);
+  const dashboard = new ParseDashboard(dashboardConfig,  { allowInsecureHTTP: true });
   app.use('/dashboard', dashboard);
 }
 
