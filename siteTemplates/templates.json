@@ -2878,19 +2878,27 @@
           {
             "name": "AppsList",
             "nameId": "AppsList",
-            "type": "Short Text",
-            "appearance": "Single line",
+            "type": "Reference",
+            "appearance": "Reference",
             "color": "rgba(167, 69, 109, 1)",
             "boolTextYes": "",
-            "boolTextNo": "",
-            "validValues": [],
+            "boolTextNo": "",            
+            "validations": {
+              "models": {
+                "active": true,
+                "modelsList": [
+                  "Developer_App"
+                ],
+                "errorMsg": "",
+                "isError": false
+              }
+            },
             "isRequired": false,
             "isTitle": false,
             "isList": true,
             "isDisabled": false,
             "isUnique": false,
-            "order": 1,
-            "validations": null
+            "order": 1
           }
         ]
       }
