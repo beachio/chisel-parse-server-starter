@@ -1985,49 +1985,6 @@
             "validations": null
           },
           {
-            "name": "Dashboard Setting",
-            "nameId": "Dashboard_Setting",
-            "type": "Reference",
-            "appearance": "Reference",
-            "color": "rgba(109, 114, 70, 1)",
-            "boolTextYes": "",
-            "boolTextNo": "",
-            "validValues": [],
-            "isRequired": false,
-            "isTitle": false,
-            "isList": false,
-            "isDisabled": false,
-            "isUnique": false,
-            "order": 8,
-            "validations": {
-              "models": {
-                "active": true,
-                "modelsList": [
-                  "Dashboard_Ext_Settings"
-                ],
-                "errorMsg": "",
-                "isError": false
-              }
-            }
-          },
-          {
-            "name": "Facilitator Mode",
-            "nameId": "Facilitator_Mode",
-            "type": "Boolean",
-            "appearance": "Switch",
-            "color": "rgba(216, 80, 7, 1)",
-            "boolTextYes": "",
-            "boolTextNo": "",
-            "validValues": [],
-            "isRequired": false,
-            "isTitle": false,
-            "isList": false,
-            "isDisabled": false,
-            "isUnique": false,
-            "order": 9,
-            "validations": null
-          },
-          {
             "name": "Permissions",
             "nameId": "Permissions",
             "type": "Short Text",
@@ -2384,23 +2341,6 @@
             "isDisabled": false,
             "isUnique": false,
             "order": 0,
-            "validations": null
-          },
-          {
-            "name": "Forge API Key",
-            "nameId": "Forge_API_Key",
-            "type": "Short Text",
-            "appearance": "Single line",
-            "color": "rgba(123, 241, 79, 1)",
-            "boolTextYes": "",
-            "boolTextNo": "",
-            "validValues": [],
-            "isRequired": false,
-            "isTitle": false,
-            "isList": false,
-            "isDisabled": false,
-            "isUnique": false,
-            "order": 1,
             "validations": null
           },
           {
@@ -2913,22 +2853,22 @@
         ]
       },
       {
-        "name": "Dashboard Ext Settings",
-        "nameId": "Dashboard_Ext_Settings",
+        "name": "UserInstalledApps",
+        "nameId": "UserInstalledApps",
         "description": "",
-        "color": "rgba(160, 149, 26, 1)",
+        "color": "rgba(38, 212, 82, 1)",
         "fields": [
           {
-            "name": "name",
-            "nameId": "name",
+            "name": "UserEmail",
+            "nameId": "UserEmail",
             "type": "Short Text",
             "appearance": "Single line",
-            "color": "rgba(197, 213, 150, 1)",
+            "color": "rgba(107, 110, 51, 1)",
             "boolTextYes": "",
             "boolTextNo": "",
             "validValues": [],
-            "isRequired": true,
-            "isTitle": true,
+            "isRequired": false,
+            "isTitle": false,
             "isList": false,
             "isDisabled": false,
             "isUnique": false,
@@ -2936,103 +2876,20 @@
             "validations": null
           },
           {
-            "name": "SVG Icon",
-            "nameId": "SVG_Icon",
-            "type": "Media",
-            "appearance": "Media",
-            "color": "rgba(147, 253, 122, 1)",
+            "name": "AppsList",
+            "nameId": "AppsList",
+            "type": "Short Text",
+            "appearance": "Single line",
+            "color": "rgba(167, 69, 109, 1)",
             "boolTextYes": "",
             "boolTextNo": "",
             "validValues": [],
-            "isRequired": true,
+            "isRequired": false,
             "isTitle": false,
-            "isList": false,
+            "isList": true,
             "isDisabled": false,
             "isUnique": false,
             "order": 1,
-            "validations": {
-              "fileSize": {
-                "active": false,
-                "min": 0,
-                "max": 0,
-                "minActive": true,
-                "maxActive": true,
-                "minUnit": "Bytes",
-                "maxUnit": "Bytes",
-                "errorMsg": "",
-                "isError": false
-              },
-              "fileTypes": {
-                "active": false,
-                "types": [],
-                "errorMsg": "",
-                "isError": false
-              }
-            }
-          },
-          {
-            "name": "custom entry point",
-            "nameId": "custom_entry_point",
-            "type": "Short Text",
-            "appearance": "URL",
-            "color": "rgba(36, 216, 150, 1)",
-            "boolTextYes": "",
-            "boolTextNo": "",
-            "validValues": [],
-            "isRequired": false,
-            "isTitle": false,
-            "isList": false,
-            "isDisabled": false,
-            "isUnique": false,
-            "order": 2,
-            "validations": null
-          },
-          {
-            "name": "sandbox permissions",
-            "nameId": "sandbox_permissions",
-            "type": "Short Text",
-            "appearance": "Dropdown",
-            "color": "rgba(125, 192, 51, 1)",
-            "boolTextYes": "",
-            "boolTextNo": "",
-            "validValues": [
-              "allow-scripts",
-              "allow-same-origin",
-              "allow-presentation",
-              "allow-modals",
-              "allow-top-navigation"
-            ],
-            "isRequired": false,
-            "isTitle": false,
-            "isList": true,
-            "isDisabled": false,
-            "isUnique": false,
-            "order": 3,
-            "validations": null
-          },
-          {
-            "name": "permissions",
-            "nameId": "permissions",
-            "type": "Short Text",
-            "appearance": "Dropdown",
-            "color": "rgba(238, 231, 140, 1)",
-            "boolTextYes": "",
-            "boolTextNo": "",
-            "validValues": [
-              "fullscreen",
-              "camera",
-              "microphone",
-              "geolocation",
-              "display-capture",
-              "xr-spatial-tracking",
-              "speaker-selection"
-            ],
-            "isRequired": false,
-            "isTitle": false,
-            "isList": true,
-            "isDisabled": false,
-            "isUnique": true,
-            "order": 4,
             "validations": null
           }
         ]
