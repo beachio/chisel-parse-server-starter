@@ -1450,7 +1450,7 @@
   {
     "name": "Extension Marketplace",
     "description": "The template for Extension MarketPlace.",
-    "icon": "products.svg",
+    "icon": "marketplace.svg",
     "models": [
       {
         "name": "Developer App",
