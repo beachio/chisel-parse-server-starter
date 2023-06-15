@@ -2,6 +2,7 @@ const configs = require('../index.js');
 module.exports.config = configs.parseConfig;
 module.exports.SITE = configs['URL_SITE'];
 module.exports.StripeConfig = configs.StripeConfig;
+module.exports.OpenAiAPIKey = configs.OpenAiAPIKey;
 
 
 module.exports.ROLE_ADMIN = "ADMIN";

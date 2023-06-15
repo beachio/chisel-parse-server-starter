@@ -7,6 +7,7 @@ const request = require('request');
 const http = require('http');
 const path = require('path');
 const fs = require('fs');
+require('dotenv').config();
 const bodyParser = require('body-parser')
 const packageJSON = require('./package.json');
 
@@ -14,6 +15,7 @@ const config = require('./config.json');
 
 let parseConfig = config.parseConfig;
 let StripeConfig = config.extraConfig.StripeConfig;
+let OpenAiAPIKey = process.env.OPENAI_API_KEY || config.extraConfig.OpenAiAPIKey;
 
 const PORT            = process.env.PORT          || parseConfig.port;
 const URL_SERVER      = process.env.SERVER_URL    || parseConfig.URLserver;
@@ -67,6 +69,7 @@ for (let p in cps) {
 module.exports.parseConfig = parseConfig;
 module.exports.URL_SITE = URL_SITE;
 module.exports.StripeConfig = StripeConfig;
+module.exports.OpenAiAPIKey = OpenAiAPIKey;
 
 
 const parseServer = new ParseServer(parseConfig);

@@ -60,6 +60,8 @@
     "StripeConfig": {
       "keyPublic": "pk_test_sample",
       "keyPrivate": "sk_test_sample"
-    }
+    },
+
+    "OpenAiAPIKey": "sample"
   }
 }

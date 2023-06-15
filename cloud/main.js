@@ -4,7 +4,10 @@ const {config, SITE, ROLE_ADMIN, ROLE_EDITOR, promisifyW, getAllObjects} = requi
 
 const {getPayPlan} = require('./payment');
 
+require('./openai');
+
 require('./users_code');
+
 
 const checkRights = (user, obj) => {
   const acl = obj.getACL();
