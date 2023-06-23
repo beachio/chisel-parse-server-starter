@@ -1612,6 +1612,43 @@
                 "isError": false
               }
             }
+          },
+          {
+            "name": "Kind",
+            "nameId": "Kind",
+            "type": "Short Text",
+            "appearance": "Dropdown",
+            "color": "rgba(40, 62, 108, 1)",
+            "boolTextYes": "",
+            "boolTextNo": "",
+            "validValues": [
+              "Site",
+              "User"
+            ],
+            "isRequired": false,
+            "isTitle": false,
+            "isList": true,
+            "isDisabled": false,
+            "isUnique": false,
+            "order": 7,
+            "validations": null
+          },
+          {
+            "name": "InstallParams",
+            "nameId": "InstallParams",
+            "type": "Short Text",
+            "appearance": "Single line",
+            "color": "rgba(254, 209, 115, 1)",
+            "boolTextYes": "",
+            "boolTextNo": "",
+            "validValues": [],
+            "isRequired": false,
+            "isTitle": false,
+            "isList": false,
+            "isDisabled": false,
+            "isUnique": false,
+            "order": 8,
+            "validations": null
           }
         ]
       },
@@ -2899,6 +2936,107 @@
             "isDisabled": false,
             "isUnique": false,
             "order": 1
+          }
+        ]
+      },
+      {
+        "name": "App Instance",
+        "nameId": "App_Instance",
+        "description": "",
+        "color": "rgba(82, 129, 84, 1)",
+        "fields": [
+          {
+            "name": "Slug",
+            "nameId": "Slug",
+            "type": "Short Text",
+            "appearance": "Single line",
+            "color": "rgba(248, 14, 81, 1)",
+            "boolTextYes": "",
+            "boolTextNo": "",
+            "validValues": [],
+            "isRequired": true,
+            "isTitle": true,
+            "isList": false,
+            "isDisabled": false,
+            "isUnique": false,
+            "order": 0,
+            "validations": null
+          },
+          {
+            "name": "Developer App",
+            "nameId": "Developer_App",
+            "type": "Reference",
+            "appearance": "Reference",
+            "color": "rgba(255, 17, 25, 1)",
+            "boolTextYes": "",
+            "boolTextNo": "",
+            "validValues": [],
+            "isRequired": false,
+            "isTitle": false,
+            "isList": false,
+            "isDisabled": false,
+            "isUnique": false,
+            "order": 1,
+            "validations": null
+          },
+          {
+            "name": "Param",
+            "nameId": "Param",
+            "type": "Short Text",
+            "appearance": "Single line",
+            "color": "rgba(29, 231, 44, 1)",
+            "boolTextYes": "",
+            "boolTextNo": "",
+            "validValues": [],
+            "isRequired": false,
+            "isTitle": false,
+            "isList": false,
+            "isDisabled": false,
+            "isUnique": false,
+            "order": 2,
+            "validations": null
+          }
+        ]
+      },
+      {
+        "name": "SDK",
+        "nameId": "SDK",
+        "description": "",
+        "color": "rgba(149, 71, 183, 1)",
+        "fields": [
+          {
+            "name": "Version",
+            "nameId": "Version",
+            "type": "Short Text",
+            "appearance": "Single line",
+            "color": "rgba(9, 125, 103, 1)",
+            "boolTextYes": "",
+            "boolTextNo": "",
+            "validValues": [],
+            "isRequired": true,
+            "isTitle": true,
+            "isList": false,
+            "isDisabled": false,
+            "isUnique": false,
+            "order": 0,
+            "validations": null
+          },
+          {
+            "name": "File",
+            "nameId": "File",
+            "type": "Media",
+            "appearance": "Media",
+            "color": "rgba(91, 240, 36, 1)",
+            "boolTextYes": "",
+            "boolTextNo": "",
+            "validValues": [],
+            "isRequired": false,
+            "isTitle": false,
+            "isList": false,
+            "isDisabled": false,
+            "isUnique": false,
+            "order": 1,
+            "validations": null
           }
         ]
       }
