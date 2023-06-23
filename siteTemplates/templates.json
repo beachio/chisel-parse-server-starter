@@ -2890,17 +2890,51 @@
         ]
       },
       {
-        "name": "UserInstalledApps",
-        "nameId": "UserInstalledApps",
+        "name": "InstalledApps",
+        "nameId": "InstalledApps",
         "description": "",
-        "color": "rgba(38, 212, 82, 1)",
+        "color": "rgba(56, 82, 39, 1)",
         "fields": [
           {
-            "name": "UserEmail",
-            "nameId": "UserEmail",
+            "name": "slug",
+            "nameId": "slug",
             "type": "Short Text",
             "appearance": "Single line",
-            "color": "rgba(107, 110, 51, 1)",
+            "color": "rgba(156, 25, 116, 1)",
+            "boolTextYes": "",
+            "boolTextNo": "",
+            "validValues": [],
+            "isRequired": true,
+            "isTitle": true,
+            "isList": false,
+            "isDisabled": false,
+            "isUnique": false,
+            "order": 0,
+            "validations": null
+          },
+          {
+            "name": "InstanceList",
+            "nameId": "InstanceList",
+            "type": "Reference",
+            "appearance": "Reference",
+            "color": "rgba(255, 1, 5, 1)",
+            "boolTextYes": "",
+            "boolTextNo": "",
+            "validValues": [],
+            "isRequired": false,
+            "isTitle": false,
+            "isList": true,
+            "isDisabled": false,
+            "isUnique": false,
+            "order": 1,
+            "validations": null
+          },
+          {
+            "name": "UserId",
+            "nameId": "UserId",
+            "type": "Short Text",
+            "appearance": "Single line",
+            "color": "rgba(231, 174, 188, 1)",
             "boolTextYes": "",
             "boolTextNo": "",
             "validValues": [],
@@ -2909,33 +2943,25 @@
             "isList": false,
             "isDisabled": false,
             "isUnique": false,
-            "order": 0,
+            "order": 2,
             "validations": null
           },
           {
-            "name": "AppsList",
-            "nameId": "AppsList",
-            "type": "Reference",
-            "appearance": "Reference",
-            "color": "rgba(167, 69, 109, 1)",
+            "name": "SiteId",
+            "nameId": "SiteId",
+            "type": "Short Text",
+            "appearance": "Single line",
+            "color": "rgba(95, 19, 156, 1)",
             "boolTextYes": "",
-            "boolTextNo": "",            
-            "validations": {
-              "models": {
-                "active": true,
-                "modelsList": [
-                  "Developer_App"
-                ],
-                "errorMsg": "",
-                "isError": false
-              }
-            },
+            "boolTextNo": "",
+            "validValues": [],
             "isRequired": false,
             "isTitle": false,
-            "isList": true,
+            "isList": false,
             "isDisabled": false,
             "isUnique": false,
-            "order": 1
+            "order": 3,
+            "validations": null
           }
         ]
       },
