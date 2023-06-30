@@ -2149,6 +2149,23 @@
             "validations": null
           },
           {
+            "name": "Country",
+            "nameId": "Country",
+            "type": "Short Text",
+            "appearance": "Single line",
+            "color": "rgba(56, 211, 183, 1)",
+            "boolTextYes": "",
+            "boolTextNo": "",
+            "validValues": [],
+            "isRequired": false,
+            "isTitle": false,
+            "isList": false,
+            "isDisabled": false,
+            "isUnique": false,
+            "order": 4,
+            "validations": null
+          },
+          {
             "name": "Verified",
             "nameId": "Verified",
             "type": "Boolean",
