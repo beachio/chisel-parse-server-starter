@@ -2642,6 +2642,23 @@
             "validations": null
           },
           {
+            "name": "Forge API Key",
+            "nameId": "Forge_API_Key",
+            "type": "Short Text",
+            "appearance": "Single line",
+            "color": "rgba(123, 241, 79, 1)",
+            "boolTextYes": "",
+            "boolTextNo": "",
+            "validValues": [],
+            "isRequired": false,
+            "isTitle": false,
+            "isList": false,
+            "isDisabled": false,
+            "isUnique": false,
+            "order": 1,
+            "validations": null
+          },
+          {
             "name": "Policy",
             "nameId": "Policy",
             "type": "Reference",
