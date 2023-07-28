@@ -1632,23 +1632,6 @@
             "isUnique": false,
             "order": 7,
             "validations": null
-          },
-          {
-            "name": "InstallParams",
-            "nameId": "InstallParams",
-            "type": "Short Text",
-            "appearance": "Single line",
-            "color": "rgba(254, 209, 115, 1)",
-            "boolTextYes": "",
-            "boolTextNo": "",
-            "validValues": [],
-            "isRequired": false,
-            "isTitle": false,
-            "isList": false,
-            "isDisabled": false,
-            "isUnique": false,
-            "order": 8,
-            "validations": null
           }
         ]
       },
@@ -2070,6 +2053,23 @@
             "isDisabled": false,
             "isUnique": false,
             "order": 11,
+            "validations": null
+          },
+          {
+            "name": "InstallParams",
+            "nameId": "InstallParams",
+            "type": "Short Text",
+            "appearance": "Single line",
+            "color": "rgba(254, 209, 115, 1)",
+            "boolTextYes": "",
+            "boolTextNo": "",
+            "validValues": [],
+            "isRequired": false,
+            "isTitle": false,
+            "isList": false,
+            "isDisabled": false,
+            "isUnique": false,
+            "order": 12,
             "validations": null
           }
         ]
