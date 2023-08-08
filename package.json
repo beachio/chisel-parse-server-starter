@@ -1,6 +1,6 @@
 {
   "name": "chisel-parse-server",
-  "version": "0.7.12",
+  "version": "0.7.13",
   "description": "Parse Server setup for Chisel CMS",
   "author": "Beach.io <beach.io>",
   "license": "MIT",
@@ -23,6 +23,7 @@
     "express": "^4.17.1",
     "express-http-proxy": "^1.6.2",
     "jose": "^4.3.7",
+    "jwt-decode": "^3.1.2",
     "openai": "^3.1.0",
     "parse": "^2.19.0",
     "parse-dashboard": "^3.3.0",
