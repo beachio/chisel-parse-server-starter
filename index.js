@@ -223,6 +223,24 @@ const postStart = async () => {
   }
 };
 
+const checkUsersCode = async() => {
+  try {
+    const SERVER_URL = process.env.SERVER_URL;
+    const parse_id = SERVER_URL.match(/https:\/\/(\d*).*/)[1]
+    var file = fs.statSync('./cloud/users_code.js');
+        const url = process.env.CUSTOM_CODE_URL || 'https://getforge.com/cloud66-webhook';
+        console.log(file.size);
+        console.log(url);
+        if (file.size == 0){
+            request.post({headers: {'content-type': 'application/json'},
+                url: url, body: `{"service": {"name": "parse-${parse_id }"}}`})
+        }
+    }
+    catch (e) {
+        console.log(e)
+    }
+};
+
 // Clearing logs
 const clearLogInterval = 1000 * 60 * 60 * 24;
 const logsDirectory = './logs';
@@ -247,6 +265,7 @@ setInterval(clearLogs, clearLogInterval);
 const httpServer = http.createServer(app);
 httpServer.listen(PORT, async () => {
   await postStart();
+  await checkUsersCode();
   console.log(`Chisel Parse server v${packageJSON.version} running on port ${PORT}.`);
 });
 
