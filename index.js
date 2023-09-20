@@ -33,6 +33,9 @@ const DASH_USER_PASSWORD  = process.env.USER_PASS           || config.extraConfi
 
 const SITE_TEMPLATES      = process.env.SITE_TEMPLATES      || config.extraConfig.siteTemplates;
 
+const VERIFY_USER_EMAIL = process.env.VERIFY_USER_EMAIL || parseConfig.verifyUserEmails;
+const PREVENT_LOGIN_WITH_UNVERIFIED_EMAIL = process.env.PREVENT_LOGIN_WITH_UNVERIFIED_EMAIL || parseConfig.preventLoginWithUnverifiedEmail;
+
 
 let emailOptions = parseConfig.emailAdapter.options;
 emailOptions.fromAddress  = process.env.FROM_ADDRESS    || emailOptions.fromAddress;
@@ -46,6 +49,8 @@ Object.assign(parseConfig, {
   cloud: "./cloud/main",
   databaseURI: URL_DB,
   maxUploadSize: MAX_UPLOAD_SIZE,
+  verifyUserEmails: VERIFY_USER_EMAIL,
+  preventLoginWithUnverifiedEmail: PREVENT_LOGIN_WITH_UNVERIFIED_EMAIL,
 
   serverURL: URL_SERVER,
   publicServerURL: URL_SERVER,
