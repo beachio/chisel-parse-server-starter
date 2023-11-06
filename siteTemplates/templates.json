@@ -1632,6 +1632,40 @@
             "isUnique": false,
             "order": 7,
             "validations": null
+          },
+          {
+            "name": "Dev URL",
+            "nameId": "Dev_URL",
+            "type": "Short Text",
+            "appearance": "Single line",
+            "color": "rgba(49, 234, 146, 1)",
+            "boolTextYes": "",
+            "boolTextNo": "",
+            "validValues": [],
+            "isRequired": false,
+            "isTitle": false,
+            "isList": false,
+            "isDisabled": false,
+            "isUnique": false,
+            "order": 8,
+            "validations": null
+          },
+          {
+            "name": "Dev Mode",
+            "nameId": "Dev_Mode",
+            "type": "Boolean",
+            "appearance": "Radio buttons",
+            "color": "rgba(129, 2, 153, 1)",
+            "boolTextYes": "",
+            "boolTextNo": "",
+            "validValues": [],
+            "isRequired": false,
+            "isTitle": false,
+            "isList": false,
+            "isDisabled": false,
+            "isUnique": false,
+            "order": 9,
+            "validations": null
           }
         ]
       },
