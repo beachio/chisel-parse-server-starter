@@ -50,9 +50,8 @@ Object.assign(parseConfig, {
   cloud: "./cloud/main",
   databaseURI: URL_DB,
   maxUploadSize: MAX_UPLOAD_SIZE,
-  verifyUserEmails: VERIFY_USER_EMAIL,
-  preventLoginWithUnverifiedEmail: PREVENT_LOGIN_WITH_UNVERIFIED_EMAIL,
-
+  verifyUserEmails: JSON.parse(VERIFY_USER_EMAIL),
+  preventLoginWithUnverifiedEmail: JSON.parse(PREVENT_LOGIN_WITH_UNVERIFIED_EMAIL),
   serverURL: URL_SERVER,
   publicServerURL: URL_SERVER,
 
