@@ -27,7 +27,7 @@
     "express-http-proxy": "^1.6.2",
     "jose": "^4.3.7",
     "jwt-decode": "^3.1.2",
-    "openai": "^4.19.0",
+    "openai": "3.3.0",
     "parse": "^2.19.0",
     "parse-dashboard": "^3.3.0",
     "parse-server-jobs-scheduler": "^1.1.1",
