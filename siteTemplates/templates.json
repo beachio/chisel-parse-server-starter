@@ -3333,6 +3333,23 @@
             "isUnique": false,
             "order": 2,
             "validations": null
+          },
+          {
+            "name": "Installed By",
+            "nameId": "Installed_By",
+            "type": "Short Text",
+            "appearance": "Single line",
+            "color": "rgba(222, 193, 92, 1)",
+            "boolTextYes": "",
+            "boolTextNo": "",
+            "validValues": [],
+            "isRequired": false,
+            "isTitle": false,
+            "isList": false,
+            "isDisabled": false,
+            "isUnique": false,
+            "order": 3,
+            "validations": null
           }
         ]
       },
