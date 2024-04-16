@@ -84,6 +84,9 @@ const parseGraphQLServer = new ParseGraphQLServer(
 );
 const app = new express();
 app.use('/parse', parseServer.app);
+app.use(bodyParser.json({limit: '4mb'}));
+app.use(bodyParser.urlencoded({limit: '4mb', extended: true}));
+
 parseGraphQLServer.applyGraphQL(app);
 
 app.post('/users_code', bodyParser.json(), (req, res, next) => {
