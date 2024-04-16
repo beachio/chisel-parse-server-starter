@@ -84,8 +84,10 @@ const parseGraphQLServer = new ParseGraphQLServer(
 );
 const app = new express();
 app.use('/parse', parseServer.app);
-app.use(bodyParser.json({limit: '4mb'}));
-app.use(bodyParser.urlencoded({limit: '4mb', extended: true}));
+if (process.env.REQUEST_LIMIT) {
+  app.use(bodyParser.json({limit: process.env.REQUEST_LIMIT}));
+  app.use(bodyParser.urlencoded({limit: process.env.REQUEST_LIMIT, extended: true}));
+}
 
 parseGraphQLServer.applyGraphQL(app);
 
