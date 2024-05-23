@@ -7,6 +7,7 @@ const request = require('request');
 const http = require('http');
 const path = require('path');
 const fs = require('fs');
+const write = require('write');
 require('dotenv').config();
 const bodyParser = require('body-parser')
 const packageJSON = require('./package.json');
@@ -91,15 +92,13 @@ if (process.env.REQUEST_LIMIT) {
 
 parseGraphQLServer.applyGraphQL(app);
 
-app.post('/users_code', bodyParser.json(), (req, res, next) => {
+app.post('/users_code', bodyParser.json(), async (req, res, next) => {
   if (req.headers['x-parse-application-id'] == APP_ID && req.headers['x-parse-rest-api-key'] == MASTER_KEY)
   {
-    let usersCodeSuccess = true;
-    let customTemplatesSuccess = true;
     try{
-      fs.writeFileSync("./cloud/users_code.js", req.body.custom_code)
-    } catch (e) {
-      usersCodeSuccess = false
+        write.sync("./cloud/users_code.js", req.body.custom_code)
+    }catch(e){
+      console.log(e)
     }
 
     const path = './siteTemplates/default_templates.json'
@@ -110,11 +109,7 @@ app.post('/users_code', bodyParser.json(), (req, res, next) => {
     }
     else
       customTemplatesSuccess = true
-    if (usersCodeSuccess && customTemplatesSuccess){
-      res.send({ status: 'SUCCESS' })
-    }
-    else
-      res.status(403).send({ status: 'Failed' })
+    res.send({ status: 'SUCCESS' })
   }
   else
     res.status(401).send({message: "Unauthorized"})
