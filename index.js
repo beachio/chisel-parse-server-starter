@@ -94,12 +94,14 @@ parseGraphQLServer.applyGraphQL(app);
 app.post('/users_code', bodyParser.json(), (req, res, next) => {
   if (req.headers['x-parse-application-id'] == APP_ID && req.headers['x-parse-rest-api-key'] == MASTER_KEY)
   {
-    let usersCodeSuccess = false;
+    let usersCodeSuccess = true;
     let customTemplatesSuccess = true;
-    fs.writeFileSync("./cloud/users_code.js", req.body.custom_code, (err) =>{
-        if (!err)
-          usersCodeSuccess = true;
-    });
+    try{
+      fs.writeFileSync("./cloud/users_code.js", req.body.custom_code)
+    } catch (e) {
+      usersCodeSuccess = false
+    }
+
     const path = './siteTemplates/default_templates.json'
     if (fs.existsSync(path)) {
       let defaultData = JSON.parse(fs.readFileSync(path));
@@ -112,7 +114,7 @@ app.post('/users_code', bodyParser.json(), (req, res, next) => {
       res.send({ status: 'SUCCESS' })
     }
     else
-      res.send({ status: 'Failed' })
+      res.status(403).send({ status: 'Failed' })
   }
   else
     res.status(401).send({message: "Unauthorized"})
