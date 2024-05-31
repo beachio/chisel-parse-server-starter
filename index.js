@@ -117,6 +117,9 @@ app.post('/users_code', bodyParser.json(), async (req, res, next) => {
 
 
 if (DASHBOARD_ACTIVATED) {
+  const options = {
+
+  }
   const dashboardConfig = {
     apps: [{
       serverURL: URL_SERVER,
@@ -125,12 +128,9 @@ if (DASHBOARD_ACTIVATED) {
       masterKey: MASTER_KEY,
       appName: parseConfig.appName
     }],
-    trustProxy: 1,
-    PARSE_DASHBOARD_COOKIE_SESSION_SECRET: APP_ID,
-    PARSE_DASHBOARD_ALLOW_INSECURE_HTTP: 1,
-    PARSE_DASHBOARD_TRUST_PROXY: 1,
-    cookieSessionSecret: "IgniteForge",
+    cookieSessionSecret: APP_ID,
     allowInsecureHTTP: 1,
+    trustProxy: 1
   };
 
   if (DASH_USER_EMAIL && DASH_USER_PASSWORD)
