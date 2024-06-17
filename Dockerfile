@@ -1,4 +1,4 @@
-FROM node:14.13.0
+FROM node:18.19.0
 
 RUN mkdir parse
 

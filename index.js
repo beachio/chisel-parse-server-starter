@@ -1,5 +1,6 @@
 const express = require('express');
-const { default: ParseServer, ParseGraphQLServer } = require('@nessi/parse-server');
+const ParseServer = require('parse-server').ParseServer;
+const ParseGraphQLServer = require('parse-server').ParseGraphQLServer;
 const ParseDashboard = require('parse-dashboard');
 const Parse = require('parse/node');
 const muralAuthAdapter = require('parse-server-mural-auth-adapter');
@@ -128,9 +129,12 @@ if (DASHBOARD_ACTIVATED) {
       masterKey: MASTER_KEY,
       appName: parseConfig.appName
     }],
+    trustProxy: 1,
+    PARSE_DASHBOARD_COOKIE_SESSION_SECRET: APP_ID,
+    PARSE_DASHBOARD_ALLOW_INSECURE_HTTP: 1,
+    PARSE_DASHBOARD_TRUST_PROXY: 1,
     cookieSessionSecret: APP_ID,
-    allowInsecureHTTP: 1,
-    trustProxy: 1
+    allowInsecureHTTP: 1
   };
 
   if (DASH_USER_EMAIL && DASH_USER_PASSWORD)
