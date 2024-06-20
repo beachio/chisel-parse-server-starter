@@ -52,7 +52,7 @@ Object.assign(parseConfig, {
   maxUploadSize: MAX_UPLOAD_SIZE,
   verifyUserEmails: JSON.parse(VERIFY_USER_EMAIL),
   preventLoginWithUnverifiedEmail: JSON.parse(PREVENT_LOGIN_WITH_UNVERIFIED_EMAIL),
-  masterKeyIps: ['0.0.0.0/0', '::1'],
+  masterKeyIps: ['::'],
   serverURL: URL_SERVER,
   publicServerURL: URL_SERVER,
 
