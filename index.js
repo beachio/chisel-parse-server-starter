@@ -122,6 +122,7 @@ if (DASHBOARD_ACTIVATED) {
     }],
     trustProxy: 1,
     PARSE_DASHBOARD_COOKIE_SESSION_SECRET: APP_ID,
+    masterKeyIps: ['0.0.0.0/0', '::1'],
     PARSE_DASHBOARD_ALLOW_INSECURE_HTTP: 1,
     PARSE_DASHBOARD_TRUST_PROXY: 1,
     cookieSessionSecret: APP_ID,
