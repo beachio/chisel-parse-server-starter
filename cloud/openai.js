@@ -1,12 +1,10 @@
-const {OpenAiAPIKey} = require('./common');
+  const {OpenAiAPIKey} = require('./common');
 
-const { Configuration, OpenAIApi } = require("openai");
+const OpenAI = require('openai');
 
-const configuration = new Configuration({
-    apiKey: OpenAiAPIKey,
+const openai = new OpenAI({
+    apiKey: OpenAiAPIKey // This is also the default, can be omitted
 });
-
-const openai = new OpenAIApi(configuration);
 
 
 Parse.Cloud.define("openAiCompletion", async request => {

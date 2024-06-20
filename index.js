@@ -1,6 +1,5 @@
 const express = require('express');
-const ParseServer = require('parse-server').ParseServer;
-const ParseGraphQLServer = require('parse-server').ParseGraphQLServer;
+const { default: ParseServer, ParseGraphQLServer } = require('parse-server');
 const ParseDashboard = require('parse-dashboard');
 const Parse = require('parse/node');
 const muralAuthAdapter = require('parse-server-mural-auth-adapter');
@@ -14,7 +13,6 @@ const bodyParser = require('body-parser')
 const packageJSON = require('./package.json');
 
 const config = require('./config.json');
-const Scheduler = require('parse-server-jobs-scheduler').default;
 
 let parseConfig = config.parseConfig;
 let StripeConfig = config.extraConfig.StripeConfig;
@@ -79,19 +77,12 @@ module.exports.StripeConfig = StripeConfig;
 module.exports.OpenAiAPIKey = OpenAiAPIKey;
 
 
-const parseServer = new ParseServer(parseConfig);
-const parseGraphQLServer = new ParseGraphQLServer(
-  parseServer,
-  {graphQLPath: '/graphql'}
-);
 const app = new express();
-app.use('/parse', parseServer.app);
 if (process.env.REQUEST_LIMIT) {
   app.use(bodyParser.json({limit: process.env.REQUEST_LIMIT}));
   app.use(bodyParser.urlencoded({limit: process.env.REQUEST_LIMIT, extended: true}));
 }
 
-parseGraphQLServer.applyGraphQL(app);
 
 app.post('/users_code', bodyParser.json(), async (req, res, next) => {
   if (req.headers['x-parse-application-id'] == APP_ID && req.headers['x-parse-rest-api-key'] == MASTER_KEY)
@@ -275,27 +266,31 @@ setInterval(clearLogs, clearLogInterval);
 
 
 
-const scheduler = new Scheduler();
- 
-// Recreates all crons when the server is launched
-scheduler.recreateScheduleForAllJobs();
- 
+
+
 // Recreates schedule when a job schedule has changed
-Parse.Cloud.afterSave('_JobSchedule', async (request) => {
-  scheduler.recreateSchedule(request.object.id)
+
+(async () => {
+
+  const parseServer = new ParseServer(parseConfig);
+  await parseServer.start();
+  app.use('/parse', parseServer.app);
+
+  const parseGraphQLServer = new ParseGraphQLServer(
+    parseServer,
+    {graphQLPath: '/graphql'}
+  );
+  parseGraphQLServer.applyGraphQL(app);
+
+  const httpServer = http.createServer(app);
+  httpServer.listen(PORT, async () => {
+    await postStart();
+    await checkUsersCode();
+    console.log(`Chisel Parse server v${packageJSON.version} running on port ${PORT}.`);
 });
- 
-// Destroy schedule for removed job
-Parse.Cloud.afterDelete('_JobSchedule', async (request) => {
-  scheduler.destroySchedule(request.object.id)
-});
+  const lqServer = ParseServer.createLiveQueryServer(httpServer);
+})()
 
 
-const httpServer = http.createServer(app);
-httpServer.listen(PORT, async () => {
-  await postStart();
-  await checkUsersCode();
-  console.log(`Chisel Parse server v${packageJSON.version} running on port ${PORT}.`);
-});
 
-const lqServer = ParseServer.createLiveQueryServer(httpServer);
+

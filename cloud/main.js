@@ -1,12 +1,28 @@
 console.log('Cloud code connected');
 
 const {config, SITE, ROLE_ADMIN, ROLE_EDITOR, promisifyW, getAllObjects} = require('./common');
+const Scheduler = require('@hiennguyen92/parse-server-jobs-scheduler').default;
 
 const {getPayPlan} = require('./payment');
 
 require('./openai');
 
 require('./users_code');
+
+const scheduler = new Scheduler();
+
+// Recreates all crons when the server is launched
+scheduler.recreateScheduleForAllJobs();
+
+Parse.Cloud.afterSave('_JobSchedule', async (request) => {
+    scheduler.recreateSchedule(request.object.id)
+});
+
+// Destroy schedule for removed job
+Parse.Cloud.afterDelete('_JobSchedule', async (request) => {
+    scheduler.destroySchedule(request.object.id)
+});
+
 
 
 const checkRights = (user, obj) => {
