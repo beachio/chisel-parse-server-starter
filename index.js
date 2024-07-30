@@ -229,7 +229,7 @@ const postStart = async () => {
 
 const checkUsersCode = async() => {
   try {
-    const SERVER_URL = process.env.SERVER_URL;
+    const SERVER_URL =  process.env.SERVER_URL || "";
     const parse_id = SERVER_URL.match(/https:\/\/(\d*).*/)[1]
     var file = fs.statSync('./cloud/users_code.js');
         const url = process.env.CUSTOM_CODE_URL || 'https://getforge.com/cloud66-webhook';
