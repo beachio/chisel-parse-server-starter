@@ -47,6 +47,7 @@ emailOptions.apiKey       = process.env.MAILGUN_API_KEY || emailOptions.apiKey;
 Object.assign(parseConfig, {
   appId: APP_ID,
   masterKey: MASTER_KEY,
+  allowClientClassCreation: true,
   cloud: "./cloud/main",
   databaseURI: URL_DB,
   maxUploadSize: MAX_UPLOAD_SIZE,
