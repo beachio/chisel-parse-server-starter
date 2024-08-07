@@ -1,6 +1,7 @@
 console.log('Cloud code connected');
 
 const {config, SITE, ROLE_ADMIN, ROLE_EDITOR, promisifyW, getAllObjects} = require('./common');
+const axios = require('axios');
 const Scheduler = require('@hiennguyen92/parse-server-jobs-scheduler').default;
 
 const {getPayPlan} = require('./payment');
@@ -44,15 +45,14 @@ const getTableData = async (table) => {
   const endpoint = '/schemas/' + table;
 
   try {
-    const response = await Parse.Cloud.httpRequest({
+    const response = await axios({
       url: config.serverURL + endpoint,
       method: 'GET',
-      mode: 'cors',
-      cache: 'no-cache',
       headers: {
         'Content-Type': 'application/json',
         'X-Parse-Application-Id': config.appId,
-        'X-Parse-Master-Key': config.masterKey
+        'X-Parse-Master-Key': config.masterKey,
+        'Cache-Control': 'no-cache'
       }
     });
 
@@ -67,17 +67,16 @@ const getTableData = async (table) => {
 const setTableData = async (table, data, method = 'POST') => {
   const endpoint = '/schemas/' + table;
 
-  const response = await Parse.Cloud.httpRequest({
+  const response = await axios({
     url: config.serverURL + endpoint,
     method,
-    mode: 'cors',
-    cache: 'no-cache',
     headers: {
       'Content-Type': 'application/json',
       'X-Parse-Application-Id': config.appId,
-      'X-Parse-Master-Key': config.masterKey
+      'X-Parse-Master-Key': config.masterKey,
+      'Cache-Control': 'no-cache'
     },
-    body: JSON.stringify(data)
+    data: data
   });
 
   if (response.status != 200)
@@ -87,15 +86,14 @@ const setTableData = async (table, data, method = 'POST') => {
 const deleteTable = async (table) => {
   const endpoint = '/schemas/' + table;
 
-  const response = await Parse.Cloud.httpRequest({
+  const response = await axios({
     url: config.serverURL + endpoint,
     method: 'DELETE',
-    mode: 'cors',
-    cache: 'no-cache',
     headers: {
       'Content-Type': 'application/json',
       'X-Parse-Application-Id': config.appId,
-      'X-Parse-Master-Key': config.masterKey
+      'X-Parse-Master-Key': config.masterKey,
+      'Cache-Control': 'no-cache'
     }
   });
 
@@ -675,7 +673,7 @@ Parse.Cloud.define("onContentModify", async request => {
   if (!URL)
     return 'Warning! There is no content hook!';
 
-  const response = await Parse.Cloud.httpRequest({
+  const response = await axios({
     url: URL,
     method: 'GET'
   });
