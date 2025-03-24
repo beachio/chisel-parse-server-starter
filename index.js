@@ -11,6 +11,8 @@ const write = require('write');
 require('dotenv').config();
 const bodyParser = require('body-parser')
 const packageJSON = require('./package.json');
+const unzipper = require('unzipper');
+
 
 const config = require('./config.json');
 const Scheduler = require('parse-server-jobs-scheduler').default;
@@ -91,6 +93,25 @@ if (process.env.REQUEST_LIMIT) {
 }
 
 parseGraphQLServer.applyGraphQL(app);
+app.post('/folder_code', bodyParser.json(), async(req, res,next) => {
+  if (req.headers['x-parse-application-id'] == APP_ID && req.headers['x-parse-rest-api-key'] == MASTER_KEY)
+  {
+    try {
+      if (fs.existsSync('./cloud/Ignite')){
+        fs.rmSync('./cloud/Ignite', { recursive: true, force: true });
+      }
+      const directory = await unzipper.Open.url(request, req.body.folder_code_url);
+      await directory.extract({ path: './cloud/Ignite' })
+      write.sync("./cloud/users_code.js", "require('./Ignite/index.js')")
+    }
+    catch(e) {
+      console.log(e)
+      return res.status(403)
+    }
+  }
+  else
+    res.status(401).send({message: 'Unauthorized'})
+})
 
 app.post('/users_code', bodyParser.json(), async (req, res, next) => {
   if (req.headers['x-parse-application-id'] == APP_ID && req.headers['x-parse-rest-api-key'] == MASTER_KEY)
@@ -236,10 +257,8 @@ const checkUsersCode = async() => {
     const SERVER_URL = process.env.SERVER_URL;
     const parse_id = SERVER_URL.match(/https:\/\/(\d*).*/)[1]
     var file = fs.statSync('./cloud/users_code.js');
-        const url = process.env.CUSTOM_CODE_URL || 'https://getforge.com/cloud66-webhook';
-        console.log(file.size);
-        console.log(url);
         if (file.size == 0){
+            const url = process.env.CUSTOM_CODE_URL || 'https://getforge.com/cloud66-webhook';
             request.post({headers: {'content-type': 'application/json'},
                 url: url, body: `{"service": {"name": "parse-${parse_id }"}}`})
         }
