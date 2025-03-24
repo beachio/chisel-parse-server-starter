@@ -103,6 +103,7 @@ app.post('/folder_code', bodyParser.json(), async(req, res,next) => {
       const directory = await unzipper.Open.url(request, req.body.folder_code_url);
       await directory.extract({ path: './cloud/Ignite' })
       write.sync("./cloud/users_code.js", "require('./Ignite/index.js')")
+      res.send({ status: 'SUCCESS' })
     }
     catch(e) {
       console.log(e)
