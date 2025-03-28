@@ -43,9 +43,7 @@
             "validations": {
               "fileTypes": {
                 "active": true,
-                "types": [
-                  "Image"
-                ],
+                "types": ["Image"],
                 "errorMsg": "",
                 "isError": false
               }
@@ -140,9 +138,7 @@
             "validations": {
               "models": {
                 "active": true,
-                "modelsList": [
-                  "Author"
-                ],
+                "modelsList": ["Author"],
                 "errorMsg": "",
                 "isError": false
               }
@@ -165,9 +161,7 @@
             "validations": {
               "fileTypes": {
                 "active": true,
-                "types": [
-                  "Image"
-                ],
+                "types": ["Image"],
                 "errorMsg": "",
                 "isError": false
               }
@@ -190,9 +184,7 @@
             "validations": {
               "fileTypes": {
                 "active": true,
-                "types": [
-                  "Image"
-                ],
+                "types": ["Image"],
                 "errorMsg": "",
                 "isError": false
               }
@@ -310,9 +302,7 @@
             "validations": {
               "fileTypes": {
                 "active": true,
-                "types": [
-                  "Image"
-                ],
+                "types": ["Image"],
                 "errorMsg": "",
                 "isError": false
               }
@@ -407,9 +397,7 @@
             "validations": {
               "models": {
                 "active": true,
-                "modelsList": [
-                  "Author"
-                ],
+                "modelsList": ["Author"],
                 "errorMsg": "",
                 "isError": false
               }
@@ -432,9 +420,7 @@
             "validations": {
               "fileTypes": {
                 "active": true,
-                "types": [
-                  "Image"
-                ],
+                "types": ["Image"],
                 "errorMsg": "",
                 "isError": false
               }
@@ -457,9 +443,7 @@
             "validations": {
               "fileTypes": {
                 "active": true,
-                "types": [
-                  "Image"
-                ],
+                "types": ["Image"],
                 "errorMsg": "",
                 "isError": false
               }
@@ -546,9 +530,7 @@
             "validations": {
               "models": {
                 "active": true,
-                "modelsList": [
-                  "Category"
-                ],
+                "modelsList": ["Category"],
                 "errorMsg": "",
                 "isError": false
               }
@@ -595,9 +577,7 @@
             "validations": {
               "fileTypes": {
                 "active": true,
-                "types": [
-                  "Image"
-                ],
+                "types": ["Image"],
                 "errorMsg": "",
                 "isError": false
               }
@@ -669,9 +649,7 @@
             "validations": {
               "fileTypes": {
                 "active": true,
-                "types": [
-                  "Image"
-                ],
+                "types": ["Image"],
                 "errorMsg": "",
                 "isError": false
               }
@@ -754,9 +732,7 @@
             "validations": {
               "fileTypes": {
                 "active": true,
-                "types": [
-                  "Image"
-                ],
+                "types": ["Image"],
                 "errorMsg": "",
                 "isError": false
               }
@@ -780,9 +756,7 @@
             "validations": {
               "models": {
                 "active": true,
-                "modelsList": [
-                  "Author"
-                ],
+                "modelsList": ["Author"],
                 "errorMsg": "",
                 "isError": false
               }
@@ -882,9 +856,7 @@
             "validations": {
               "models": {
                 "active": true,
-                "modelsList": [
-                  "Author"
-                ],
+                "modelsList": ["Author"],
                 "errorMsg": "",
                 "isError": false
               }
@@ -908,9 +880,7 @@
             "validations": {
               "fileTypes": {
                 "active": true,
-                "types": [
-                  "Image"
-                ],
+                "types": ["Image"],
                 "errorMsg": "",
                 "isError": false
               }
@@ -934,9 +904,7 @@
             "validations": {
               "models": {
                 "active": true,
-                "modelsList": [
-                  "Image"
-                ],
+                "modelsList": ["Image"],
                 "errorMsg": "",
                 "isError": false
               }
@@ -1060,9 +1028,7 @@
             "validations": {
               "fileTypes": {
                 "active": true,
-                "types": [
-                  "Image"
-                ],
+                "types": ["Image"],
                 "errorMsg": "",
                 "isError": false
               }
@@ -1196,9 +1162,7 @@
             "validations": {
               "fileTypes": {
                 "active": true,
-                "types": [
-                  "Image"
-                ],
+                "types": ["Image"],
                 "errorMsg": "",
                 "isError": false
               }
@@ -1281,9 +1245,7 @@
             "validations": {
               "models": {
                 "active": true,
-                "modelsList": [
-                  "Brand"
-                ],
+                "modelsList": ["Brand"],
                 "errorMsg": "",
                 "isError": false
               }
@@ -1324,9 +1286,7 @@
             "validations": {
               "models": {
                 "active": true,
-                "modelsList": [
-                  "Category"
-                ],
+                "modelsList": ["Category"],
                 "errorMsg": "",
                 "isError": false
               }
@@ -1350,9 +1310,7 @@
             "validations": {
               "fileTypes": {
                 "active": true,
-                "types": [
-                  "Image"
-                ],
+                "types": ["Image"],
                 "errorMsg": "",
                 "isError": false
               }
@@ -1510,9 +1468,7 @@
             "validations": {
               "models": {
                 "active": true,
-                "modelsList": [
-                  "Developer_App_Content"
-                ],
+                "modelsList": ["Developer_App_Content"],
                 "errorMsg": "",
                 "isError": false
               }
@@ -1536,9 +1492,7 @@
             "validations": {
               "models": {
                 "active": true,
-                "modelsList": [
-                  "Developer_App_Data"
-                ],
+                "modelsList": ["Developer_App_Data"],
                 "errorMsg": "",
                 "isError": false
               }
@@ -1562,9 +1516,7 @@
             "validations": {
               "models": {
                 "active": true,
-                "modelsList": [
-                  "Developer"
-                ],
+                "modelsList": ["Developer"],
                 "errorMsg": "",
                 "isError": false
               }
@@ -1605,9 +1557,7 @@
             "validations": {
               "models": {
                 "active": true,
-                "modelsList": [
-                  "Developer_App_Security"
-                ],
+                "modelsList": ["Developer_App_Security"],
                 "errorMsg": "",
                 "isError": false
               }
@@ -1621,10 +1571,7 @@
             "color": "rgba(40, 62, 108, 1)",
             "boolTextYes": "",
             "boolTextNo": "",
-            "validValues": [
-              "Site",
-              "User"
-            ],
+            "validValues": ["Site", "User"],
             "isRequired": false,
             "isTitle": false,
             "isList": true,
@@ -1812,9 +1759,7 @@
             "validations": {
               "models": {
                 "active": true,
-                "modelsList": [
-                  "Category"
-                ],
+                "modelsList": ["Category"],
                 "errorMsg": "",
                 "isError": false
               }
@@ -1828,11 +1773,7 @@
             "color": "rgba(73, 181, 133, 1)",
             "boolTextYes": "",
             "boolTextNo": "",
-            "validValues": [
-              "Listed",
-              "Unlisted",
-              "Private"
-            ],
+            "validValues": ["Listed", "Unlisted", "Private"],
             "isRequired": false,
             "isTitle": false,
             "isList": false,
@@ -1849,12 +1790,7 @@
             "color": "rgba(72, 152, 5, 1)",
             "boolTextYes": "",
             "boolTextNo": "",
-            "validValues": [
-              "Popular",
-              "Trending",
-              "Recommended",
-              "New"
-            ],
+            "validValues": ["Popular", "Trending", "Recommended", "New"],
             "isRequired": false,
             "isTitle": false,
             "isList": true,
@@ -1976,9 +1912,7 @@
             "validations": {
               "models": {
                 "active": true,
-                "modelsList": [
-                  "Capability"
-                ],
+                "modelsList": ["Capability"],
                 "errorMsg": "",
                 "isError": false
               }
@@ -2009,10 +1943,7 @@
             "color": "rgba(87, 193, 115, 1)",
             "boolTextYes": "",
             "boolTextNo": "",
-            "validValues": [
-              "One-time",
-              "Monthly"
-            ],
+            "validValues": ["One-time", "Monthly"],
             "isRequired": false,
             "isTitle": false,
             "isList": false,
@@ -2710,9 +2641,7 @@
             "validations": {
               "models": {
                 "active": true,
-                "modelsList": [
-                  "Policy"
-                ],
+                "modelsList": ["Policy"],
                 "errorMsg": "",
                 "isError": false
               }
@@ -3356,7 +3285,7 @@
       {
         "name": "Review",
         "nameId": "Review",
-        "description": "",        
+        "description": "",
         "color": "rgba(185, 251, 186, 1)",
         "fields": [
           {
@@ -3435,11 +3364,7 @@
             "color": "rgba(220, 211, 31, 1)",
             "boolTextYes": "",
             "boolTextNo": "",
-            "validValues": [
-              "Waiting Review",
-              "Declined",
-              "Approved"
-            ],
+            "validValues": ["Waiting Review", "Declined", "Approved"],
             "isRequired": false,
             "isTitle": false,
             "isList": false,

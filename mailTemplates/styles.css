@@ -20,7 +20,8 @@ table {
   border: 0;
 }
 
-tr, td {
+tr,
+td {
   vertical-align: top;
   padding: 0;
 }

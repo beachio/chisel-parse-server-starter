@@ -1,244 +1,244 @@
-const {StripeConfig, CLOUD_ERROR_CODE__STRIPE_INIT_ERROR} = require('./common');
+const {
+  StripeConfig,
+  CLOUD_ERROR_CODE__STRIPE_INIT_ERROR,
+} = require('./common')
 
-let stripe;
+let stripe
 if (StripeConfig && StripeConfig.keyPrivate)
-  stripe = require("stripe")(StripeConfig.keyPrivate);
+  stripe = require('stripe')(StripeConfig.keyPrivate)
 
-
-let defaultPayPlan;
+let defaultPayPlan
 
 //if there are no pay plans, return null
 const getDefaultPayPlan = async () => {
   if (!defaultPayPlan)
     defaultPayPlan = await new Parse.Query('PayPlan')
       .equalTo('priceMonthly', 0)
-      .first();
+      .first()
 
-  return defaultPayPlan;
-};
+  return defaultPayPlan
+}
 
 const getPayPlan = async (user) => {
   if (!stripe) {
     //return null;
     //throw {errorMsg: 'Stripe is not initialized!', errorCode: 701};
 
-    let payPlan = user.get('payPlan');
-    if (!payPlan)
-      return null;
+    let payPlan = user.get('payPlan')
+    if (!payPlan) return null
 
-    await payPlan.fetch();
-    return payPlan;
+    await payPlan.fetch()
+    return payPlan
   }
 
-  const customerId = user.get('StripeId');
-  if (!customerId)
-    return getDefaultPayPlan();
+  const customerId = user.get('StripeId')
+  if (!customerId) return getDefaultPayPlan()
 
-  let customer;
+  let customer
   try {
-    customer = await stripe.customers.retrieve(customerId);
+    customer = await stripe.customers.retrieve(customerId)
   } catch (e) {}
-  if (!customer || customer.deleted)
-    return getDefaultPayPlan();
+  if (!customer || customer.deleted) return getDefaultPayPlan()
 
-  const subscription = customer.subscriptions.data[0];
+  const subscription = customer.subscriptions.data[0]
   if (!subscription || subscription.status == 'canceled' || !subscription.plan)
-    return getDefaultPayPlan();
+    return getDefaultPayPlan()
 
   const payPlan = await new Parse.Query('PayPlan')
     .equalTo('StripeId', subscription.plan.product)
-    .first();
-  if (!payPlan)
-    return getDefaultPayPlan();
+    .first()
+  if (!payPlan) return getDefaultPayPlan()
 
-  return payPlan;
-};
-module.exports.getPayPlan = getPayPlan;
+  return payPlan
+}
+module.exports.getPayPlan = getPayPlan
 
-
-
-Parse.Cloud.define("getStripeData", async request => {
+Parse.Cloud.define('getStripeData', async (request) => {
   if (!stripe)
-    throw {errorMsg: 'Stripe is not initialized!', errorCode: CLOUD_ERROR_CODE__STRIPE_INIT_ERROR};
+    throw {
+      errorMsg: 'Stripe is not initialized!',
+      errorCode: CLOUD_ERROR_CODE__STRIPE_INIT_ERROR,
+    }
 
-  const {user} = request;
-  if (!user)
-    throw 'Must be signed in to call this Cloud Function.';
+  const { user } = request
+  if (!user) throw 'Must be signed in to call this Cloud Function.'
 
-  const customerId = user.get('StripeId');
-  if (!customerId)
-    return null;
+  const customerId = user.get('StripeId')
+  if (!customerId) return null
 
-  let customer;
+  let customer
   try {
-    customer = await stripe.customers.retrieve(customerId);
+    customer = await stripe.customers.retrieve(customerId)
   } catch (e) {}
-  if (!customer || customer.deleted)
-    return null;
+  if (!customer || customer.deleted) return null
 
-  const sources = [];
+  const sources = []
   for await (const source of stripe.customers.listSources(customerId)) {
-    sources.push(source);
+    sources.push(source)
   }
 
-  let subscription = customer.subscriptions.data[0];
-  if (subscription && subscription.status == 'canceled')
-    subscription = null;
+  let subscription = customer.subscriptions.data[0]
+  if (subscription && subscription.status == 'canceled') subscription = null
 
   return {
     defaultSource: customer.default_source,
     sources,
-    subscription
-  };
-});
+    subscription,
+  }
+})
 
-Parse.Cloud.define("savePaymentSource", async request => {
+Parse.Cloud.define('savePaymentSource', async (request) => {
   if (!stripe)
-    throw {errorMsg: 'Stripe is not initialized!', errorCode: CLOUD_ERROR_CODE__STRIPE_INIT_ERROR};
+    throw {
+      errorMsg: 'Stripe is not initialized!',
+      errorCode: CLOUD_ERROR_CODE__STRIPE_INIT_ERROR,
+    }
 
-  const {user} = request;
-  if (!user)
-    throw 'Must be signed in to call this Cloud Function.';
+  const { user } = request
+  if (!user) throw 'Must be signed in to call this Cloud Function.'
 
-  const {tokenId, asDefault} = request.params;
-  if (!tokenId)
-    throw 'There is no token param!';
+  const { tokenId, asDefault } = request.params
+  if (!tokenId) throw 'There is no token param!'
 
-  const customerId = user.get('StripeId');
-  let customer;
+  const customerId = user.get('StripeId')
+  let customer
   try {
-    customer = await stripe.customers.retrieve(customerId);
+    customer = await stripe.customers.retrieve(customerId)
   } catch (e) {}
 
   if (customer && !customer.deleted) {
-    const source = await stripe.customers.createSource(customerId, {source: tokenId});
+    const source = await stripe.customers.createSource(customerId, {
+      source: tokenId,
+    })
     if (asDefault)
-      await stripe.customers.update(customerId, {default_source: source.id});
+      await stripe.customers.update(customerId, { default_source: source.id })
 
-    return null;
-
+    return null
   } else {
     customer = await stripe.customers.create({
       source: tokenId,
-      email: user.get('email')
-    });
-    user.set('StripeId', customer.id);
-    await user.save(null, {useMasterKey: true});
+      email: user.get('email'),
+    })
+    user.set('StripeId', customer.id)
+    await user.save(null, { useMasterKey: true })
 
-    return customer.id;
+    return customer.id
   }
-});
+})
 
-Parse.Cloud.define("setDefaultPaymentSource", async request => {
+Parse.Cloud.define('setDefaultPaymentSource', async (request) => {
   if (!stripe)
-    throw {errorMsg: 'Stripe is not initialized!', errorCode: CLOUD_ERROR_CODE__STRIPE_INIT_ERROR};
+    throw {
+      errorMsg: 'Stripe is not initialized!',
+      errorCode: CLOUD_ERROR_CODE__STRIPE_INIT_ERROR,
+    }
 
-  const {user} = request;
-  if (!user)
-    throw 'Must be signed in to call this Cloud Function.';
+  const { user } = request
+  if (!user) throw 'Must be signed in to call this Cloud Function.'
 
-  const {sourceId} = request.params;
-  if (!sourceId)
-    throw 'There is no source param!';
+  const { sourceId } = request.params
+  if (!sourceId) throw 'There is no source param!'
 
-  let customerId = user.get('StripeId');
-  if (!customerId)
-    throw 'There is no customer object yet!';
+  let customerId = user.get('StripeId')
+  if (!customerId) throw 'There is no customer object yet!'
 
-  await stripe.customers.update(customerId, {default_source: sourceId});
+  await stripe.customers.update(customerId, { default_source: sourceId })
 
-  return null;
-});
+  return null
+})
 
-Parse.Cloud.define("removePaymentSource", async request => {
+Parse.Cloud.define('removePaymentSource', async (request) => {
   if (!stripe)
-    throw {errorMsg: 'Stripe is not initialized!', errorCode: CLOUD_ERROR_CODE__STRIPE_INIT_ERROR};
+    throw {
+      errorMsg: 'Stripe is not initialized!',
+      errorCode: CLOUD_ERROR_CODE__STRIPE_INIT_ERROR,
+    }
 
-  const {user} = request;
-  if (!user)
-    throw 'Must be signed in to call this Cloud Function.';
+  const { user } = request
+  if (!user) throw 'Must be signed in to call this Cloud Function.'
 
-  const {sourceId} = request.params;
-  if (!sourceId)
-    throw 'There is no sourceId param!';
+  const { sourceId } = request.params
+  if (!sourceId) throw 'There is no sourceId param!'
 
-  let customerId = user.get('StripeId');
-  if (!customerId)
-    throw 'There is no customer object yet!';
+  let customerId = user.get('StripeId')
+  if (!customerId) throw 'There is no customer object yet!'
 
-  await stripe.customers.deleteSource(customerId, sourceId);
+  await stripe.customers.deleteSource(customerId, sourceId)
 
-  const customer = await stripe.customers.retrieve(customerId);
+  const customer = await stripe.customers.retrieve(customerId)
 
-  return {defaultSource: customer.default_source};
-});
+  return { defaultSource: customer.default_source }
+})
 
-Parse.Cloud.define('paySubscription', async request => {
+Parse.Cloud.define('paySubscription', async (request) => {
   if (!stripe)
-    throw {errorMsg: 'Stripe is not initialized!', errorCode: CLOUD_ERROR_CODE__STRIPE_INIT_ERROR};
+    throw {
+      errorMsg: 'Stripe is not initialized!',
+      errorCode: CLOUD_ERROR_CODE__STRIPE_INIT_ERROR,
+    }
 
-  const {user} = request;
-  if (!user)
-    throw 'Must be signed in to call this Cloud Function.';
+  const { user } = request
+  if (!user) throw 'Must be signed in to call this Cloud Function.'
 
-  const customerId = user.get('StripeId');
-  if (!customerId)
-    throw 'There are no payment methods!';
+  const customerId = user.get('StripeId')
+  if (!customerId) throw 'There are no payment methods!'
 
-  const {planId, isYearly} = request.params;
-  if (!planId)
-    throw 'There is no plan param!';
+  const { planId, isYearly } = request.params
+  if (!planId) throw 'There is no plan param!'
 
-  const payPlan = await new Parse.Query("PayPlan").get(planId);
-  if (!payPlan)
-    throw 'There is no pay plan!';
+  const payPlan = await new Parse.Query('PayPlan').get(planId)
+  if (!payPlan) throw 'There is no pay plan!'
 
-  const StripePlanId = isYearly ? payPlan.get('StripeIdYearly') : payPlan.get('StripeIdMonthly');
-  if (!StripePlanId)
-    throw 'Wrong pay plan!';
+  const StripePlanId = isYearly
+    ? payPlan.get('StripeIdYearly')
+    : payPlan.get('StripeIdMonthly')
+  if (!StripePlanId) throw 'Wrong pay plan!'
 
-  const customer = await stripe.customers.retrieve(customerId);
+  const customer = await stripe.customers.retrieve(customerId)
 
-  let subscription = customer.subscriptions.data[0];
+  let subscription = customer.subscriptions.data[0]
   if (subscription) {
     subscription = await stripe.subscriptions.update(subscription.id, {
-      items: [{
-        id: subscription.items.data[0].id,
-        plan: StripePlanId
-      }],
-      cancel_at_period_end: false
-    });
-
+      items: [
+        {
+          id: subscription.items.data[0].id,
+          plan: StripePlanId,
+        },
+      ],
+      cancel_at_period_end: false,
+    })
   } else {
     subscription = await stripe.subscriptions.create({
       customer: customerId,
-      items: [{plan: StripePlanId}]
-    });
+      items: [{ plan: StripePlanId }],
+    })
   }
 
-  user.set('payPlan', payPlan);
-  await user.save(null, {useMasterKey: true});
+  user.set('payPlan', payPlan)
+  await user.save(null, { useMasterKey: true })
 
-  return subscription;
-});
+  return subscription
+})
 
-Parse.Cloud.define('cancelSubscription', async request => {
+Parse.Cloud.define('cancelSubscription', async (request) => {
   if (!stripe)
-    throw {errorMsg: 'Stripe is not initialized!', errorCode: CLOUD_ERROR_CODE__STRIPE_INIT_ERROR};
+    throw {
+      errorMsg: 'Stripe is not initialized!',
+      errorCode: CLOUD_ERROR_CODE__STRIPE_INIT_ERROR,
+    }
 
-  const {user} = request;
-  if (!user)
-    throw 'Must be signed in to call this Cloud Function.';
+  const { user } = request
+  if (!user) throw 'Must be signed in to call this Cloud Function.'
 
-  const customerId = user.get('StripeId');
-  if (!customerId)
-    throw 'There are no Stripe customer!';
+  const customerId = user.get('StripeId')
+  if (!customerId) throw 'There are no Stripe customer!'
 
-  const customer = await stripe.customers.retrieve(customerId);
+  const customer = await stripe.customers.retrieve(customerId)
 
-  const subscription = customer.subscriptions.data[0];
-  if (!subscription)
-    throw 'There are no subscription!';
+  const subscription = customer.subscriptions.data[0]
+  if (!subscription) throw 'There are no subscription!'
 
-  return await stripe.subscriptions.update(subscription.id, {cancel_at_period_end: true});
-});
+  return await stripe.subscriptions.update(subscription.id, {
+    cancel_at_period_end: true,
+  })
+})

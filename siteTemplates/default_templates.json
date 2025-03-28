@@ -43,9 +43,7 @@
             "validations": {
               "fileTypes": {
                 "active": true,
-                "types": [
-                  "Image"
-                ],
+                "types": ["Image"],
                 "errorMsg": "",
                 "isError": false
               }
@@ -140,9 +138,7 @@
             "validations": {
               "models": {
                 "active": true,
-                "modelsList": [
-                  "Author"
-                ],
+                "modelsList": ["Author"],
                 "errorMsg": "",
                 "isError": false
               }
@@ -165,9 +161,7 @@
             "validations": {
               "fileTypes": {
                 "active": true,
-                "types": [
-                  "Image"
-                ],
+                "types": ["Image"],
                 "errorMsg": "",
                 "isError": false
               }
@@ -190,9 +184,7 @@
             "validations": {
               "fileTypes": {
                 "active": true,
-                "types": [
-                  "Image"
-                ],
+                "types": ["Image"],
                 "errorMsg": "",
                 "isError": false
               }
@@ -310,9 +302,7 @@
             "validations": {
               "fileTypes": {
                 "active": true,
-                "types": [
-                  "Image"
-                ],
+                "types": ["Image"],
                 "errorMsg": "",
                 "isError": false
               }
@@ -407,9 +397,7 @@
             "validations": {
               "models": {
                 "active": true,
-                "modelsList": [
-                  "Author"
-                ],
+                "modelsList": ["Author"],
                 "errorMsg": "",
                 "isError": false
               }
@@ -432,9 +420,7 @@
             "validations": {
               "fileTypes": {
                 "active": true,
-                "types": [
-                  "Image"
-                ],
+                "types": ["Image"],
                 "errorMsg": "",
                 "isError": false
               }
@@ -457,9 +443,7 @@
             "validations": {
               "fileTypes": {
                 "active": true,
-                "types": [
-                  "Image"
-                ],
+                "types": ["Image"],
                 "errorMsg": "",
                 "isError": false
               }
@@ -546,9 +530,7 @@
             "validations": {
               "models": {
                 "active": true,
-                "modelsList": [
-                  "Category"
-                ],
+                "modelsList": ["Category"],
                 "errorMsg": "",
                 "isError": false
               }
@@ -595,9 +577,7 @@
             "validations": {
               "fileTypes": {
                 "active": true,
-                "types": [
-                  "Image"
-                ],
+                "types": ["Image"],
                 "errorMsg": "",
                 "isError": false
               }
@@ -669,9 +649,7 @@
             "validations": {
               "fileTypes": {
                 "active": true,
-                "types": [
-                  "Image"
-                ],
+                "types": ["Image"],
                 "errorMsg": "",
                 "isError": false
               }
@@ -754,9 +732,7 @@
             "validations": {
               "fileTypes": {
                 "active": true,
-                "types": [
-                  "Image"
-                ],
+                "types": ["Image"],
                 "errorMsg": "",
                 "isError": false
               }
@@ -780,9 +756,7 @@
             "validations": {
               "models": {
                 "active": true,
-                "modelsList": [
-                  "Author"
-                ],
+                "modelsList": ["Author"],
                 "errorMsg": "",
                 "isError": false
               }
@@ -882,9 +856,7 @@
             "validations": {
               "models": {
                 "active": true,
-                "modelsList": [
-                  "Author"
-                ],
+                "modelsList": ["Author"],
                 "errorMsg": "",
                 "isError": false
               }
@@ -908,9 +880,7 @@
             "validations": {
               "fileTypes": {
                 "active": true,
-                "types": [
-                  "Image"
-                ],
+                "types": ["Image"],
                 "errorMsg": "",
                 "isError": false
               }
@@ -934,9 +904,7 @@
             "validations": {
               "models": {
                 "active": true,
-                "modelsList": [
-                  "Image"
-                ],
+                "modelsList": ["Image"],
                 "errorMsg": "",
                 "isError": false
               }
@@ -1060,9 +1028,7 @@
             "validations": {
               "fileTypes": {
                 "active": true,
-                "types": [
-                  "Image"
-                ],
+                "types": ["Image"],
                 "errorMsg": "",
                 "isError": false
               }
@@ -1196,9 +1162,7 @@
             "validations": {
               "fileTypes": {
                 "active": true,
-                "types": [
-                  "Image"
-                ],
+                "types": ["Image"],
                 "errorMsg": "",
                 "isError": false
               }
@@ -1281,9 +1245,7 @@
             "validations": {
               "models": {
                 "active": true,
-                "modelsList": [
-                  "Brand"
-                ],
+                "modelsList": ["Brand"],
                 "errorMsg": "",
                 "isError": false
               }
@@ -1324,9 +1286,7 @@
             "validations": {
               "models": {
                 "active": true,
-                "modelsList": [
-                  "Category"
-                ],
+                "modelsList": ["Category"],
                 "errorMsg": "",
                 "isError": false
               }
@@ -1350,9 +1310,7 @@
             "validations": {
               "fileTypes": {
                 "active": true,
-                "types": [
-                  "Image"
-                ],
+                "types": ["Image"],
                 "errorMsg": "",
                 "isError": false
               }

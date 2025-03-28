@@ -42,11 +42,11 @@
     },
 
     "customPages": {
-      "verifyEmailSuccess":       "/email-verify",
-      "choosePassword":           "/password-set",
-      "passwordResetSuccess":     "/password-set-success",
-      "invalidLink":              "/invalid-link",
-      "invalidVerificationLink":  "/invalid-link"
+      "verifyEmailSuccess": "/email-verify",
+      "choosePassword": "/password-set",
+      "passwordResetSuccess": "/password-set-success",
+      "invalidLink": "/invalid-link",
+      "invalidVerificationLink": "/invalid-link"
     }
   },
 
