@@ -106,6 +106,11 @@ if (process.env.REQUEST_LIMIT) {
     bodyParser.urlencoded({ limit: process.env.REQUEST_LIMIT, extended: true })
   )
 }
+const cloud_api_file = require('./cloud_api.js')
+var cloudApiFile = fs.statSync('./cloud_api.js')
+
+if (cloudApiFile.size > 0)
+  app.use('/cloud_api', cloud_api_file)
 
 parseGraphQLServer.applyGraphQL(app)
 app.post('/folder_code', bodyParser.json(), async (req, res, next) => {
@@ -159,6 +164,20 @@ app.post('/users_code', bodyParser.json(), async (req, res, next) => {
         JSON.stringify(res_data)
       )
     } else customTemplatesSuccess = true
+    res.send({ status: 'Success' })
+  } else res.status(401).send({ message: 'Unauthorized' })
+})
+
+app.post('/express_code', bodyParser.json(), async (req, res, next) => {
+  if (
+    req.headers['x-parse-application-id'] == APP_ID &&
+    req.headers['x-parse-rest-api-key'] == MASTER_KEY
+  ) {
+    try {
+      write.sync('./cloud_api.js', req.body.express_code)
+    } catch (e) {
+      console.log(e)
+    }
     res.send({ status: 'Success' })
   } else res.status(401).send({ message: 'Unauthorized' })
 })
